@@ -20,40 +20,40 @@ Templates are predefined Images that can be modified and loaded on the Displays.
   - [Third party components](#third-party-components)
 
 
-##Installation guide
+## Installation guide
 Clone the repo to your computer
 >clone "link"
-###Database
+### Database
 Install PostgreSQL on your machine
 Create Database named **edisplays** with user **edisplay-user**
 ```sql
 CREATE DATABASE edisplays;
 CREATE USER edisplays-user;
 ```
-###JPAHibernate
+### JPAHibernate
 Configure **application.properties** with your values, if you used other values for username and database name in [previous setp](#database).
 Otherwise go on.
-##Run Application
+## Run Application
 Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway create tables in your database and the the API is ready to use! Enjoy!
-##DTO
-####DisplayDto
+## DTO
+#### DisplayDto
 Contains all information about a E-Ink Display like name, uuid, timestamps etc. We the structure inside [DisplayDto](link)
-###LocationDto
+### LocationDto
 Contains all information about a Display like name, uuid, timestamps etc. We the structure inside [LocationDto](link)
-###ConnectionDto
+### ConnectionDto
 Contains all information about a Connection between a Display and a Location like corresponding Display/Location, network address, protocol type etc. We the structure inside [ConnectionDto](link) 
-###TemplateDto
+### TemplateDto
 Contains all information about a Template, that can be used to create an Content for the Displays like name, monochromatic image bytes, uuid etc. We the structure inside [TemplateDto](link)
 
-##Swagger
+## Swagger
 Swinger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OAuth for verification.
 Configure your username and password in "FILELOCATION OF SWAGGER PSWD"
-##Unit Tests
+## Unit Tests
 Tests can be created with JUnit and there are already some simple Tests for 
-##Integration test
+## Integration test
 All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](link).
 
-##Licenses
+## Licenses
 The E-Display Backend is free software. It is licensed under GNU GENERAL
 PUBLIC LICENSE Version 3 from 29 June 2007.
 More info can be found [here](https://www.gnu.org/licenses/gpl-3.0.en.html)
