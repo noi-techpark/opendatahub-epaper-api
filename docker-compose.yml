@@ -1,0 +1,23 @@
+version: "3"
+services:
+  java:
+    build:
+      context: .
+      dockerfile: docker/dockerfile-java
+    volumes:
+      - ./:/code
+    working_dir: /code
+    command: ["mvn spring-boot:run"]
+    depends_on: 
+      - postgres
+    tty: true
+    ports:
+      - "8999:8081"
+  postgres:
+    image: "postgres:11-alpine"
+    environment:
+      POSTGRES_DB: epaper
+      POSTGRES_USER: epaper
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5555:5432"
