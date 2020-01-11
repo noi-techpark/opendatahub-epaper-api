@@ -1,11 +1,11 @@
 package it.noi.edisplay.controller;
 
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.model.Display;
+import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.DisplayRepository;
+import it.noi.edisplay.repositories.TemplateRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -27,6 +28,9 @@ public class DisplayController {
 
     @Autowired
     DisplayRepository displayRepository;
+
+    @Autowired
+    TemplateRepository templateRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -43,12 +47,22 @@ public class DisplayController {
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity getAllDisplays() {
-        return new ResponseEntity<>(modelMapper.map(displayRepository.findAll(), List.class), HttpStatus.OK);
+        List<Display> list = displayRepository.findAll();
+        ArrayList<DisplayDto> dtoList = new ArrayList<>();
+        for (Display display : list)
+            dtoList.add(modelMapper.map(display, DisplayDto.class));
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createDisplay(@RequestBody DisplayDto displayDto) {
-        Display display = modelMapper.map(displayDto, Display.class);
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid) {
+        Display display = new Display();
+        display.setName(name);
+        display.setBatteryPercentage(new Random().nextInt(99));
+
+        Template template = templateRepository.findByUuid(templateUuid);
+        display.setImage(template.getImage());
+
         return new ResponseEntity<>(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.CREATED);
     }
 

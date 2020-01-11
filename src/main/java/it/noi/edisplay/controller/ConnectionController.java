@@ -48,7 +48,11 @@ public class ConnectionController {
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<ArrayList> getAllConnections() {
-        return new ResponseEntity<>(modelMapper.map(connectionRepository.findAll(), ArrayList.class), HttpStatus.OK);
+        ArrayList<Connection> list = modelMapper.map(connectionRepository.findAll(), ArrayList.class);
+        ArrayList<ConnectionDto> dtoList = new ArrayList<>();
+        for (Connection connection : list)
+            dtoList.add(modelMapper.map(connection, ConnectionDto.class));
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -90,6 +94,7 @@ public class ConnectionController {
         connection.setName(connectionDto.getName());
         connection.setLocation(location);
         connection.setDisplay(display);
+        connection.setCoordinates(connectionDto.getCoordinates());
 
         connectionRepository.save(connection);
         return new ResponseEntity(HttpStatus.ACCEPTED);
