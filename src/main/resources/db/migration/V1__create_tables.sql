@@ -1,5 +1,5 @@
 create TABLE displays (
-    id BIGINT,
+    id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL,
     network_address VARCHAR(25) UNIQUE,
@@ -12,7 +12,7 @@ create TABLE displays (
 );
 
 create TABLE locations (
-    id BIGINT,
+    id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL,
     created TIMESTAMP NOT NULL,
@@ -24,7 +24,7 @@ create TABLE locations (
 CREATE TYPE protocol_type AS ENUM ('WLAN', 'LORAWAN');
 
 create TABLE connections (
-    id BIGINT,
+    id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL UNIQUE,
     network_address VARCHAR(25) NOT NULL,
@@ -32,15 +32,15 @@ create TABLE connections (
     created TIMESTAMP NOT NULL,
     last_update TIMESTAMP NOT NULL,
     coordinates VARCHAR(50) NOT NULL,
-    display_id BIGINT NOT NULL,
-    location_id BIGINT NOT NULL,
+    display_id SERIAL NOT NULL,
+    location_id SERIAL NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (display_id) REFERENCES displays (id) ON DELETE CASCADE,
     FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE
 );
 
 create TABLE templates (
-    id BIGINT,
+    id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL,
     created  TIMESTAMP NOT NULL,

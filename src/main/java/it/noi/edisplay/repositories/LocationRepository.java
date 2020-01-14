@@ -15,3 +15,4 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
 
     List<Location> findAll();
 }
+g

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * JpaRepository to create CRUD operations on Display Entity
  */
-public interface DisplayRepository extends JpaRepository<Display, Long> {
+public interface DisplayRepository extends JpaRepository<Display, Integer> {
 
     Display findByUuid(String uuid);
     List<Display> findAll();
