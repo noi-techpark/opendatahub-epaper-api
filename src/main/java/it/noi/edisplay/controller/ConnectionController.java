@@ -63,7 +63,7 @@ public class ConnectionController {
         if (display == null || location == null)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        Connection connection = connectionRepository.save(new Connection(display, location, connectionDto.getName(), connectionDto.getCoordinates(), connectionDto.getProtocol(), connectionDto.getNetworkAddress()));
+        Connection connection = connectionRepository.save(new Connection(display, location, connectionDto.getName(), connectionDto.getCoordinates(), connectionDto.getNetworkAddress()));
         return new ResponseEntity<>(modelMapper.map(connection, ConnectionDto.class), HttpStatus.OK);
     }
 
@@ -90,7 +90,6 @@ public class ConnectionController {
         if (connection == null || display == null || location == null)
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
 
-        connection.setProtocol(ProtocolType.valueOf(connectionDto.getProtocol()));
         connection.setName(connectionDto.getName());
         connection.setLocation(location);
         connection.setDisplay(display);
