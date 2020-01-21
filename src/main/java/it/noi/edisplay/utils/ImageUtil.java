@@ -3,12 +3,13 @@ package it.noi.edisplay.utils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 
-public class MonochromeImageCreator {
+public class ImageUtil {
 
     public static byte[] convertToMonochrome(BufferedImage image) throws IOException {
         BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
@@ -20,13 +21,20 @@ public class MonochromeImageCreator {
         return baos.toByteArray();
     }
 
-    public static String getBinaryImage(BufferedImage image) {
+    public static String getBinaryImage(byte[] image) {
         StringBuffer result = new StringBuffer();
-        int width = image.getWidth();
-        int height = image.getHeight();
-        for (int i = 0; i < height; i++)
-            for (int j = 0; j < width; j++)
-                result.append(image.getRGB(j, i) == -1?0:1 );
+        InputStream in = new ByteArrayInputStream(image);
+        try {
+            BufferedImage bufferedImage = ImageIO.read(in);
+
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            for (int i = 0; i < height; i++)
+                for (int j = 0; j < width; j++)
+                    result.append(bufferedImage.getRGB(j, i) == -1 ? 0 : 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return result.toString();
     }
 
