@@ -2,14 +2,10 @@ package it.noi.edisplay.controller;
 
 
 import it.noi.edisplay.dto.DisplayDto;
-import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.Template;
-import it.noi.edisplay.repositories.ConnectionRepository;
 import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.TemplateRepository;
-import it.noi.edisplay.services.RestService;
-import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -37,14 +33,7 @@ public class DisplayController {
     TemplateRepository templateRepository;
 
     @Autowired
-    ConnectionRepository connectionRepository;
-
-
-    @Autowired
     ModelMapper modelMapper;
-
-    @Autowired
-    RestService restService;
 
     @RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
     public ResponseEntity<DisplayDto> getDisplay(@PathVariable("uuid") String uuid) {
@@ -53,26 +42,6 @@ public class DisplayController {
         if (display == null)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/send-to-e-ink-display/{uuid}", method = RequestMethod.POST)
-    public void sendImageToEInkDisplay(@PathVariable("uuid") String uuid) {
-        Display display = displayRepository.findByUuid(uuid);
-        if (display != null) {
-            Connection connection = connectionRepository.findByDisplay(display);
-            if (connection != null)
-                restService.sendImageToDisplay(display, connection);
-        }
-    }
-
-    @RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)
-    public void clearEInkDisplay(@PathVariable("uuid") String uuid) {
-        Display display = displayRepository.findByUuid(uuid);
-        if (display != null) {
-            Connection connection = connectionRepository.findByDisplay(display);
-            if (connection != null)
-                restService.clearDisplay(connection);
-        }
     }
 
 
@@ -119,6 +88,7 @@ public class DisplayController {
         if (display == null)
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         display.setBatteryPercentage(displayDto.getBatteryPercentage());
+        display.setImage(displayDto.getImage());
         display.setImage(displayDto.getImage());
         display.setName(displayDto.getName());
         display.setLastState(displayDto.getLastState());

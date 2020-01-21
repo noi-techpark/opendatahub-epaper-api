@@ -3,7 +3,7 @@ package it.noi.edisplay.controller;
 import it.noi.edisplay.dto.TemplateDto;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.TemplateRepository;
-import it.noi.edisplay.utils.MonochromeImageCreator;
+import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -59,7 +59,7 @@ public class TemplateController {
         try {
             InputStream in = new ByteArrayInputStream(image.getBytes());
             BufferedImage bImageFromConvert = ImageIO.read(in);
-            template.setImage(MonochromeImageCreator.convertToMonochrome(bImageFromConvert));
+            template.setImage(ImageUtil.convertToMonochrome(bImageFromConvert));
         } catch (IOException e) {
             e.printStackTrace();
         }
