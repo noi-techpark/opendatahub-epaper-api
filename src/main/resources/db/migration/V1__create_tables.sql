@@ -21,14 +21,14 @@ create TABLE locations (
 );
 
 
-CREATE TYPE protocol_type AS ENUM ('WLAN', 'LORAWAN');
+--CREATE TYPE protocol_type AS ENUM ('WLAN', 'LORAWAN');
 
 create TABLE connections (
     id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL UNIQUE,
     network_address VARCHAR(25) NOT NULL,
-    protocol protocol_type NOT NULL,
+--    protocol protocol_type NOT NULL,
     created TIMESTAMP NOT NULL,
     last_update TIMESTAMP NOT NULL,
     coordinates VARCHAR(50) NOT NULL,
