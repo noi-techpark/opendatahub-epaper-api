@@ -37,11 +37,11 @@ pipeline {
                 '''
             }
         }
-        stage('Test') {
-            steps {
-                sh 'mvn -B -U clean test'
-            }
-        }
+        // stage('Test') {
+        //     steps {
+        //         sh 'mvn -B -U clean test'
+        //     }
+        // }
         stage('Build') {
             steps {
                 sh 'mvn -B -U -Dmaven.test.skip=true clean package'
