@@ -14,7 +14,7 @@ pipeline {
         DB_USERNAME = "epaper"
         DB_PASSWORD = credentials('epaper-api-test-db-password')
         SERVER_ADDR = "0.0.0.0"
-        SERVER_PORT = 8081
+        SERVER_PORT = 8080
         APP_DEBUG = false
     }
 
