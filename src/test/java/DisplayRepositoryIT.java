@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = MainApplicationClass.class)
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class DisplayRepositoryIntegrationTest {
+public class DisplayRepositoryIT {
 
     @Autowired
     private DisplayRepository displayRepository;
