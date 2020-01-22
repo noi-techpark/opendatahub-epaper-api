@@ -9,7 +9,6 @@ public class ConnectionDto {
 
     private String name;
     private String uuid;
-    private String protocol;
     private String networkAddress;
     private String coordinates;
     private Date created;
@@ -59,13 +58,6 @@ public class ConnectionDto {
         this.uuid = uuid;
     }
 
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
 
     public Date getCreated() {
         return created;

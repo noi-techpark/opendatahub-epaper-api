@@ -1,6 +1,7 @@
 package it.noi.edisplay.repositories;
 
 import it.noi.edisplay.model.Connection;
+import it.noi.edisplay.model.Display;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 public interface ConnectionRepository extends JpaRepository<Connection, Integer> {
 
     Connection findByUuid(String uuid);
+    Connection findByDisplay(Display display);
 
     List<Connection> findAll();
 }

@@ -1,11 +1,15 @@
 package it.noi.edisplay.controller;
 
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
 import it.noi.edisplay.dto.DisplayDto;
+import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
+import it.noi.edisplay.model.Template;
+import it.noi.edisplay.repositories.ConnectionRepository;
 import it.noi.edisplay.repositories.DisplayRepository;
+import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.services.RestService;
+import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -29,7 +34,17 @@ public class DisplayController {
     DisplayRepository displayRepository;
 
     @Autowired
+    TemplateRepository templateRepository;
+
+    @Autowired
+    ConnectionRepository connectionRepository;
+
+
+    @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    RestService restService;
 
     @RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
     public ResponseEntity<DisplayDto> getDisplay(@PathVariable("uuid") String uuid) {
@@ -40,15 +55,51 @@ public class DisplayController {
         return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public ResponseEntity<String> test() {
+        List<Display> list = displayRepository.findAll();
+        return new ResponseEntity<>(ImageUtil.getBinaryImage(list.get(0).getImage()), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/send-to-e-ink-display/{uuid}", method = RequestMethod.POST)
+    public void sendImageToEInkDisplay(@PathVariable("uuid") String uuid) {
+        Display display = displayRepository.findByUuid(uuid);
+        if (display != null) {
+            Connection connection = connectionRepository.findByDisplay(display);
+            if (connection != null)
+                restService.sendImageToDisplay(display, connection);
+        }
+    }
+
+    @RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)
+    public void clearEInkDisplay(@PathVariable("uuid") String uuid) {
+        Display display = displayRepository.findByUuid(uuid);
+        if (display != null) {
+            Connection connection = connectionRepository.findByDisplay(display);
+            if (connection != null)
+                restService.clearDisplay(connection);
+        }
+    }
+
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity getAllDisplays() {
-        return new ResponseEntity<>(modelMapper.map(displayRepository.findAll(), List.class), HttpStatus.OK);
+        List<Display> list = displayRepository.findAll();
+        ArrayList<DisplayDto> dtoList = new ArrayList<>();
+        for (Display display : list)
+            dtoList.add(modelMapper.map(display, DisplayDto.class));
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity createDisplay(@RequestBody DisplayDto displayDto) {
-        Display display = modelMapper.map(displayDto, Display.class);
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
+    public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid) {
+        Display display = new Display();
+        display.setName(name);
+        display.setBatteryPercentage(new Random().nextInt(99));
+
+        Template template = templateRepository.findByUuid(templateUuid);
+        display.setImage(template.getImage());
+
         return new ResponseEntity<>(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.CREATED);
     }
 

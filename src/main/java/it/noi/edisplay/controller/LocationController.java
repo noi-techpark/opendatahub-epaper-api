@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controller class to create API for CRUD operations on Locations
@@ -36,7 +37,11 @@ public class LocationController {
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity getAllLocations() {
-        return new ResponseEntity<>(modelMapper.map(locationRepository.findAll(), ArrayList.class), HttpStatus.OK);
+        List<Location> list = locationRepository.findAll();
+        ArrayList<LocationDto> dtoList = new ArrayList<>();
+        for (Location location : list)
+            dtoList.add(modelMapper.map(location, LocationDto.class));
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")

@@ -34,10 +34,6 @@ public class Connection {
     private String networkAddress;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    private ProtocolType protocol;
-
-    @NotNull
     private String coordinates;
 
     @CreationTimestamp
@@ -61,11 +57,10 @@ public class Connection {
 
     }
 
-    public Connection(Display display, Location location, String name,String coordinates, String protocolType, String networkAddress) {
+    public Connection(Display display, Location location, String name,String coordinates, String networkAddress) {
         this.display = display;
         this.location = location;
         this.name = name;
-        this.protocol = ProtocolType.valueOf(protocolType);
         this.networkAddress = networkAddress;
         this.coordinates = coordinates;
     }
@@ -111,13 +106,6 @@ public class Connection {
     }
 
 
-    public ProtocolType getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(ProtocolType protocol) {
-        this.protocol = protocol;
-    }
 
     public Date getCreated() {
         return created;
