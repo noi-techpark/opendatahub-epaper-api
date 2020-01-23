@@ -31,7 +31,7 @@ create TABLE connections (
 --    protocol protocol_type NOT NULL,
     created TIMESTAMP NOT NULL,
     last_update TIMESTAMP NOT NULL,
-    coordinates VARCHAR(50) NOT NULL,
+    coordinates POINT NOT NULL,
     display_id SERIAL NOT NULL,
     location_id SERIAL NOT NULL,
     PRIMARY KEY (id),

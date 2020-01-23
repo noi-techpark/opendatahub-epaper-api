@@ -3,6 +3,7 @@ package it.noi.edisplay.model;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.geo.Point;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -34,7 +35,7 @@ public class Connection {
     private String networkAddress;
 
     @NotNull
-    private String coordinates;
+    private Point coordinates;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -57,7 +58,7 @@ public class Connection {
 
     }
 
-    public Connection(Display display, Location location, String name,String coordinates, String networkAddress) {
+    public Connection(Display display, Location location, String name,Point coordinates, String networkAddress) {
         this.display = display;
         this.location = location;
         this.name = name;
@@ -133,11 +134,11 @@ public class Connection {
     }
 
 
-    public String getCoordinates() {
+    public Point getCoordinates() {
         return coordinates;
     }
 
-    public void setCoordinates(String coordinates) {
+    public void setCoordinates(Point coordinates) {
         this.coordinates = coordinates;
     }
 
