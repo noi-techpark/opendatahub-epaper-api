@@ -6,8 +6,9 @@ Templates are predefined Images that can be modified and loaded on the Displays.
 #### Table of Contents
 - [Installation guide](#installation-guide)
     - [DATABASE](#database)
-      - [SETUP](#writer)
-        - [dc-interface](#dc-interface)
+    - [JPAHibernate](#JPAHibernate)
+- [Run Application](#Run-Application)
+- [Set up to send image to real physical e-ink display](Set-up-to-send-image-to-real-physical-e-ink-display)
 - [DTO](#dto)
     - [DisplayDto](#displaydto)
     - [LocationDto](#locationdto)
@@ -34,6 +35,15 @@ Configure **application.properties** with your values, if you used other values 
 Otherwise go on.
 ##Run Application
 Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway create tables in your database and the the API is ready to use! Enjoy!
+##Set up to send image to real physical e-ink display
+- Check the IP-Address the machine where you want to run the API with ifconfing
+- Set that IP-Address in application.properties like
+```
+server.address = 192.168.1.8
+```
+- Start the API
+- Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/e-ink-displays-backend)
+- Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to use the webapp to send the image
 ##DTO
 ####DisplayDto
 Contains all information about a E-Ink Display like name, uuid, timestamps etc. We the structure inside [DisplayDto](link)
