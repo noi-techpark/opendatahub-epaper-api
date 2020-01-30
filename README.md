@@ -14,22 +14,25 @@ predefined Images that can be modified and loaded on the Displays.
 **Table of Contents**
 
 - [Installation guide](#installation-guide)
-- [Source code](#source-code)
+  - [Source code](#source-code)
 - [Run Application](#run-application)
-	- [Execute without Docker](#execute-without-docker)
-		- [Database](#database)
-		- [Application](#application)
-	- [Execute with Docker](#execute-with-docker)
+  - [Execute without Docker](#execute-without-docker)
+    - [Database](#database)
+  - [JPAHibernate](#jpahibernate)
+- [Run Application](#run-application-1)
+    - [Application](#application)
+  - [Execute with Docker](#execute-with-docker)
+- [Set up to send image to display](#set-up-to-send-image-to-display)
 - [Data Transport Objects (DTO)](#data-transport-objects-dto)
-	- [DisplayDto](#displaydto)
-	- [LocationDto](#locationdto)
-	- [ConnectionDto](#connectiondto)
-	- [TemplateDto](#templatedto)
+    - [DisplayDto](#displaydto)
+  - [LocationDto](#locationdto)
+  - [ConnectionDto](#connectiondto)
+  - [TemplateDto](#templatedto)
 - [Swagger](#swagger)
 - [Unit Tests](#unit-tests)
 - [Integration test](#integration-test)
 - [Licenses](#licenses)
-- [Third party components](#third-party-components)
+  - [Third party components](#third-party-components)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -63,6 +66,11 @@ Create Database named **edisplays** with user **edisplay-user**
 CREATE DATABASE edisplays;
 CREATE USER edisplays-user;
 ```
+### JPAHibernate
+Configure **application.properties** with your values, if you used other values for username and database name in [previous setp](#database).
+Otherwise go on.
+## Run Application
+Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway create tables in your database and the the API is ready to use! Enjoy!
 
 Configure **application.properties** with your values, if you used other values for username and database name in [previous setp](#database).
 Otherwise go on.
@@ -96,6 +104,15 @@ docker-compose up
 
 The service will be available at localhost and your specified server port.
 
+## Set up to send image to display
+- Check the IP-Address the machine where you want to run the API with ifconfing
+- Set that IP-Address in application.properties like
+```
+server.address = 192.168.1.8
+```
+- Start the API
+- Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/e-ink-displays-backend)
+- Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to use the webapp to send the image
 
 ## Data Transport Objects (DTO)
 #### DisplayDto
@@ -108,10 +125,13 @@ Contains all information about a Connection between a Display and a Location lik
 Contains all information about a Template, that can be used to create an Content for the Displays like name, monochromatic image bytes, uuid etc. We the structure inside [TemplateDto](link)
 
 ## Swagger
-Swinger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OAuth for verification.
-Configure your username and password in "FILELOCATION OF SWAGGER PSWD"
+
+Swagger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OAuth for verification.
+
 ## Unit Tests
+
 Tests can be created with JUnit and there are already some simple Tests for
+
 ## Integration test
 All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](link).
 

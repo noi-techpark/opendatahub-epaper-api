@@ -1,6 +1,7 @@
 package it.noi.edisplay.dto;
 
 
+
 import java.sql.Date;
 
 
@@ -10,7 +11,8 @@ public class ConnectionDto {
     private String name;
     private String uuid;
     private String networkAddress;
-    private String coordinates;
+    private Double longitude;
+    private Double latitude;
     private Date created;
     private Date lastUpdate;
     private String displayUuid;
@@ -75,11 +77,19 @@ public class ConnectionDto {
         this.lastUpdate = lastUpdate;
     }
 
-    public String getCoordinates() {
-        return coordinates;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setCoordinates(String coordinates) {
-        this.coordinates = coordinates;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 }

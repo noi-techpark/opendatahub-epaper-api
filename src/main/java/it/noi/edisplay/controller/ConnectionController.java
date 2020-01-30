@@ -11,6 +11,7 @@ import it.noi.edisplay.repositories.LocationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.geo.Point;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,15 +44,22 @@ public class ConnectionController {
 
         if (connectionByUuid == null)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<ConnectionDto>(modelMapper.map(connectionByUuid, ConnectionDto.class), HttpStatus.OK);
+        ConnectionDto connectionDto = modelMapper.map(connectionByUuid, ConnectionDto.class);
+        connectionDto.setLongitude(connectionByUuid.getCoordinates().getX());
+        connectionDto.setLatitude(connectionByUuid.getCoordinates().getY());
+        return new ResponseEntity<ConnectionDto>(connectionDto, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity<ArrayList> getAllConnections() {
         ArrayList<Connection> list = modelMapper.map(connectionRepository.findAll(), ArrayList.class);
         ArrayList<ConnectionDto> dtoList = new ArrayList<>();
-        for (Connection connection : list)
-            dtoList.add(modelMapper.map(connection, ConnectionDto.class));
+        for (Connection connection : list) {
+            ConnectionDto connectionDto = modelMapper.map(connection, ConnectionDto.class);
+            connectionDto.setLongitude(connection.getCoordinates().getX());
+            connectionDto.setLatitude(connection.getCoordinates().getY());
+            dtoList.add(connectionDto);
+        }
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
@@ -63,7 +71,7 @@ public class ConnectionController {
         if (display == null || location == null)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        Connection connection = connectionRepository.save(new Connection(display, location, connectionDto.getName(), connectionDto.getCoordinates(), connectionDto.getNetworkAddress()));
+        Connection connection = connectionRepository.save(new Connection(display, location, connectionDto.getName(), new Point(connectionDto.getLongitude(),connectionDto.getLatitude()), connectionDto.getNetworkAddress()));
         return new ResponseEntity<>(modelMapper.map(connection, ConnectionDto.class), HttpStatus.OK);
     }
 
@@ -93,7 +101,7 @@ public class ConnectionController {
         connection.setName(connectionDto.getName());
         connection.setLocation(location);
         connection.setDisplay(display);
-        connection.setCoordinates(connectionDto.getCoordinates());
+        connection.setCoordinates(new Point(connectionDto.getLongitude(),connectionDto.getLatitude()));
 
         connectionRepository.save(connection);
         return new ResponseEntity(HttpStatus.ACCEPTED);
