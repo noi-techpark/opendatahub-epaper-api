@@ -55,8 +55,7 @@ Contains all information about a Connection between a Display and a Location lik
 Contains all information about a Template, that can be used to create an Content for the Displays like name, monochromatic image bytes, uuid etc. We the structure inside [TemplateDto](link)
 
 ## Swagger
-Swinger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OAuth for verification.
-Configure your username and password in "FILELOCATION OF SWAGGER PSWD"
+Swagger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OAuth for verification.
 ## Unit Tests
 Tests can be created with JUnit and there are already some simple Tests for 
 ## Integration test
