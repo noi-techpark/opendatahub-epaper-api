@@ -1,14 +1,11 @@
 pipeline {
-    agent {
-        dockerfile {
-            filename 'docker/dockerfile-java'
-            additionalBuildArgs '--build-arg JENKINS_USER_ID=`id -u jenkins` --build-arg JENKINS_GROUP_ID=`id -g jenkins`'
-        }
-    }
+    agent any
 
     environment {
-        TESTSERVER_TOMCAT_ENDPOINT = "http://api.epaper.tomcat02.testingmachine.eu:8080/manager/text"
-        TESTSERVER_TOMCAT_CREDENTIALS = credentials('testserver-tomcat8-credentials')
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+		DOCKER_IMAGE = '755952719952.dkr.ecr.eu-west-1.amazonaws.com/e-paper-displays-api'
+		DOCKER_TAG = "test-$BUILD_NUMBER"
 
         DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
         DB_USERNAME = "epaper"
@@ -18,39 +15,36 @@ pipeline {
         APP_DEBUG = false
     }
 
-    stages {
+	stages {
         stage('Configure') {
             steps {
-                sh '''
-                    sed -i -e "s/<\\/settings>$//g\" ~/.m2/settings.xml
-                    echo "    <servers>" >> ~/.m2/settings.xml
-                    echo "        ${TESTSERVER_TOMCAT_CREDENTIALS}" >> ~/.m2/settings.xml
-                    echo "    </servers>" >> ~/.m2/settings.xml
-                    echo "</settings>" >> ~/.m2/settings.xml
-
-                    sed -i -e "s%\\(spring.datasource.url\\s*=\\).*\\$%\\1${DB_URL}%" src/main/resources/application.properties
-                    sed -i -e "s%\\(spring.datasource.username\\s*=\\).*\\$%\\1${DB_USERNAME}%" src/main/resources/application.properties
-                    sed -i -e "s%\\(spring.datasource.password\\s*=\\).*\\$%\\1${DB_PASSWORD}%" src/main/resources/application.properties
-                    sed -i -e "s%\\(debug\\s*=\\).*\\$%\\1${APP_DEBUG}%" src/main/resources/application.properties
-                    sed -i -e "s%\\(server.address\\s*=\\).*\\$%\\1${SERVER_ADDR}%" src/main/resources/application.properties
-                    sed -i -e "s%\\(server.port\\s*=\\).*\\$%\\1${SERVER_PORT}%" src/main/resources/application.properties
-                '''
+                sh 'cp .env.example .env'
             }
         }
-        // stage('Test') {
+
+        stage('Test') {
+            steps {
+				sh '''
+					docker-compose build --pull --build-arg JENKINS_USER_ID=$(id -u jenkins) --build-arg JENKINS_GROUP_ID=$(id -g jenkins)
+					docker-compose run --rm -u $(id -u jenkins):$(id -g jenkins) app "mvn -B -U clean test"
+				'''
+            }
+        }
+		stage('Build') {
+            steps {
+				sh '''
+					aws ecr get-login --region eu-west-1 --no-include-email | bash
+					docker-compose -f docker-compose.build.yml build --pull
+					docker-compose -f docker-compose.build.yml push
+				'''
+            }
+        }
+		// stage('Deploy') {
         //     steps {
-        //         sh 'mvn -B -U clean test'
+		// 		sh '''
+
+		// 		'''
         //     }
         // }
-        stage('Build') {
-            steps {
-                sh 'mvn -B -U -Dmaven.test.skip=true clean package'
-            }
-        }
-        stage('Deploy') {
-            steps{
-                sh 'mvn -B -U -Dmaven.test.skip=true tomcat:redeploy -Dmaven.tomcat.url=${TESTSERVER_TOMCAT_ENDPOINT} -Dmaven.tomcat.server=testServer -Dmaven.tomcat.path=/'
-            }
-        }
     }
 }
