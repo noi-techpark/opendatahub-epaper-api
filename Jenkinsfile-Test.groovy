@@ -18,7 +18,7 @@ pipeline {
 	stages {
         stage('Configure') {
             steps {
-                sh '''
+                sh """
 					rm -f .env
 					cp .env.example .env
 					echo -e "\n" >> .env
@@ -28,7 +28,7 @@ pipeline {
 					echo 'DB_URL=${DB_URL}' >> .env
 					echo 'DB_USERNAME=${DB_USERNAME}' >> .env
 					echo 'DB_PASSWORD=${DB_PASSWORD}' >> .env
-				'''
+				"""
             }
         }
 
