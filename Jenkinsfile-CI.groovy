@@ -7,9 +7,6 @@ pipeline {
                 sh 'cp .env.example .env'
             }
         }
-    }
-
-	stages {
         stage('Build') {
             steps {
 				sh '''
@@ -17,9 +14,6 @@ pipeline {
 				'''
             }
         }
-    }
-
-    stages {
         stage('Test') {
             steps {
 				sh '''
