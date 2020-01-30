@@ -23,8 +23,8 @@ pipeline {
 					cp .env.example .env
 					echo -e "\n" >> .env
                 	echo 'COMPOSE_PROJECT_NAME=${DOCKER_PROJECT_NAME}' >> .env
-                	echo 'DOCKER_IMAGE_APP=${DOCKER_IMAGE_APP}' >> .env
-                	echo 'DOCKER_TAG_APP=${DOCKER_TAG_APP}' >> .env
+                	echo 'DOCKER_IMAGE=${DOCKER_IMAGE}' >> .env
+                	echo 'DOCKER_TAG=${DOCKER_TAG}' >> .env
 					echo 'DB_URL=${DB_URL}' >> .env
 					echo 'DB_USERNAME=${DB_USERNAME}' >> .env
 					echo 'DB_PASSWORD=${DB_PASSWORD}' >> .env
