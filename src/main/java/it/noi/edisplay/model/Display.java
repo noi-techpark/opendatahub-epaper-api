@@ -1,7 +1,6 @@
 package it.noi.edisplay.model;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -118,6 +117,7 @@ public class Display {
     @PrePersist
     public void prePersist() {
         this.setUuid(UUID.randomUUID().toString());
-        lastState = new Date();
+        if (lastState == null)
+            lastState = new Date();
     }
 }

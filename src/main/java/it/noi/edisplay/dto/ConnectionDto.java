@@ -1,7 +1,6 @@
 package it.noi.edisplay.dto;
 
 
-import org.springframework.data.geo.Point;
 
 import java.sql.Date;
 
