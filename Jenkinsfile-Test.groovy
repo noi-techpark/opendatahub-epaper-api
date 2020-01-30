@@ -53,9 +53,7 @@ pipeline {
                sshagent(['jenkins-ssh-key']) {
                     sh """
 					    ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -c "'
-							AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
-							AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
-							aws ecr get-login --region eu-west-1 --no-include-email | bash
+							AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" aws ecr get-login --region eu-west-1 --no-include-email | bash
 							mkdir -p ${DOCKER_SERVER_DIRECTORY}
 						'"
 
