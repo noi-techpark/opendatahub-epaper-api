@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: docker/dockerfile-java
+      target: dev
     volumes:
       - ./:/code
     working_dir: /code
