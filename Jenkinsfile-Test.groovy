@@ -52,7 +52,7 @@ pipeline {
             steps {
                sshagent(['jenkins-ssh-key']) {
                     sh """
-					    ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -c "'
+					    ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -euc "'
 							mkdir -p ${DOCKER_SERVER_DIRECTORY}
 							ls -1t ${DOCKER_SERVER_DIRECTORY}/releases/ | tail -n +10 | grep -v `readlink -f ${DOCKER_SERVER_DIRECTORY}/current | xargs basename --` -- | xargs -r printf \"${DOCKER_SERVER_DIRECTORY}/releases/%s\\n\" | xargs -r rm -rf --
 							mkdir -p ${DOCKER_SERVER_DIRECTORY}/releases/${BUILD_NUMBER}
@@ -61,7 +61,7 @@ pipeline {
 						scp -o StrictHostKeyChecking=no docker-compose.run.yml ${DOCKER_SERVER_IP}:${DOCKER_SERVER_DIRECTORY}/releases/${BUILD_NUMBER}/docker-compose.yml
 						scp -o StrictHostKeyChecking=no .env ${DOCKER_SERVER_IP}:${DOCKER_SERVER_DIRECTORY}/releases/${BUILD_NUMBER}/.env
 
-						ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -c "'
+						ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -euc "'
 							AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" aws ecr get-login --region eu-west-1 --no-include-email | bash
 							cd ${DOCKER_SERVER_DIRECTORY}/releases/${BUILD_NUMBER} && docker-compose --no-ansi pull
 							[ -d \"${DOCKER_SERVER_DIRECTORY}/current\" ] && (cd ${DOCKER_SERVER_DIRECTORY}/current && docker-compose --no-ansi down) || true
