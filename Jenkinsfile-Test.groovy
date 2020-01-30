@@ -54,7 +54,7 @@ pipeline {
                     sh """
 					    ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -c "'
 							mkdir -p ${DOCKER_SERVER_DIRECTORY}
-							ls -1t ${DOCKER_SERVER_DIRECTORY}/releases/ | tail -n +10 | grep -v $(readlink -f ${DOCKER_SERVER_DIRECTORY}/current | xargs basename --) -- | xargs -r printf \"${DOCKER_SERVER_DIRECTORY}/releases/%s\\n\" | xargs -r rm -rf --
+							ls -1t ${DOCKER_SERVER_DIRECTORY}/releases/ | tail -n +10 | grep -v `readlink -f ${DOCKER_SERVER_DIRECTORY}/current | xargs basename --` -- | xargs -r printf \"${DOCKER_SERVER_DIRECTORY}/releases/%s\\n\" | xargs -r rm -rf --
 							mkdir -p ${DOCKER_SERVER_DIRECTORY}/releases/${BUILD_NUMBER}
 						'"
 
