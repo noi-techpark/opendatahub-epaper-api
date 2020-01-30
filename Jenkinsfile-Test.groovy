@@ -52,9 +52,12 @@ pipeline {
             steps {
                sshagent(['jenkins-ssh-key']) {
                     sh """
-					    ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} 'AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" bash -c "aws ecr get-login --region eu-west-1 --no-include-email | bash"'
-
-						ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} 'mkdir -p ${DOCKER_SERVER_DIRECTORY}'
+					    ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} bash -c "'
+							AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+							AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+							aws ecr get-login --region eu-west-1 --no-include-email | bash
+							mkdir -p ${DOCKER_SERVER_DIRECTORY}
+						'"
 
                     	ssh -o StrictHostKeyChecking=no ${DOCKER_SERVER_IP} 'ls -1t ${DOCKER_SERVER_DIRECTORY}/releases/ | tail -n +10 | grep -v `readlink -f ${DOCKER_SERVER_DIRECTORY}/current | xargs basename --` -- | xargs -r printf \"${DOCKER_SERVER_DIRECTORY}/releases/%s\\n\" | xargs -r rm -rf --'
 
