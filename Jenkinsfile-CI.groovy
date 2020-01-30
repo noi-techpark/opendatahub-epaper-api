@@ -17,7 +17,7 @@ pipeline {
         stage('Test') {
             steps {
 				sh '''
-					docker-compose run --rm -u `id -u jenkins`:`id -g jenkins` app mvn -B -U clean test
+					docker-compose run --rm -u `id -u jenkins`:`id -g jenkins` app "mvn -B -U clean test"
 				'''
             }
         }
