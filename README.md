@@ -66,14 +66,6 @@ Create Database named **edisplays** with user **edisplay-user**
 CREATE DATABASE edisplays;
 CREATE USER edisplays-user;
 ```
-### JPAHibernate
-Configure **application.properties** with your values, if you used other values for username and database name in [previous setp](#database).
-Otherwise go on.
-## Run Application
-Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway create tables in your database and the the API is ready to use! Enjoy!
-
-Configure **application.properties** with your values, if you used other values for username and database name in [previous setp](#database).
-Otherwise go on.
 
 #### Application
 Copy the file `src/main/resources/application.properties` to `src/main/resources/application-local.properties` and adjust the variables that get their values from environment variables. You can take a look at the `.env.example` for some help.

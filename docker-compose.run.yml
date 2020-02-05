@@ -1,0 +1,14 @@
+version: "3.4"
+services:
+  app:
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG}
+    command: "mvn spring-boot:run"
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SERVER_ADDR: ${SERVER_ADDR}
+      SERVER_PORT: ${SERVER_PORT}
+      APP_DEBUG: ${APP_DEBUG}
+    ports:
+      - "1010:8081"
