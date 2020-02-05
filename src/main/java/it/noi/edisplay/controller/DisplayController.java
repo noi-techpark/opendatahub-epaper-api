@@ -8,7 +8,7 @@ import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.ConnectionRepository;
 import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.TemplateRepository;
-import it.noi.edisplay.services.RestService;
+import it.noi.edisplay.services.EDisplayRestService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,7 +43,7 @@ public class DisplayController {
 	ModelMapper modelMapper;
 
 	@Autowired
-	RestService restService;
+	EDisplayRestService eDisplayRestService;
 
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<DisplayDto> getDisplay(@PathVariable("uuid") String uuid) {
@@ -61,7 +61,7 @@ public class DisplayController {
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null)
-				restService.sendImageToDisplay(display, connection);
+				eDisplayRestService.sendImageToDisplay(display, connection);
 		}
 	}
 
@@ -71,7 +71,7 @@ public class DisplayController {
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null)
-				restService.clearDisplay(connection);
+				eDisplayRestService.clearDisplay(connection);
 		}
 	}
 
