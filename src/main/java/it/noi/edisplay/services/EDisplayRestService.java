@@ -7,16 +7,18 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+
 @Service
-public class RestService {
+public class EDisplayRestService {
 
     private final RestTemplate restTemplate;
 
-    public RestService(RestTemplateBuilder restTemplateBuilder) {
+    public EDisplayRestService(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public void sendImageToDisplay(Display display, Connection connection) {
+    public void sendImageToDisplay(Display display, Connection connection) throws IOException {
         final String uri = connection.getNetworkAddress();
         String image = ImageUtil.getBinaryImage(display.getImage());
         restTemplate.postForLocation(uri, image);
@@ -24,6 +26,6 @@ public class RestService {
 
     public void clearDisplay(Connection connection){
         final String uri = connection.getNetworkAddress();
-        restTemplate.postForLocation(uri, "2"); //2 means clear displa
+        restTemplate.postForLocation(uri, "2"); //2 means clear display
     }
 }
