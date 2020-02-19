@@ -2,6 +2,7 @@ package it.noi.edisplay.controller;
 
 
 import it.noi.edisplay.dto.DisplayDto;
+import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.Template;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -63,6 +65,22 @@ public class DisplayController {
 			if (connection != null)
 				eDisplayRestService.sendImageToDisplay(display, connection);
 		}
+	}
+
+	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
+	public ResponseEntity getEInkDisplayState(@PathVariable("uuid") String uuid) throws IOException {
+		Display display = displayRepository.findByUuid(uuid);
+		if (display != null) {
+			Connection connection = connectionRepository.findByDisplay(display);
+			if (connection != null) {
+				display.setLastState(new Date());
+				displayRepository.save(display);
+				StateDto currentState = eDisplayRestService.getCurrentState(connection);
+				currentState.setLastState(display.getLastState());
+				return new ResponseEntity<>(currentState, HttpStatus.OK);
+			}
+		}
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	@RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)

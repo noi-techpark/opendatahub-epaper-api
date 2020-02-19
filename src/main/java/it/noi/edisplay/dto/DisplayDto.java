@@ -6,68 +6,77 @@ import java.util.UUID;
 
 public class DisplayDto {
 
-    private String uuid;
-    private String name;
-    private Date created;
-    private Date lastUpdate;
-    private Date lastState;
-    private byte[] image;
-    private int batteryPercentage;
+	private String uuid;
+	private String name;
+	private Date created;
+	private Date lastUpdate;
+	private Date lastState;
+	private Date lastRealDisplayState;
+	private byte[] image;
+	private int batteryPercentage;
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+	public Date getLastRealDisplayState() {
+		return lastRealDisplayState;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setLastRealDisplayState(Date lastRealDisplayState) {
+		this.lastRealDisplayState = lastRealDisplayState;
+	}
 
-    public void setCreated(Date created) {
-        this.created = created;
-    }
+	public String getUuid() {
+		return uuid;
+	}
 
-    public void setLastUpdate(Date lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
 
-    public void setLastState(Date lastState) {
-        this.lastState = lastState;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setBatteryPercentage(int batteryPercentage) {
-        this.batteryPercentage = batteryPercentage;
-    }
+	public Date getCreated() {
+		return created;
+	}
 
-    public String getUuid() {
-        return uuid;
-    }
+	public void setCreated(Date created) {
+		this.created = created;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
 
-    public Date getCreated() {
-        return created;
-    }
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
 
-    public Date getLastUpdate() {
-        return lastUpdate;
-    }
+	public Date getLastState() {
+		return lastState;
+	}
 
-    public Date getLastState() {
-        return lastState;
-    }
+	public void setLastState(Date lastState) {
+		this.lastState = lastState;
+	}
 
-    public byte[] getImage() {
-        return image;
-    }
+	public byte[] getImage() {
+		return image;
+	}
 
-    public int getBatteryPercentage() {
-        return batteryPercentage;
-    }
+	public void setImage(byte[] image) {
+		this.image = image;
+	}
+
+	public int getBatteryPercentage() {
+		return batteryPercentage;
+	}
+
+	public void setBatteryPercentage(int batteryPercentage) {
+		this.batteryPercentage = batteryPercentage;
+	}
 
 }
