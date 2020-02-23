@@ -1,19 +1,28 @@
 package it.noi.edisplay.dto;
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Date;
 import java.util.UUID;
 
 public class DisplayDto {
 
-	private String uuid;
 	private String name;
-	private Date created;
-	private Date lastUpdate;
-	private Date lastState;
-	private Date lastRealDisplayState;
 	private byte[] image;
 	private int batteryPercentage;
+
+	@ApiModelProperty(hidden = true)
+	private String uuid;
+	@ApiModelProperty(hidden = true)
+	private Date created;
+	@ApiModelProperty(hidden = true)
+	private Date lastUpdate;
+	@ApiModelProperty(hidden = true)
+	private Date lastState;
+	@ApiModelProperty(hidden = true)
+	private Date lastRealDisplayState;
+
 
 	public Date getLastRealDisplayState() {
 		return lastRealDisplayState;

@@ -1,46 +1,52 @@
 package it.noi.edisplay.dto;
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.sql.Date;
 
 
 public class LocationDto {
 
-    private String uuid;
-    private String name;
-    private Date created;
-    private Date lastUpdate;
+	private String name;
 
-    public String getUuid() {
-        return uuid;
-    }
+	@ApiModelProperty(hidden = true)
+	private String uuid;
+	@ApiModelProperty(hidden = true)
+	private Date created;
+	@ApiModelProperty(hidden = true)
+	private Date lastUpdate;
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+	public String getUuid() {
+		return uuid;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public Date getCreated() {
-        return created;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setCreated(Date created) {
-        this.created = created;
-    }
+	public Date getCreated() {
+		return created;
+	}
 
-    public Date getLastUpdate() {
-        return lastUpdate;
-    }
+	public void setCreated(Date created) {
+		this.created = created;
+	}
 
-    public void setLastUpdate(Date lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
 
 }

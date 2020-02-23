@@ -2,6 +2,8 @@ package it.noi.edisplay.dto;
 
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.sql.Date;
 
 
@@ -9,14 +11,18 @@ import java.sql.Date;
 public class ConnectionDto {
 
     private String name;
+	private String networkAddress;
+	private Double longitude;
+	private Double latitude;
+	private String displayUuid;
+	private String locationUuid;
+
+	@ApiModelProperty(hidden=true)
     private String uuid;
-    private String networkAddress;
-    private Double longitude;
-    private Double latitude;
+	@ApiModelProperty(hidden=true)
     private Date created;
+	@ApiModelProperty(hidden=true)
     private Date lastUpdate;
-    private String displayUuid;
-    private String locationUuid;
 
     public String getNetworkAddress() {
         return networkAddress;

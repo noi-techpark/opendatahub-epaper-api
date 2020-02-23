@@ -133,7 +133,7 @@ public class DisplayController {
 		if (display == null)
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		display.setBatteryPercentage(displayDto.getBatteryPercentage());
-		
+
 		Template template = templateRepository.findByUuid(templateUuid);
 		display.setImage(template.getImage());
 
