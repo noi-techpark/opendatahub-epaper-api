@@ -18,16 +18,15 @@ predefined Images that can be modified and loaded on the Displays.
 - [Run Application](#run-application)
   - [Execute without Docker](#execute-without-docker)
     - [Database](#database)
-  - [JPAHibernate](#jpahibernate)
-- [Run Application](#run-application-1)
     - [Application](#application)
   - [Execute with Docker](#execute-with-docker)
 - [Set up to send image to display](#set-up-to-send-image-to-display)
 - [Data Transport Objects (DTO)](#data-transport-objects-dto)
-    - [DisplayDto](#displaydto)
+  - [DisplayDto](#displaydto)
   - [LocationDto](#locationdto)
   - [ConnectionDto](#connectiondto)
   - [TemplateDto](#templatedto)
+  - [StateDto](#statedto)
 - [Swagger](#swagger)
 - [Unit Tests](#unit-tests)
 - [Integration test](#integration-test)
@@ -107,14 +106,16 @@ server.address = 192.168.1.8
 - Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to use the webapp to send the image
 
 ## Data Transport Objects (DTO)
-#### DisplayDto
-Contains all information about a E-Ink Display like name, uuid, timestamps etc. We the structure inside [DisplayDto](link)
+### DisplayDto
+Contains all information about a E-Ink Display like name, uuid, timestamps etc. We the structure inside [DisplayDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/DisplayDto.java)
 ### LocationDto
-Contains all information about a Display like name, uuid, timestamps etc. We the structure inside [LocationDto](link)
+Contains all information about a Display like name, uuid, timestamps etc. We the structure inside [LocationDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/LocationDto.java)
 ### ConnectionDto
-Contains all information about a Connection between a Display and a Location like corresponding Display/Location, network address, protocol type etc. We the structure inside [ConnectionDto](link)
+Contains all information about a Connection between a Display and a Location like corresponding Display/Location, network address, protocol type etc. We the structure inside [ConnectionDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/ConnectionDto.java)
 ### TemplateDto
-Contains all information about a Template, that can be used to create an Content for the Displays like name, monochromatic image bytes, uuid etc. We the structure inside [TemplateDto](link)
+Contains all information about a Template, that can be used to create an Content for the Displays like name, monochromatic image bytes, uuid etc. We the structure inside [TemplateDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/TemplateDto.java)
+### StateDto
+Contains all information about a state of a display. We the structure inside [StateDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/StateDto.java)
 
 ## Swagger
 
@@ -125,7 +126,7 @@ Swagger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OA
 Tests can be created with JUnit and there are already some simple Tests for
 
 ## Integration test
-All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](link).
+All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](https://github.com/noi-techpark/e-ink-displays-api/tree/development/src/test/java).
 
 ## Licenses
 The E-Display Backend is free software. It is licensed under GNU GENERAL
