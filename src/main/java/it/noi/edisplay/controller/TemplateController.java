@@ -86,7 +86,7 @@ public class TemplateController {
 
 		template.setName(templateDto.getName());
 		template.setImage(templateDto.getImage());
-		templateRepository.save(template);
+		templateRepository.saveAndFlush(template);
 		return new ResponseEntity(HttpStatus.ACCEPTED);
 	}
 }

@@ -103,7 +103,7 @@ public class DisplayController {
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
+	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
 	public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid) {
 		Display display = new Display();
 		display.setName(name);
@@ -127,18 +127,19 @@ public class DisplayController {
 
 	}
 
-	@RequestMapping(value = "/update", method = RequestMethod.PUT, consumes = "application/json")
-	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto) {
+	@RequestMapping(value = "/update/{templateUuid}", method = RequestMethod.PUT, consumes = "application/json")
+	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto,@PathVariable("templateUuid") String templateUuid) {
 		Display display = displayRepository.findByUuid(displayDto.getUuid());
 		if (display == null)
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		display.setBatteryPercentage(displayDto.getBatteryPercentage());
-		display.setImage(displayDto.getImage());
-		display.setImage(displayDto.getImage());
+		
+		Template template = templateRepository.findByUuid(templateUuid);
+		display.setImage(template.getImage());
+
 		display.setName(displayDto.getName());
 		display.setLastState(displayDto.getLastState());
-		displayRepository.save(display);
-		return new ResponseEntity(HttpStatus.ACCEPTED);
+		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display),DisplayDto.class),HttpStatus.ACCEPTED);
 	}
 
 }

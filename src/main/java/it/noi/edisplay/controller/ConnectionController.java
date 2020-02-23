@@ -95,7 +95,7 @@ public class ConnectionController {
 		connection.setName(connectionDto.getName());
 		connection.setLocation(location);
 		connection.setDisplay(display);
-		connection.setNetworkAddress(connectionDto.getNetworkAddress());
+		connection.setNetworkAddress(connectionDto.getNetworkAddress()); //TODO check if address is correct and reachable
 		connection.setCoordinates(new Point(connectionDto.getLongitude(), connectionDto.getLatitude()));
 
 		connectionRepository.save(connection);
