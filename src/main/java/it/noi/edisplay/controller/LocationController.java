@@ -67,7 +67,7 @@ public class LocationController {
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 
 		location.setName(locationDto.getName());
-		locationRepository.save(location);
+		locationRepository.saveAndFlush(location);
 		return new ResponseEntity(HttpStatus.ACCEPTED);
 	}
 }

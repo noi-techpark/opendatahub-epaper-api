@@ -2,6 +2,7 @@ package it.noi.edisplay.controller;
 
 
 import it.noi.edisplay.dto.DisplayDto;
+import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.Template;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -65,6 +67,22 @@ public class DisplayController {
 		}
 	}
 
+	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
+	public ResponseEntity getEInkDisplayState(@PathVariable("uuid") String uuid) throws IOException {
+		Display display = displayRepository.findByUuid(uuid);
+		if (display != null) {
+			Connection connection = connectionRepository.findByDisplay(display);
+			if (connection != null) {
+				display.setLastState(new Date());
+				displayRepository.save(display);
+				StateDto currentState = eDisplayRestService.getCurrentState(connection);
+				currentState.setLastState(display.getLastState());
+				return new ResponseEntity<>(currentState, HttpStatus.OK);
+			}
+		}
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
+
 	@RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)
 	public void clearEInkDisplay(@PathVariable("uuid") String uuid) {
 		Display display = displayRepository.findByUuid(uuid);
@@ -85,7 +103,7 @@ public class DisplayController {
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
+	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
 	public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid) {
 		Display display = new Display();
 		display.setName(name);
@@ -109,18 +127,19 @@ public class DisplayController {
 
 	}
 
-	@RequestMapping(value = "/update", method = RequestMethod.PUT, consumes = "application/json")
-	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto) {
+	@RequestMapping(value = "/update/{templateUuid}", method = RequestMethod.PUT, consumes = "application/json")
+	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto,@PathVariable("templateUuid") String templateUuid) {
 		Display display = displayRepository.findByUuid(displayDto.getUuid());
 		if (display == null)
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		display.setBatteryPercentage(displayDto.getBatteryPercentage());
-		display.setImage(displayDto.getImage());
-		display.setImage(displayDto.getImage());
+
+		Template template = templateRepository.findByUuid(templateUuid);
+		display.setImage(template.getImage());
+
 		display.setName(displayDto.getName());
 		display.setLastState(displayDto.getLastState());
-		displayRepository.save(display);
-		return new ResponseEntity(HttpStatus.ACCEPTED);
+		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display),DisplayDto.class),HttpStatus.ACCEPTED);
 	}
 
 }

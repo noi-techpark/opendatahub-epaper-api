@@ -1,16 +1,22 @@
 package it.noi.edisplay.dto;
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.sql.Date;
 
 
 public class TemplateDto {
 
+	private String name;
+	private byte[] image;
+
+	@ApiModelProperty(hidden=true)
     private String uuid;
-    private String name;
+	@ApiModelProperty(hidden=true)
     private Date created;
+	@ApiModelProperty(hidden=true)
     private Date lastUpdate;
-    private byte[] image;
 
     public String getUuid() {
         return uuid;

@@ -19,105 +19,120 @@ import java.util.UUID;
 @Table(name = "displays")
 public class Display {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    @NotNull
-    private String name;
+	@NotNull
+	private String name;
 
-    @NotNull
-    private String uuid;
+	@NotNull
+	private String uuid;
 
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date created;
+	@CreationTimestamp
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date created;
 
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastUpdate;
+	//Saves timestamp when logical display gets updated
+	@UpdateTimestamp
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastUpdate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastState;
+	//Saves timestamp when real physical display gets updated
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastRealDisplayUpdate;
 
-
-    private byte[] image;
-    private int batteryPercentage;
-
-
-    public Display() {
-
-    }
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastState;
 
 
-    public Integer getId() {
-        return id;
-    }
+	private byte[] image;
+	private int batteryPercentage;
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
-    public String getName() {
-        return name;
-    }
+	public Display() {
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	}
 
-    public String getUuid() {
-        return uuid;
-    }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+	public Integer getId() {
+		return id;
+	}
 
-    public Date getCreated() {
-        return created;
-    }
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
-    public void setCreated(Date created) {
-        this.created = created;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public Date getLastUpdate() {
-        return lastUpdate;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setLastUpdate(Date lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
+	public String getUuid() {
+		return uuid;
+	}
 
-    public Date getLastState() {
-        return lastState;
-    }
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
 
-    public void setLastState(Date lastState) {
-        this.lastState = lastState;
-    }
+	public Date getCreated() {
+		return created;
+	}
 
-    public byte[] getImage() {
-        return image;
-    }
+	public void setCreated(Date created) {
+		this.created = created;
+	}
 
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
 
-    public int getBatteryPercentage() {
-        return batteryPercentage;
-    }
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
 
-    public void setBatteryPercentage(int batteryPercentage) {
-        this.batteryPercentage = batteryPercentage;
-    }
+	public Date getLastState() {
+		return lastState;
+	}
 
-    @PrePersist
-    public void prePersist() {
-        this.setUuid(UUID.randomUUID().toString());
-        if (lastState == null)
-            lastState = new Date();
-    }
+	public void setLastState(Date lastState) {
+		this.lastState = lastState;
+	}
+
+	public byte[] getImage() {
+		return image;
+	}
+
+	public void setImage(byte[] image) {
+		this.image = image;
+	}
+
+	public int getBatteryPercentage() {
+		return batteryPercentage;
+	}
+
+	public void setBatteryPercentage(int batteryPercentage) {
+		this.batteryPercentage = batteryPercentage;
+	}
+
+	public Date getLastRealDisplayUpdate() {
+		return lastRealDisplayUpdate;
+	}
+
+	public void setLastRealDisplayUpdate(Date lastRealDisplayUpdate) {
+		this.lastRealDisplayUpdate = lastRealDisplayUpdate;
+	}
+
+	@PrePersist
+	public void prePersist() {
+		this.setUuid(UUID.randomUUID().toString());
+		if (lastState == null)
+			lastState = new Date();
+	}
+
+
 }
