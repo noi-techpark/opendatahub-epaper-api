@@ -61,7 +61,7 @@ public class ConnectionController {
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST)
+	@RequestMapping(value = "/create", method = RequestMethod.POST,consumes = "application/json")
 	public ResponseEntity<ConnectionDto> createConnection(@RequestBody ConnectionDto connectionDto) {
 		Display display = displayRepository.findByUuid(connectionDto.getDisplayUuid());
 		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());

@@ -103,7 +103,7 @@ public class DisplayController {
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
+	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid) {
 		Display display = new Display();
 		display.setName(name);
@@ -127,7 +127,7 @@ public class DisplayController {
 
 	}
 
-	@RequestMapping(value = "/update/{templateUuid}", method = RequestMethod.PUT, consumes = "application/json")
+	@RequestMapping(value = "/update/{templateUuid}", method = RequestMethod.PUT)
 	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto,@PathVariable("templateUuid") String templateUuid) {
 		Display display = displayRepository.findByUuid(displayDto.getUuid());
 		if (display == null)
