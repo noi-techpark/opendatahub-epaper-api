@@ -13,13 +13,20 @@ public class DisplayDto {
 	private int batteryPercentage;
 
 	@ApiModelProperty(hidden = true)
+	private ConnectionDto connection;
+
+	@ApiModelProperty(hidden = true)
 	private String uuid;
+
 	@ApiModelProperty(hidden = true)
 	private Date created;
+
 	@ApiModelProperty(hidden = true)
 	private Date lastUpdate;
+
 	@ApiModelProperty(hidden = true)
 	private Date lastState;
+
 	@ApiModelProperty(hidden = true)
 	private Date lastRealDisplayState;
 
@@ -88,4 +95,11 @@ public class DisplayDto {
 		this.batteryPercentage = batteryPercentage;
 	}
 
+	public ConnectionDto getConnection() {
+		return connection;
+	}
+
+	public void setConnection(ConnectionDto connection) {
+		this.connection = connection;
+	}
 }

@@ -1,3 +1,12 @@
+create TABLE resolutions (
+	id SERIAL,
+	uuid VARCHAR(36) NOT NULL UNIQUE,
+	width INT,
+	height INT,
+	UNIQUE (width, height),
+	PRIMARY KEY (id)
+);
+
 create TABLE displays (
     id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
@@ -7,9 +16,11 @@ create TABLE displays (
     last_update TIMESTAMP NOT NULL,
     last_real_display_update TIMESTAMP,
     last_state TIMESTAMP NOT NULL,
+    resolution_id SERIAL NOT NULL,
     image BYTEA,
     battery_percentage INT,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    FOREIGN KEY (resolution_id) REFERENCES resolutions (id) ON DELETE CASCADE
 );
 
 create TABLE locations (
@@ -27,7 +38,6 @@ create TABLE locations (
 create TABLE connections (
     id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
-    name VARCHAR(50) NOT NULL UNIQUE,
     network_address VARCHAR(25) NOT NULL,
 --    protocol protocol_type NOT NULL,
     created TIMESTAMP NOT NULL,

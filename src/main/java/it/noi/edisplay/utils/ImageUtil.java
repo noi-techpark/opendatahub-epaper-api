@@ -1,5 +1,7 @@
 package it.noi.edisplay.utils;
 
+import org.imgscalr.Scalr;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -10,6 +12,7 @@ import java.io.InputStream;
 
 
 public class ImageUtil {
+
 
 	public static byte[] convertToMonochrome(BufferedImage image) throws IOException {
 		BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
@@ -22,7 +25,7 @@ public class ImageUtil {
 	}
 
 	public static String getBinaryImage(byte[] image) throws IOException {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		InputStream in = new ByteArrayInputStream(image);
 		BufferedImage bufferedImage = ImageIO.read(in);
 
@@ -33,6 +36,13 @@ public class ImageUtil {
 				result.append(bufferedImage.getRGB(j, i) == -1 ? 0 : 1);
 		return result.toString();
 	}
+//
+//	public BufferedImage getScaledImage(BufferedImage image){
+//		return Scalr.resize(image, Scalr.Method.AUTOMATIC,
+//			image.getHeight() < image.getWidth() ? Scalr.Mode.FIT_TO_HEIGHT : Scalr.Mode.FIT_TO_WIDTH,
+//			Math.max(width, height), Math.max(width, height), Scalr.OP_ANTIALIAS);
+//	}
+
 
 
 }
