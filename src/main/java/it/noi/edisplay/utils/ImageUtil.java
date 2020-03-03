@@ -1,5 +1,6 @@
 package it.noi.edisplay.utils;
 
+import it.noi.edisplay.model.Resolution;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
@@ -24,25 +25,28 @@ public class ImageUtil {
 		return baos.toByteArray();
 	}
 
-	public static String getBinaryImage(byte[] image) throws IOException {
+	public static String getBinaryImage(byte[] image, boolean inverted, Resolution resolution) throws IOException {
 		StringBuilder result = new StringBuilder();
 		InputStream in = new ByteArrayInputStream(image);
 		BufferedImage bufferedImage = ImageIO.read(in);
+
+		if (bufferedImage.getHeight() != resolution.getHeight() || bufferedImage.getWidth() != resolution.getWidth())
+			bufferedImage = getScaledImage(bufferedImage, resolution.getWidth(), resolution.getHeight());
 
 		int width = bufferedImage.getWidth();
 		int height = bufferedImage.getHeight();
 		for (int i = 0; i < height; i++)
 			for (int j = 0; j < width; j++)
-				result.append(bufferedImage.getRGB(j, i) == -1 ? 0 : 1);
+				if (inverted)
+					result.append(bufferedImage.getRGB(j, i) == -1 ? 1 : 0);
+				else
+					result.append(bufferedImage.getRGB(j, i) == -1 ? 0 : 1);
 		return result.toString();
 	}
-//
-//	public BufferedImage getScaledImage(BufferedImage image){
-//		return Scalr.resize(image, Scalr.Method.AUTOMATIC,
-//			image.getHeight() < image.getWidth() ? Scalr.Mode.FIT_TO_HEIGHT : Scalr.Mode.FIT_TO_WIDTH,
-//			Math.max(width, height), Math.max(width, height), Scalr.OP_ANTIALIAS);
-//	}
 
+	public static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
+		return Scalr.resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, width, height);
+	}
 
 
 }

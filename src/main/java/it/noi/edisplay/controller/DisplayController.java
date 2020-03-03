@@ -69,17 +69,17 @@ public class DisplayController {
 	}
 
 
-	@RequestMapping(value = "/send-to-e-ink-display/{uuid}", method = RequestMethod.POST)
-	public void sendImageToEInkDisplay(@PathVariable("uuid") String uuid) throws IOException {
+	@RequestMapping(value = "/send-to-e-ink-display", method = RequestMethod.POST)
+	public void sendImageToEInkDisplay(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null)
-				eDisplayRestService.sendImageToDisplay(display, connection);
+				eDisplayRestService.sendImageToDisplay(display, connection, inverted);
 		}
 	}
 
-	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
+	@RequestMapping(value = "/get-e-ink-display-state", method = RequestMethod.GET)
 	public ResponseEntity getEInkDisplayState(@PathVariable("uuid") String uuid) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
