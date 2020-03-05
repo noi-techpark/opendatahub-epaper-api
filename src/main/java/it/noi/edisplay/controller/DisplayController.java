@@ -79,7 +79,7 @@ public class DisplayController {
 		}
 	}
 
-	@RequestMapping(value = "/get-e-ink-display-state", method = RequestMethod.GET)
+	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity getEInkDisplayState(@PathVariable("uuid") String uuid) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {

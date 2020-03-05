@@ -11,6 +11,7 @@ public class DisplayDto {
 	private String name;
 	private byte[] image;
 	private int batteryPercentage;
+	private ResolutionDto resolution;
 
 	@ApiModelProperty(hidden = true)
 	private ConnectionDto connection;
@@ -101,5 +102,13 @@ public class DisplayDto {
 
 	public void setConnection(ConnectionDto connection) {
 		this.connection = connection;
+	}
+
+	public ResolutionDto getResolution() {
+		return resolution;
+	}
+
+	public void setResolution(ResolutionDto resolution) {
+		this.resolution = resolution;
 	}
 }
