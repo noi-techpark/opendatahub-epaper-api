@@ -70,13 +70,21 @@ public class DisplayController {
 
 
 	@RequestMapping(value = "/send-to-e-ink-display", method = RequestMethod.POST)
-	public void sendImageToEInkDisplay(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
+	public ResponseEntity sendImageToEInkDisplay(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
-			if (connection != null)
+			if (connection != null) {
+				logger.debug("Sending image to display with uuid:" + uuid);
 				eDisplayRestService.sendImageToDisplay(display, connection, inverted);
-		}
+				logger.debug("Image successful send to display with uuid " + uuid);
+				return new ResponseEntity(HttpStatus.OK);
+			} else
+				logger.debug("Sending image to display with uuid:" + uuid + " failed. Connection not found");
+		} else
+			logger.debug("Sending image to display with uuid:" + uuid + " failed. Display not found");
+		return new ResponseEntity(HttpStatus.BAD_REQUEST);
+
 	}
 
 	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
@@ -99,17 +107,19 @@ public class DisplayController {
 	}
 
 	@RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)
-	public void clearEInkDisplay(@PathVariable("uuid") String uuid) {
+	public ResponseEntity clearEInkDisplay(@PathVariable("uuid") String uuid) {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Clear display with uuid:" + uuid);
 				eDisplayRestService.clearDisplay(connection);
+				return new ResponseEntity(HttpStatus.OK);
 			} else
 				logger.debug("Failed to clear display with uuid:" + uuid + ". Connection not found");
 		} else
 			logger.debug("Failed to clear display with uuid:" + uuid + ". Display not found");
+		return new ResponseEntity(HttpStatus.BAD_REQUEST);
 	}
 
 
@@ -135,15 +145,15 @@ public class DisplayController {
 			display.setImage(template.getImage());
 		else {
 			logger.debug("Display creation failed. Template not found");
-			return new ResponseEntity<>( HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
-		if(resolutionbyWidthAndHeight == null) {
-			Resolution resolution = new Resolution(width,height);
+		if (resolutionbyWidthAndHeight == null) {
+			Resolution resolution = new Resolution(width, height);
 			resolutionRepository.saveAndFlush(resolution);
 			display.setResolution(resolution);
-		}else
+		} else
 			display.setResolution(resolutionbyWidthAndHeight);
 
 		Display savedDisplay = displayRepository.saveAndFlush(display);
@@ -177,7 +187,20 @@ public class DisplayController {
 		display.setBatteryPercentage(displayDto.getBatteryPercentage());
 
 		Template template = templateRepository.findByUuid(templateUuid);
+		if (template == null) {
+			logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Template not found.");
+			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
 		display.setImage(template.getImage());
+
+		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
+		if (resolutionbyWidthAndHeight == null) {
+			Resolution resolution = new Resolution(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
+			resolutionRepository.saveAndFlush(resolution);
+			display.setResolution(resolution);
+		} else
+			display.setResolution(resolutionbyWidthAndHeight);
+
 
 		display.setName(displayDto.getName());
 		display.setLastState(displayDto.getLastState());
