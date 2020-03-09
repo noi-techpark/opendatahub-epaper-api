@@ -5,6 +5,8 @@ import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.TemplateRepository;
 import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +34,17 @@ public class TemplateController {
 	@Autowired
 	ModelMapper modelMapper;
 
+	Logger logger = LoggerFactory.getLogger(TemplateController.class);
+
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<TemplateDto> getTemplate(@PathVariable("uuid") String uuid) {
 		Template template = templateRepository.findByUuid(uuid);
 
-		if (template == null)
+		if (template == null) {
+			logger.debug("Template with uuid: " + uuid + " not found.");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		logger.debug("Get display with uuid: " + uuid);
 		return new ResponseEntity<>(modelMapper.map(template, TemplateDto.class), HttpStatus.OK);
 	}
 
@@ -47,6 +54,7 @@ public class TemplateController {
 		ArrayList<TemplateDto> dtoList = new ArrayList<>();
 		for (Template template : list)
 			dtoList.add(modelMapper.map(template, TemplateDto.class));
+		logger.debug("All templates requested");
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 
@@ -61,19 +69,25 @@ public class TemplateController {
 			template.setImage(ImageUtil.convertToMonochrome(bImageFromConvert));
 		} catch (IOException e) {
 			e.printStackTrace();
+			logger.debug("Template with creation failed. Image creation error.");
 		}
 
-		return new ResponseEntity<>(modelMapper.map(templateRepository.saveAndFlush(template), TemplateDto.class), HttpStatus.CREATED);
+		Template savedTemplate = templateRepository.saveAndFlush(template);
+
+		logger.debug("Template with uuid:" + savedTemplate.getUuid() + " created.");
+		return new ResponseEntity<>(modelMapper.map(savedTemplate, TemplateDto.class), HttpStatus.CREATED);
 	}
 
 	@RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
 	public ResponseEntity deleteTemplate(@PathVariable("uuid") String uuid) {
 		Template template = templateRepository.findByUuid(uuid);
 
-		if (template == null)
+		if (template == null) {
+			logger.debug("Delete template with uuid:" + uuid + " failed.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
-
+		}
 		templateRepository.delete(template);
+		logger.debug("Deleted template with uuid:" + uuid);
 		return new ResponseEntity(HttpStatus.OK);
 
 	}
@@ -81,12 +95,14 @@ public class TemplateController {
 	@RequestMapping(value = "/update", method = RequestMethod.PUT, consumes = "application/json")
 	public ResponseEntity updateTemplate(@RequestBody TemplateDto templateDto) {
 		Template template = templateRepository.findByUuid(templateDto.getUuid());
-		if (template == null)
+		if (template == null) {
+			logger.debug("Update template with uuid:" + templateDto.getUuid() + " failed.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
-
+		}
 		template.setName(templateDto.getName());
 		template.setImage(templateDto.getImage());
 		templateRepository.saveAndFlush(template);
+		logger.debug("Updated template with uuid:" + template.getUuid());
 		return new ResponseEntity(HttpStatus.ACCEPTED);
 	}
 }

@@ -26,9 +26,6 @@ public class Connection {
     private Integer id;
 
     @NotNull
-    private String name;
-
-    @NotNull
     private String uuid;
 
     @NotNull
@@ -58,10 +55,9 @@ public class Connection {
 
     }
 
-    public Connection(Display display, Location location, String name,Point coordinates, String networkAddress) {
+    public Connection(Display display, Location location, Point coordinates, String networkAddress) {
         this.display = display;
         this.location = location;
-        this.name = name;
         this.networkAddress = networkAddress;
         this.coordinates = coordinates;
     }
@@ -97,15 +93,6 @@ public class Connection {
     public void setId(Integer id) {
         this.id = id;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 
 
     public Date getCreated() {

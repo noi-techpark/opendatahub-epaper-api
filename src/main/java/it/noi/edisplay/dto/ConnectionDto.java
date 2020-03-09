@@ -10,12 +10,14 @@ import java.sql.Date;
 
 public class ConnectionDto {
 
-    private String name;
 	private String networkAddress;
 	private Double longitude;
 	private Double latitude;
 	private String displayUuid;
 	private String locationUuid;
+
+	@ApiModelProperty(hidden = true)
+	private LocationDto location;
 
 	@ApiModelProperty(hidden=true)
     private String uuid;
@@ -50,13 +52,6 @@ public class ConnectionDto {
         this.locationUuid = locationUuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getUuid() {
         return uuid;
@@ -98,4 +93,12 @@ public class ConnectionDto {
     public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
+
+	public LocationDto getLocation() {
+		return location;
+	}
+
+	public void setLocation(LocationDto location) {
+		this.location = location;
+	}
 }

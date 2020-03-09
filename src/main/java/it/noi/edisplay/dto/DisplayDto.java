@@ -11,15 +11,23 @@ public class DisplayDto {
 	private String name;
 	private byte[] image;
 	private int batteryPercentage;
+	private ResolutionDto resolution;
+
+	@ApiModelProperty(hidden = true)
+	private ConnectionDto connection;
 
 	@ApiModelProperty(hidden = true)
 	private String uuid;
+
 	@ApiModelProperty(hidden = true)
 	private Date created;
+
 	@ApiModelProperty(hidden = true)
 	private Date lastUpdate;
+
 	@ApiModelProperty(hidden = true)
 	private Date lastState;
+
 	@ApiModelProperty(hidden = true)
 	private Date lastRealDisplayState;
 
@@ -88,4 +96,19 @@ public class DisplayDto {
 		this.batteryPercentage = batteryPercentage;
 	}
 
+	public ConnectionDto getConnection() {
+		return connection;
+	}
+
+	public void setConnection(ConnectionDto connection) {
+		this.connection = connection;
+	}
+
+	public ResolutionDto getResolution() {
+		return resolution;
+	}
+
+	public void setResolution(ResolutionDto resolution) {
+		this.resolution = resolution;
+	}
 }

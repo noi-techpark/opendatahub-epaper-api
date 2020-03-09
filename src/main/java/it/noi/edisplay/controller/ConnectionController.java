@@ -8,6 +8,8 @@ import it.noi.edisplay.repositories.ConnectionRepository;
 import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.LocationRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Point;
 import org.springframework.http.HttpStatus;
@@ -36,15 +38,21 @@ public class ConnectionController {
 	@Autowired
 	ModelMapper modelMapper;
 
+
+	Logger logger = LoggerFactory.getLogger(ConnectionController.class);
+
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<ConnectionDto> get(@RequestParam String uuid) {
 		Connection connectionByUuid = connectionRepository.findByUuid(uuid);
 
-		if (connectionByUuid == null)
+		if (connectionByUuid == null) {
+			logger.debug("Connection with uuid: " + uuid + " not found.");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 		ConnectionDto connectionDto = modelMapper.map(connectionByUuid, ConnectionDto.class);
 		connectionDto.setLongitude(connectionByUuid.getCoordinates().getX());
 		connectionDto.setLatitude(connectionByUuid.getCoordinates().getY());
+		logger.debug("Get connection with uuid: " + uuid);
 		return new ResponseEntity<ConnectionDto>(connectionDto, HttpStatus.OK);
 	}
 
@@ -58,18 +66,22 @@ public class ConnectionController {
 			connectionDto.setLatitude(connection.getCoordinates().getY());
 			dtoList.add(connectionDto);
 		}
+		logger.debug("All connections requested");
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST,consumes = "application/json")
+	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
 	public ResponseEntity<ConnectionDto> createConnection(@RequestBody ConnectionDto connectionDto) {
 		Display display = displayRepository.findByUuid(connectionDto.getDisplayUuid());
 		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());
 
-		if (display == null || location == null)
+		if (display == null || location == null) {
+			logger.debug("Creation of connection failed.");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 
-		Connection connection = connectionRepository.save(new Connection(display, location, connectionDto.getName(), new Point(connectionDto.getLongitude(), connectionDto.getLatitude()), connectionDto.getNetworkAddress()));
+		Connection connection = connectionRepository.save(new Connection(display, location , new Point(connectionDto.getLongitude(), connectionDto.getLatitude()), connectionDto.getNetworkAddress()));
+		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(connection, ConnectionDto.class), HttpStatus.OK);
 	}
 
@@ -77,10 +89,13 @@ public class ConnectionController {
 	public ResponseEntity deleteConnection(@PathVariable("uuid") String uuid) {
 		Connection connection = connectionRepository.findByUuid(uuid);
 
-		if (connection == null)
+		if (connection == null) {
+			logger.debug("Delete connection with uuid:" + uuid + " failed.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
 
 		connectionRepository.delete(connection);
+		logger.debug("Deleted connection with uuid:" + uuid);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
@@ -89,16 +104,19 @@ public class ConnectionController {
 		Connection connection = connectionRepository.findByUuid(connectionDto.getUuid());
 		Display display = displayRepository.findByUuid(connectionDto.getDisplayUuid());
 		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());
-		if (connection == null || display == null || location == null)
+		if (connection == null || display == null || location == null) {
+			logger.debug("Update connection with uuid:" + connectionDto.getUuid() + " failed.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		}
 
-		connection.setName(connectionDto.getName());
 		connection.setLocation(location);
 		connection.setDisplay(display);
 		connection.setNetworkAddress(connectionDto.getNetworkAddress()); //TODO check if address is correct and reachable
 		connection.setCoordinates(new Point(connectionDto.getLongitude(), connectionDto.getLatitude()));
 
 		connectionRepository.save(connection);
+
+		logger.debug("Updated connection with uuid:" + connection.getUuid());
 		return new ResponseEntity(HttpStatus.ACCEPTED);
 	}
 

@@ -45,8 +45,12 @@ public class Display {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date lastState;
 
+	@NotNull
+	@ManyToOne
+	private Resolution resolution;
 
 	private byte[] image;
+
 	private int batteryPercentage;
 
 
@@ -135,4 +139,11 @@ public class Display {
 	}
 
 
+	public Resolution getResolution() {
+		return resolution;
+	}
+
+	public void setResolution(Resolution resolution) {
+		this.resolution = resolution;
+	}
 }
