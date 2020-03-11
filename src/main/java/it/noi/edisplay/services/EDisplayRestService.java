@@ -1,9 +1,11 @@
 package it.noi.edisplay.services;
 
+import it.noi.edisplay.dto.ImageDto;
 import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.utils.ImageUtil;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
@@ -26,29 +28,33 @@ public class EDisplayRestService {
 
 	public EDisplayRestService(RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder.build();
-
 	}
 
-	public void sendImageToDisplay(Display display, Connection connection, boolean inverted) throws IOException {
+	public StateDto sendImageToDisplay(Display display, Connection connection, boolean inverted) throws IOException {
+		ResponseEntity<String> stringResponseEntity;
 		if (!remote) {
 			final String uri = "http://" + connection.getNetworkAddress();
 			String image = ImageUtil.getBinaryImage(display.getImage(), inverted, display.getResolution());
-			restTemplate.postForLocation(uri, image);
+			stringResponseEntity = restTemplate.postForEntity(uri,image, String.class);
 		} else {
 			String image = ImageUtil.getBinaryImage(display.getImage(), inverted, display.getResolution());
-			final String uri = "http://" + proxyIpAddress + "/send?ip="+connection.getNetworkAddress()+"&image="+image;
-			restTemplate.postForLocation(uri, null);
+			final String uri = "http://" + proxyIpAddress + "/send?ip="+connection.getNetworkAddress();
+			ImageDto imageDto = new ImageDto(image);
+			stringResponseEntity = restTemplate.postForEntity(uri,imageDto, String.class);
 		}
+		return new StateDto(stringResponseEntity.getBody().split(";"));
 	}
 
-	public void clearDisplay(Connection connection) {
+	public StateDto clearDisplay(Connection connection) {
+		ResponseEntity<String> stringResponseEntity;
 		if(!remote) {
 			final String uri = "http://" + connection.getNetworkAddress();
-			restTemplate.postForLocation(uri, "2"); //2 means clear display
+			stringResponseEntity = restTemplate.postForEntity(uri,"2", String.class);
 		} else{
 			final String uri = "http://" + proxyIpAddress + "/clear?ip="+connection.getNetworkAddress();
-			restTemplate.postForLocation(uri, null);
+			stringResponseEntity = restTemplate.postForEntity(uri,null, String.class);
 		}
+		return new StateDto(stringResponseEntity.getBody().split(";"));
 	}
 
 	public StateDto getCurrentState(Connection connection) {
@@ -59,9 +65,8 @@ public class EDisplayRestService {
 			return new StateDto(states);
 		}else{
 			final String uri = "http://" + proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
-			ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri,null, String.class);//2 means clear display
-			String[] states = stringResponseEntity.getBody().split(";");
-			return new StateDto(states);
+			ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri,null, String.class);
+			return new StateDto(stringResponseEntity.getBody().split(";"));
 		}
 	}
 }

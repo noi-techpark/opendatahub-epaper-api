@@ -69,16 +69,16 @@ public class DisplayController {
 	}
 
 
-	@RequestMapping(value = "/send-to-e-ink-display", method = RequestMethod.POST)
-	public ResponseEntity sendImageToEInkDisplay(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
+	@RequestMapping(value = "/send", method = RequestMethod.POST)
+	public ResponseEntity send(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Sending image to display with uuid:" + uuid);
-				eDisplayRestService.sendImageToDisplay(display, connection, inverted);
+				StateDto currentState = eDisplayRestService.sendImageToDisplay(display, connection, inverted);
 				logger.debug("Image successful send to display with uuid " + uuid);
-				return new ResponseEntity(HttpStatus.OK);
+				return new ResponseEntity(currentState,HttpStatus.OK);
 			} else
 				logger.debug("Sending image to display with uuid:" + uuid + " failed. Connection not found");
 		} else
@@ -87,8 +87,8 @@ public class DisplayController {
 
 	}
 
-	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
-	public ResponseEntity getEInkDisplayState(@PathVariable("uuid") String uuid) throws IOException {
+	@RequestMapping(value = "/state/{uuid}", method = RequestMethod.GET)
+	public ResponseEntity getState(@PathVariable("uuid") String uuid) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
@@ -106,15 +106,15 @@ public class DisplayController {
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
-	@RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)
-	public ResponseEntity clearEInkDisplay(@PathVariable("uuid") String uuid) {
+	@RequestMapping(value = "/clear/{uuid}", method = RequestMethod.POST)
+	public ResponseEntity clear(@PathVariable("uuid") String uuid) {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Clear display with uuid:" + uuid);
-				eDisplayRestService.clearDisplay(connection);
-				return new ResponseEntity(HttpStatus.OK);
+				StateDto currentState = eDisplayRestService.clearDisplay(connection);
+				return new ResponseEntity(currentState,HttpStatus.OK);
 			} else
 				logger.debug("Failed to clear display with uuid:" + uuid + ". Connection not found");
 		} else
