@@ -5,7 +5,6 @@ import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.utils.ImageUtil;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;

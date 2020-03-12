@@ -20,6 +20,7 @@ predefined Images that can be modified and loaded on the Displays.
     - [Database](#database)
     - [Application](#application)
   - [Execute with Docker](#execute-with-docker)
+  - [Execute with local proxy if you deploy on remote server](#execute-with-local-proxy-if-you-deploy-on-remote-server)
 - [Set up to send image to display](#set-up-to-send-image-to-display)
 - [Data Transport Objects (DTO)](#data-transport-objects-dto)
   - [DisplayDto](#displaydto)
@@ -95,12 +96,41 @@ docker-compose up
 
 The service will be available at localhost and your specified server port.
 
+### Execute with local proxy if you deploy on remote server
+
+If you deploy the application on a remote server, you need to setup a local proxy.
+So the application can communicate with the proxy instead of  trying to communicate directly with the displays and the proxy will forward the requests.
+You can **install** the proxy that you can find in proxy directory on a local machine onr Raspberry Pi
+
+```
+pip install requirements.txt
+```
+
+And the **start** the proxy
+```
+python proxy.py
+```
+
+The you need make you proxy visible to the internet. There are many ways, one is using localtunnel.
+With the following commands you can install and run it on the proxys port.
+(NOTE: at time of writing, localtunnel does not work, so you need to set custom host serverless.social. Check if still needed)
+```
+npm install -g localtunnel
+lt -h "http://serverless.social" -p 5000
+```
+
+Then localtunnel gives you an unique URL that represents you proxy that you can put in application.properties.
+Set remote to true and paste the URL to remoteIPAddress
+```
+remote = true
+proxyIpAddress = your-url.serverlees.social
+```
+Then your API is ready to communicate with the proxy.
+Note: Make sure that ou proxy is in the same network as your displays.
+
+
 ## Set up to send image to display
-- Check the IP-Address the machine where you want to run the API with ifconfing
-- Set that IP-Address in application.properties like
-```
-server.address = 192.168.1.8
-```
+
 - Start the API
 - Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/e-ink-displays-backend)
 - Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to use the webapp to send the image
