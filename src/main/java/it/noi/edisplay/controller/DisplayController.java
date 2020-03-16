@@ -162,7 +162,7 @@ public class DisplayController {
 	}
 
 	@RequestMapping(value = "/simple-create", method = RequestMethod.POST)
-	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("connectionDto") ConnectionDto connectionDto) {
+	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("networkAddress") String networkAddress, @RequestParam("locationUuid") String locationUuid) {
 		Display display = new Display();
 		display.setName(name);
 		display.setBatteryPercentage(new Random().nextInt(99));
@@ -188,11 +188,11 @@ public class DisplayController {
 
 		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
 
-		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());
+		Location location = locationRepository.findByUuid(locationUuid);
 
-		Connection connection = connectionRepository.save(new Connection(display, location , new Point(connectionDto.getLongitude(), connectionDto.getLatitude()), connectionDto.getNetworkAddress()));
+		Connection connection = connectionRepository.save(new Connection(savedDisplay, location , new Point(0, 0), networkAddress));
 		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
-		return new ResponseEntity<>(modelMapper.map(connection, ConnectionDto.class), HttpStatus.OK);
+		return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
