@@ -1,21 +1,17 @@
 package it.noi.edisplay.controller;
 
 
+import it.noi.edisplay.dto.ConnectionDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.StateDto;
-import it.noi.edisplay.model.Connection;
-import it.noi.edisplay.model.Display;
-import it.noi.edisplay.model.Resolution;
-import it.noi.edisplay.model.Template;
-import it.noi.edisplay.repositories.ConnectionRepository;
-import it.noi.edisplay.repositories.DisplayRepository;
-import it.noi.edisplay.repositories.ResolutionRepository;
-import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.model.*;
+import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +42,9 @@ public class DisplayController {
 
 	@Autowired
 	ResolutionRepository resolutionRepository;
+
+	@Autowired
+	LocationRepository locationRepository;
 
 
 	@Autowired
@@ -160,6 +159,40 @@ public class DisplayController {
 
 		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
+	}
+
+	@RequestMapping(value = "/simple-create", method = RequestMethod.POST)
+	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("connectionDto") ConnectionDto connectionDto) {
+		Display display = new Display();
+		display.setName(name);
+		display.setBatteryPercentage(new Random().nextInt(99));
+
+		Template template = templateRepository.findByUuid(templateUuid);
+
+		if (template != null)
+			display.setImage(template.getImage());
+		else {
+			logger.debug("Display creation failed. Template not found");
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
+		if (resolutionbyWidthAndHeight == null) {
+			Resolution resolution = new Resolution(width, height);
+			resolutionRepository.saveAndFlush(resolution);
+			display.setResolution(resolution);
+		} else
+			display.setResolution(resolutionbyWidthAndHeight);
+
+		Display savedDisplay = displayRepository.saveAndFlush(display);
+
+		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
+
+		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());
+
+		Connection connection = connectionRepository.save(new Connection(display, location , new Point(connectionDto.getLongitude(), connectionDto.getLatitude()), connectionDto.getNetworkAddress()));
+		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
+		return new ResponseEntity<>(modelMapper.map(connection, ConnectionDto.class), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
