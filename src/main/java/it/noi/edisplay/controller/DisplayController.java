@@ -1,21 +1,17 @@
 package it.noi.edisplay.controller;
 
 
+import it.noi.edisplay.dto.ConnectionDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.StateDto;
-import it.noi.edisplay.model.Connection;
-import it.noi.edisplay.model.Display;
-import it.noi.edisplay.model.Resolution;
-import it.noi.edisplay.model.Template;
-import it.noi.edisplay.repositories.ConnectionRepository;
-import it.noi.edisplay.repositories.DisplayRepository;
-import it.noi.edisplay.repositories.ResolutionRepository;
-import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.model.*;
+import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +43,9 @@ public class DisplayController {
 	@Autowired
 	ResolutionRepository resolutionRepository;
 
+	@Autowired
+	LocationRepository locationRepository;
+
 
 	@Autowired
 	ModelMapper modelMapper;
@@ -69,16 +68,16 @@ public class DisplayController {
 	}
 
 
-	@RequestMapping(value = "/send-to-e-ink-display", method = RequestMethod.POST)
-	public ResponseEntity sendImageToEInkDisplay(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
+	@RequestMapping(value = "/send", method = RequestMethod.POST)
+	public ResponseEntity send(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Sending image to display with uuid:" + uuid);
-				eDisplayRestService.sendImageToDisplay(display, connection, inverted);
+				StateDto currentState = eDisplayRestService.sendImageToDisplay(display, connection, inverted);
 				logger.debug("Image successful send to display with uuid " + uuid);
-				return new ResponseEntity(HttpStatus.OK);
+				return new ResponseEntity(currentState,HttpStatus.OK);
 			} else
 				logger.debug("Sending image to display with uuid:" + uuid + " failed. Connection not found");
 		} else
@@ -87,8 +86,8 @@ public class DisplayController {
 
 	}
 
-	@RequestMapping(value = "/get-e-ink-display-state/{uuid}", method = RequestMethod.GET)
-	public ResponseEntity getEInkDisplayState(@PathVariable("uuid") String uuid) throws IOException {
+	@RequestMapping(value = "/state/{uuid}", method = RequestMethod.GET)
+	public ResponseEntity getState(@PathVariable("uuid") String uuid) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
@@ -106,15 +105,15 @@ public class DisplayController {
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
-	@RequestMapping(value = "/clear-e-ink-display/{uuid}", method = RequestMethod.POST)
-	public ResponseEntity clearEInkDisplay(@PathVariable("uuid") String uuid) {
+	@RequestMapping(value = "/clear/{uuid}", method = RequestMethod.POST)
+	public ResponseEntity clear(@PathVariable("uuid") String uuid) {
 		Display display = displayRepository.findByUuid(uuid);
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Clear display with uuid:" + uuid);
-				eDisplayRestService.clearDisplay(connection);
-				return new ResponseEntity(HttpStatus.OK);
+				StateDto currentState = eDisplayRestService.clearDisplay(connection);
+				return new ResponseEntity(currentState,HttpStatus.OK);
 			} else
 				logger.debug("Failed to clear display with uuid:" + uuid + ". Connection not found");
 		} else
@@ -160,6 +159,40 @@ public class DisplayController {
 
 		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
+	}
+
+	@RequestMapping(value = "/simple-create", method = RequestMethod.POST)
+	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("networkAddress") String networkAddress, @RequestParam("locationUuid") String locationUuid) {
+		Display display = new Display();
+		display.setName(name);
+		display.setBatteryPercentage(new Random().nextInt(99));
+
+		Template template = templateRepository.findByUuid(templateUuid);
+
+		if (template != null)
+			display.setImage(template.getImage());
+		else {
+			logger.debug("Display creation failed. Template not found");
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
+		if (resolutionbyWidthAndHeight == null) {
+			Resolution resolution = new Resolution(width, height);
+			resolutionRepository.saveAndFlush(resolution);
+			display.setResolution(resolution);
+		} else
+			display.setResolution(resolutionbyWidthAndHeight);
+
+		Display savedDisplay = displayRepository.saveAndFlush(display);
+
+		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
+
+		Location location = locationRepository.findByUuid(locationUuid);
+
+		Connection connection = connectionRepository.save(new Connection(savedDisplay, location , new Point(0, 0), networkAddress));
+		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
+		return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
