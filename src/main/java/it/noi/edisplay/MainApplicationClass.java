@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -15,6 +16,7 @@ import java.util.Collections;
 
 //exclude = { SecurityAutoConfiguration.class so that own config from SecurityConfiguration.java is used
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+@EnableScheduling
 public class MainApplicationClass {
 
     public static void main(String[] args) {

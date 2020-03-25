@@ -19,24 +19,24 @@ public class EDisplayRestService {
 
 	private final RestTemplate restTemplate;
 
-	@Value("${remote}")
+	@Value("${proxy.remote}")
 	private Boolean remote;
 
-	@Value("${proxyIpAddress}")
+	@Value("${proxy.url}")
 	private String proxyIpAddress;
 
 	public EDisplayRestService(RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder.build();
 	}
 
-	public StateDto sendImageToDisplay(Display display, Connection connection, boolean inverted) throws IOException {
+	public StateDto sendImageToDisplay(Connection connection, boolean inverted) throws IOException {
 		ResponseEntity<String> stringResponseEntity;
 		if (!remote) {
 			final String uri = "http://" + connection.getNetworkAddress();
-			String image = ImageUtil.getBinaryImage(display.getImage(), inverted, display.getResolution());
+			String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
 			stringResponseEntity = restTemplate.postForEntity(uri,image, String.class);
 		} else {
-			String image = ImageUtil.getBinaryImage(display.getImage(), inverted, display.getResolution());
+			String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
 			final String uri = "http://" + proxyIpAddress + "/send?ip="+connection.getNetworkAddress();
 			ImageDto imageDto = new ImageDto(image);
 			stringResponseEntity = restTemplate.postForEntity(uri,imageDto, String.class);

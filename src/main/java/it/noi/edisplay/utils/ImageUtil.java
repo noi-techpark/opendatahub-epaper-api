@@ -1,5 +1,6 @@
 package it.noi.edisplay.utils;
 
+import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.Resolution;
 import org.imgscalr.Scalr;
 
@@ -49,4 +50,8 @@ public class ImageUtil {
 	}
 
 
+	public static byte[] getImageForEvent(EventDto eventDto){
+
+		return  null;
+	}
 }

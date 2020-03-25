@@ -32,28 +32,28 @@ public class DisplayController {
 
 
 	@Autowired
-	DisplayRepository displayRepository;
+	private DisplayRepository displayRepository;
 
 	@Autowired
-	TemplateRepository templateRepository;
+	private TemplateRepository templateRepository;
 
 	@Autowired
-	ConnectionRepository connectionRepository;
+	private ConnectionRepository connectionRepository;
 
 	@Autowired
-	ResolutionRepository resolutionRepository;
+	private ResolutionRepository resolutionRepository;
 
 	@Autowired
-	LocationRepository locationRepository;
+	private LocationRepository locationRepository;
 
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	EDisplayRestService eDisplayRestService;
+	private EDisplayRestService eDisplayRestService;
 
-	Logger logger = LoggerFactory.getLogger(DisplayController.class);
+	private Logger logger = LoggerFactory.getLogger(DisplayController.class);
 
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<DisplayDto> getDisplay(@PathVariable("uuid") String uuid) {
@@ -75,7 +75,7 @@ public class DisplayController {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Sending image to display with uuid:" + uuid);
-				StateDto currentState = eDisplayRestService.sendImageToDisplay(display, connection, inverted);
+				StateDto currentState = eDisplayRestService.sendImageToDisplay(connection, inverted);
 				logger.debug("Image successful send to display with uuid " + uuid);
 				return new ResponseEntity(currentState,HttpStatus.OK);
 			} else

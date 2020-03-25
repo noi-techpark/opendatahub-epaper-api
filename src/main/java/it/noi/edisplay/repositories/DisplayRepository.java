@@ -11,5 +11,6 @@ import java.util.List;
 public interface DisplayRepository extends JpaRepository<Display, Integer> {
 
     Display findByUuid(String uuid);
+    Display findByName(String name);
     List<Display> findAll();
 }
