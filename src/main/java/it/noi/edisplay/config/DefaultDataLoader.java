@@ -1,23 +1,41 @@
 package it.noi.edisplay.config;
 
-import it.noi.edisplay.model.Location;
-import it.noi.edisplay.model.Resolution;
-import it.noi.edisplay.model.Template;
-import it.noi.edisplay.repositories.LocationRepository;
-import it.noi.edisplay.repositories.ResolutionRepository;
-import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.model.*;
+import it.noi.edisplay.repositories.*;
+import it.noi.edisplay.services.EDisplayRestService;
+import it.noi.edisplay.services.OpenDataRestService;
 import it.noi.edisplay.utils.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
+
 
 @Component
 public class DefaultDataLoader {
+
+	@Value("${cron.enabled}")
+	private Boolean enabled;
+
+	@Autowired
+	private OpenDataRestService openDataRestService;
+
+	@Autowired
+	private EDisplayRestService eDisplayRestService;
+
+	@Autowired
+	private DisplayRepository displayRepository;
+
+	@Autowired
+	private ConnectionRepository connectionRepository;
+
 
 	@Autowired
 	private TemplateRepository templateRepository;
@@ -29,9 +47,8 @@ public class DefaultDataLoader {
 	private LocationRepository locationRepository;
 
 
-	//method invoked during the startup
 	@PostConstruct
-	public void loadTemplates() throws IOException {
+	public void onStartUp() throws IOException {
 
 		if (templateRepository.findAll().size() == 0) {
 
@@ -55,17 +72,14 @@ public class DefaultDataLoader {
 
 		}
 
-		if (resolutionRepository.findAll().size() == 0){
-
+		if (resolutionRepository.findAll().size() == 0) {
 			Resolution resolution = new Resolution();
 			resolution.setWidth(640);
 			resolution.setHeight(384);
-
-
 			resolutionRepository.saveAndFlush(resolution);
 		}
 
-		if (locationRepository.findAll().size() == 0){
+		if (locationRepository.findAll().size() == 0) {
 			Location officeLocation = new Location();
 			Location meetingRoomLocation = new Location();
 			Location freeSoftwareLabLocation = new Location();
@@ -73,18 +87,72 @@ public class DefaultDataLoader {
 
 			officeLocation.setName("Office");
 			meetingRoomLocation.setName("Meeting Room");
-			freeSoftwareLabLocation.setName("Free Software Lab");
+			freeSoftwareLabLocation.setName("Free Software Lab Default");
 
 			locationRepository.save(officeLocation);
 			locationRepository.save(meetingRoomLocation);
 			locationRepository.saveAndFlush(freeSoftwareLabLocation);
 		}
 
+
+		if (enabled) {
+			ArrayList<String> eventLocations = openDataRestService.getEventLocations();
+
+			for (String eventLocation : eventLocations) {
+				Location byName = locationRepository.findByName(eventLocation);
+				if (byName == null) {
+
+					Location location = new Location();
+					location.setName(eventLocation);
+					Location savedLocation = locationRepository.save(location);
+
+					Display display = new Display();
+					display.setName(eventLocation + " Display");
+
+					if (resolutionRepository.findAll().size() == 0) {
+						Resolution resolution = new Resolution();
+						resolution.setWidth(640);
+						resolution.setHeight(384);
+						display.setResolution(resolutionRepository.saveAndFlush(resolution));
+					} else
+						display.setResolution(resolutionRepository.findByWidthAndHeight(640, 384));
+					display.setBatteryPercentage(new Random().nextInt(100));
+					Display savedDisplay = displayRepository.save(display);
+
+					Connection connection = new Connection();
+					connection.setNetworkAddress("Please enter IP Address");
+					connection.setCoordinates(new Point(0, 0));
+					connection.setDisplay(savedDisplay);
+					connection.setLocation(savedLocation);
+
+					connectionRepository.save(connection);
+				}
+			}
+			setNextEventOnDisplay();
+		}
 	}
 
-	//method invoked during the shutdown
-//    @PreDestroy
-//    public void removeData() {
+	public void setNextEventOnDisplay() throws IOException {
+		if (enabled) {
+			ArrayList<EventDto> events = openDataRestService.getEvents();
 
-//    }
+			// saves locations that already where the image has already been created, to prevent overwriting
+			ArrayList<String> checkedLocations = new ArrayList<>();
+
+			for (EventDto event : events) {
+				if (!checkedLocations.contains(event.getSpaceDesc())) { //events will start next 5 minutes
+					Display display = displayRepository.findByName(event.getSpaceDesc().replace("NOI ", "") + " Display"); //needs to be optimized, if name changes it doesn't work anymore
+					if (display != null) {
+						display.setImage(ImageUtil.getImageForEvent(event));
+						Display savedDisplay = displayRepository.save(display);
+						Connection connection = connectionRepository.findByDisplay(savedDisplay);
+						eDisplayRestService.sendImageToDisplayAsync(connection, false);
+					}
+					checkedLocations.add(event.getSpaceDesc());
+				}
+			}
+		}
+	}
+
+
 }

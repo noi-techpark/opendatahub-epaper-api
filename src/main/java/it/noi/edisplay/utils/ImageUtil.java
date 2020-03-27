@@ -50,8 +50,17 @@ public class ImageUtil {
 	}
 
 
-	public static byte[] getImageForEvent(EventDto eventDto){
+	public static byte[] getImageForEvent(EventDto eventDto) throws IOException {
 
-		return  null;
+		BufferedImage bufferedImage = new BufferedImage(640, 384, BufferedImage.TYPE_INT_RGB);
+		Graphics graphics = bufferedImage.getGraphics();
+		graphics.setFont(new Font("Arial Black", Font.BOLD, 20));
+		graphics.drawString(eventDto.getEventDescriptionEN(), 10, 25);
+		graphics.drawString(eventDto.getCompanyName(), 10, 100);
+		graphics.drawString(String.valueOf(eventDto.getEventStartDateUTC()), 10, 200);
+		graphics.drawString(String.valueOf(eventDto.getEventStartDateUTC()), 10, 300);
+
+
+		return convertToMonochrome(bufferedImage);
 	}
 }

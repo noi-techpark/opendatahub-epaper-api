@@ -1,7 +1,6 @@
 package it.noi.edisplay.controller;
 
 
-import it.noi.edisplay.dto.ConnectionDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
@@ -71,18 +70,29 @@ public class DisplayController {
 	@RequestMapping(value = "/send", method = RequestMethod.POST)
 	public ResponseEntity send(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
+		StateDto currentState;
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Sending image to display with uuid:" + uuid);
-				StateDto currentState = eDisplayRestService.sendImageToDisplay(connection, inverted);
+				currentState = eDisplayRestService.sendImageToDisplay(connection, inverted);
+				display.setLastState(new Date());
+				displayRepository.save(display);
+				currentState.setLastState(display.getLastState());
 				logger.debug("Image successful send to display with uuid " + uuid);
-				return new ResponseEntity(currentState,HttpStatus.OK);
-			} else
+				return new ResponseEntity(currentState, HttpStatus.OK);
+			} else {
 				logger.debug("Sending image to display with uuid:" + uuid + " failed. Connection not found");
-		} else
+				String[] states = {"0", "0", "0", "No Connection Found", ""};
+				currentState = new StateDto(states);
+				currentState.setLastState(display.getLastState());
+			}
+		} else {
 			logger.debug("Sending image to display with uuid:" + uuid + " failed. Display not found");
-		return new ResponseEntity(HttpStatus.BAD_REQUEST);
+			String[] states = {"0", "0", "0", "No Display Found", ""};
+			currentState = new StateDto(states);
+		}
+		return new ResponseEntity(currentState, HttpStatus.BAD_REQUEST);
 
 	}
 
@@ -112,8 +122,11 @@ public class DisplayController {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Clear display with uuid:" + uuid);
+				display.setLastState(new Date());
+				displayRepository.save(display);
 				StateDto currentState = eDisplayRestService.clearDisplay(connection);
-				return new ResponseEntity(currentState,HttpStatus.OK);
+				currentState.setLastState(display.getLastState());
+				return new ResponseEntity(currentState, HttpStatus.OK);
 			} else
 				logger.debug("Failed to clear display with uuid:" + uuid + ". Connection not found");
 		} else
@@ -190,7 +203,7 @@ public class DisplayController {
 
 		Location location = locationRepository.findByUuid(locationUuid);
 
-		Connection connection = connectionRepository.save(new Connection(savedDisplay, location , new Point(0, 0), networkAddress));
+		Connection connection = connectionRepository.save(new Connection(savedDisplay, location, new Point(0, 0), networkAddress));
 		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
 	}

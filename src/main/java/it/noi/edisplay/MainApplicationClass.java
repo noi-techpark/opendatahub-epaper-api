@@ -6,17 +6,21 @@ import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Collections;
+import java.util.concurrent.Executor;
 
 
 //exclude = { SecurityAutoConfiguration.class so that own config from SecurityConfiguration.java is used
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 @EnableScheduling
+@EnableAsync
 public class MainApplicationClass {
 
     public static void main(String[] args) {
@@ -39,4 +43,17 @@ public class MainApplicationClass {
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }
+
+
+	@Bean
+	public Executor taskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(2);
+		executor.setQueueCapacity(500);
+		executor.setThreadNamePrefix("E-Display-");
+		executor.initialize();
+		return executor;
+	}
+
 }
