@@ -4,10 +4,7 @@ package it.noi.edisplay.components;
 import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
-import it.noi.edisplay.repositories.ConnectionRepository;
-import it.noi.edisplay.repositories.DisplayRepository;
-import it.noi.edisplay.repositories.LocationRepository;
-import it.noi.edisplay.repositories.ResolutionRepository;
+import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
 import it.noi.edisplay.services.OpenDataRestService;
 import it.noi.edisplay.utils.ImageUtil;
@@ -15,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -42,6 +40,10 @@ public class EventsScheduler {
 	private DisplayRepository displayRepository;
 
 	@Autowired
+	private TemplateRepository templateRepository;
+
+
+	@Autowired
 	private ConnectionRepository connectionRepository;
 
 	@Autowired
@@ -53,8 +55,7 @@ public class EventsScheduler {
 	private ArrayList<EventDto> events;
 
 
-	//	@Scheduled(cron = "${cron.opendata}")
-//	@Scheduled(fixedRate = 200000)
+	@Scheduled(cron = "${cron.opendata.events}")
 	public void loadNoiTodayEvents() {
 		if (enabled) {
 			logger.debug("Loading Events from OpenDataHub START");
@@ -66,8 +67,8 @@ public class EventsScheduler {
 	}
 
 
-	//	@Scheduled(fixedRate = 20000)
-	public void updateDisplay() throws IOException {
+	@Scheduled(cron = "${cron.opendata.displays}")
+	public void updateDisplays() throws IOException {
 		if (enabled) {
 			logger.debug("Send events to display START");
 
@@ -83,7 +84,7 @@ public class EventsScheduler {
 				if (event.getEventStartDateUTC() - 300000 < currentTime && event.getEventStartDateUTC() > currentTime) { //events will start next 5 minutes
 					Display display = displayRepository.findByName(event.getSpaceDesc() + " Display"); //needs to be optimized, if name changes it doesn't work anymore
 					if (display != null) {
-						display.setImage(ImageUtil.getImageForEvent(event));
+						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 						Display savedDisplay = displayRepository.save(display);
 						Connection connection = connectionRepository.findByDisplay(savedDisplay);
 						eDisplayRestService.sendImageToDisplay(connection, false);

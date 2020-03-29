@@ -44,7 +44,7 @@ public class EDisplayRestService {
 			ImageDto imageDto = new ImageDto(image);
 			stringResponseEntity = restTemplate.postForEntity(uri, imageDto, String.class);
 		}
-		StateDto stateDto = new StateDto(stringResponseEntity.getBody().split(";"));
+		StateDto stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
 		return CompletableFuture.completedFuture(stateDto);
 	}
 
@@ -62,7 +62,7 @@ public class EDisplayRestService {
 				ImageDto imageDto = new ImageDto(image);
 				stringResponseEntity = restTemplate.postForEntity(uri, imageDto, String.class);
 			}
-			stateDto = new StateDto(stringResponseEntity.getBody().split(";"));
+			stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
 		} catch (ResourceAccessException e) {
 			String[] states = {"0", "0", "0", "Unknown Host", ""};
 			stateDto = new StateDto(states);
@@ -72,26 +72,41 @@ public class EDisplayRestService {
 
 	public StateDto clearDisplay(Connection connection) {
 		ResponseEntity<String> stringResponseEntity;
-		if (!remote) {
-			final String uri = "http://" + connection.getNetworkAddress();
-			stringResponseEntity = restTemplate.postForEntity(uri, "2", String.class);
-		} else {
-			final String uri = "http://" + proxyIpAddress + "/clear?ip=" + connection.getNetworkAddress();
-			stringResponseEntity = restTemplate.postForEntity(uri, null, String.class);
+		StateDto stateDto;
+		try {
+			if (!remote) {
+				final String uri = "http://" + connection.getNetworkAddress();
+				stringResponseEntity = restTemplate.postForEntity(uri, "2", String.class);
+			} else {
+				final String uri = "http://" + proxyIpAddress + "/clear?ip=" + connection.getNetworkAddress();
+				stringResponseEntity = restTemplate.postForEntity(uri, null, String.class);
+			}
+			stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
+		} catch (ResourceAccessException e) {
+			String[] states = {"0", "0", "0", "Unknown Host", ""};
+			stateDto = new StateDto(states);
 		}
-		return new StateDto(stringResponseEntity.getBody().split(";"));
+		return stateDto;
 	}
 
 	public StateDto getCurrentState(Connection connection) {
-		if (!remote) {
-			final String uri = "http://" + connection.getNetworkAddress();
-			ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri, "3", String.class);//2 means clear display
-			String[] states = stringResponseEntity.getBody().split(";");
-			return new StateDto(states);
-		} else {
-			final String uri = "http://" + proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
-			ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri, null, String.class);
-			return new StateDto(stringResponseEntity.getBody().split(";"));
+		StateDto stateDto;
+		try {
+			if (!remote) {
+				final String uri = "http://" + connection.getNetworkAddress();
+				ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri, "3", String.class);//2 means clear display
+				String[] states = stringResponseEntity.getBody().replaceAll("\r\n", "").split(";");
+				stateDto = new StateDto(states);
+
+			} else {
+				final String uri = "http://" + proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
+				ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri, null, String.class);
+				stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
+			}
+		} catch (ResourceAccessException e) {
+			String[] states = {"0", "0", "0", "Unknown Host", ""};
+			stateDto = new StateDto(states);
 		}
+		return stateDto;
 	}
 }

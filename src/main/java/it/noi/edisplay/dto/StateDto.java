@@ -16,8 +16,10 @@ public class StateDto {
 		isSleeping = states[0].equals("1");
 		hasImage = states[1].equals("1");
 		batteryState = Integer.parseInt(states[2]);
-		ipAddress = states[3];
-		macAddress = states[4];
+		if(states.length > 3) {
+			ipAddress = states[3];
+			macAddress = states[4];
+		}
 	}
 
 	public boolean isSleeping() {

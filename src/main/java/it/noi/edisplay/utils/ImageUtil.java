@@ -11,6 +11,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 
 public class ImageUtil {
@@ -42,6 +45,7 @@ public class ImageUtil {
 					result.append(bufferedImage.getRGB(j, i) == -1 ? 1 : 0);
 				else
 					result.append(bufferedImage.getRGB(j, i) == -1 ? 0 : 1);
+
 		return result.toString();
 	}
 
@@ -50,15 +54,36 @@ public class ImageUtil {
 	}
 
 
-	public static byte[] getImageForEvent(EventDto eventDto) throws IOException {
+	public static byte[] getImageForEvent(EventDto eventDto, byte[] image) throws IOException {
+		InputStream in = new ByteArrayInputStream(image);
+		BufferedImage bufferedImage = ImageIO.read(in);
 
-		BufferedImage bufferedImage = new BufferedImage(640, 384, BufferedImage.TYPE_INT_RGB);
 		Graphics graphics = bufferedImage.getGraphics();
-		graphics.setFont(new Font("Arial Black", Font.BOLD, 20));
-		graphics.drawString(eventDto.getEventDescriptionEN(), 10, 25);
-		graphics.drawString(eventDto.getCompanyName(), 10, 100);
-		graphics.drawString(String.valueOf(eventDto.getEventStartDateUTC()), 10, 200);
-		graphics.drawString(String.valueOf(eventDto.getEventStartDateUTC()), 10, 300);
+		graphics.setColor(Color.BLACK);
+		graphics.setFont(new Font("Monospaced", Font.PLAIN, 30));
+		graphics.drawString(eventDto.getSpaceDesc(), 20, 50);
+		graphics.drawString(eventDto.getEventDescriptionEN(), 20, 225);
+		graphics.setFont(new Font("Monospaced", Font.PLAIN, 15));
+		graphics.drawString(eventDto.getCompanyName(), 20, 90);
+		graphics.setFont(new Font("Monospaced", Font.PLAIN, 20));
+		DateFormat formatter = new SimpleDateFormat("HH:mm");
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		graphics.drawString(formatter.format(eventDto.getEventStartDateUTC()), 400, 330);
+		graphics.drawString("to", 470, 330);
+		graphics.drawString(formatter.format(eventDto.getEventEndDateUTC()), 500, 330);
+
+
+		return convertToMonochrome(bufferedImage);
+	}
+
+	public static byte[] getImageForEmptyEventDisplay(String roomName, byte[] image) throws IOException {
+		InputStream in = new ByteArrayInputStream(image);
+		BufferedImage bufferedImage = ImageIO.read(in);
+
+		Graphics graphics = bufferedImage.getGraphics();
+		graphics.setColor(Color.BLACK);
+		graphics.setFont(new Font("Monospaced", Font.PLAIN, 30));
+		graphics.drawString(roomName, 20, 50);
 
 
 		return convertToMonochrome(bufferedImage);

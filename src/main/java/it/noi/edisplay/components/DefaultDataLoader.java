@@ -1,4 +1,4 @@
-package it.noi.edisplay.config;
+package it.noi.edisplay.components;
 
 import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.*;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Component;
+
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.io.IOException;
@@ -20,6 +21,8 @@ import java.util.Random;
 
 @Component
 public class DefaultDataLoader {
+
+	public static final String EVENT_TEMPLATE_NAME = "NOI Template";
 
 	@Value("${cron.enabled}")
 	private Boolean enabled;
@@ -55,19 +58,23 @@ public class DefaultDataLoader {
 			Template officeTemplate = new Template();
 			Template meetingRoomTemplate = new Template();
 			Template freeSoftwareLabTemplate = new Template();
+			Template noiTemplate = new Template();
 
 
 			officeTemplate.setName("Office");
 			meetingRoomTemplate.setName("Meeting Room");
 			freeSoftwareLabTemplate.setName("Free Software Lab");
+			noiTemplate.setName(EVENT_TEMPLATE_NAME);
 
 			officeTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/max-mustermann.png").getInputStream())));
 			meetingRoomTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/meeting-room.png").getInputStream())));
 			freeSoftwareLabTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/free-software-lab.png").getInputStream())));
+			noiTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/noi.png").getInputStream())));
 
 
 			templateRepository.save(officeTemplate);
 			templateRepository.save(meetingRoomTemplate);
+			templateRepository.save(noiTemplate);
 			templateRepository.saveAndFlush(freeSoftwareLabTemplate);
 
 		}
@@ -108,6 +115,7 @@ public class DefaultDataLoader {
 
 					Display display = new Display();
 					display.setName(eventLocation + " Display");
+					display.setImage(ImageUtil.getImageForEmptyEventDisplay(location.getName(), templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
 
 					if (resolutionRepository.findAll().size() == 0) {
 						Resolution resolution = new Resolution();
@@ -143,7 +151,7 @@ public class DefaultDataLoader {
 				if (!checkedLocations.contains(event.getSpaceDesc())) { //events will start next 5 minutes
 					Display display = displayRepository.findByName(event.getSpaceDesc().replace("NOI ", "") + " Display"); //needs to be optimized, if name changes it doesn't work anymore
 					if (display != null) {
-						display.setImage(ImageUtil.getImageForEvent(event));
+						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
 						Display savedDisplay = displayRepository.save(display);
 						Connection connection = connectionRepository.findByDisplay(savedDisplay);
 						eDisplayRestService.sendImageToDisplayAsync(connection, false);
