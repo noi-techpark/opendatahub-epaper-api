@@ -72,9 +72,9 @@ public class EventsScheduler {
 		if (enabled) {
 			logger.debug("Send events to display START");
 
-//			long currentTime = new Date().getTime();
+			long currentTime = System.currentTimeMillis();
 //			long currentTime = 1585994400000L; //4 april 2020 12:00
-			long currentTime = 1586003160000L; //4 april 2020 14:26
+//			long currentTime = 1586003160000L; //4 april 2020 14:26
 //			long currentTime = 1587212760000L; //18 april 2020 14:26
 
 			//removes events that are finished or will finish in the next 5 minutes
