@@ -1,6 +1,30 @@
 from flask import Flask
 from flask import request
 import requests
+from socket import *
+import socket
+from threading import Thread
+from time import sleep
+
+ 
+#---socket creation
+connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+#---Bind
+
+
+def threaded_function(arg):
+    try:
+        connexion.bind(('', 5006))
+    except socket.error:
+        print("connexion failed")
+        connexion.close()
+        sys.exit()
+    print("udp ready")
+    while 1:
+        data, addr = connexion.recvfrom(1024)
+        print("messages : ",addr , data)
+
 
 app = Flask(__name__)
 
@@ -29,4 +53,8 @@ def state():
     return response.content
 
 if __name__ == '__main__':
+    thread = Thread(target = threaded_function, args = (10, ))
+    thread.start()
     app.run()
+
+
