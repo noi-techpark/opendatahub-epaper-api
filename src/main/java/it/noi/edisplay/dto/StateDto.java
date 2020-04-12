@@ -5,29 +5,70 @@ import java.util.Date;
 public class StateDto {
 
 
-	boolean isSleeping;
+	boolean sleeping;
 	boolean hasImage;
+	int width;
+	int height;
 	int batteryState;
-	String ipAddress;
-	String macAddress;
+	String ip;
+	String mac;
 	Date lastState;
+	String errorMessage;
 
-	public StateDto(String [] states){
-		isSleeping = states[0].equals("1");
-		hasImage = states[1].equals("1");
-		batteryState = Integer.parseInt(states[2]);
-		if(states.length > 3) {
-			ipAddress = states[3];
-			macAddress = states[4];
-		}
+	public StateDto(){
+
+	}
+
+	public StateDto(String errorMessage){
+		this.errorMessage = errorMessage;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getMac() {
+		return mac;
+	}
+
+	public void setMac(String mac) {
+		this.mac = mac;
 	}
 
 	public boolean isSleeping() {
-		return isSleeping;
+		return sleeping;
 	}
 
 	public void setSleeping(boolean sleeping) {
-		isSleeping = sleeping;
+		this.sleeping = sleeping;
 	}
 
 	public boolean isHasImage() {
@@ -46,21 +87,6 @@ public class StateDto {
 		this.batteryState = batteryState;
 	}
 
-	public String getIpAddress() {
-		return ipAddress;
-	}
-
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
-	}
-
-	public String getMacAddress() {
-		return macAddress;
-	}
-
-	public void setMacAddress(String macAddress) {
-		this.macAddress = macAddress;
-	}
 
 	public Date getLastState() {
 		return lastState;

@@ -9,6 +9,7 @@ create TABLE resolutions (
 
 create TABLE displays (
     id SERIAL,
+    mac VARCHAR(17) UNIQUE,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL,
     network_address VARCHAR(25) UNIQUE,

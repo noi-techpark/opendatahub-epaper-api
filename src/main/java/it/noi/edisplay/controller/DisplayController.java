@@ -1,6 +1,7 @@
 package it.noi.edisplay.controller;
 
 
+import it.noi.edisplay.components.DefaultDataLoader;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
@@ -83,14 +84,12 @@ public class DisplayController {
 				return new ResponseEntity(currentState, HttpStatus.OK);
 			} else {
 				logger.debug("Sending image to display with uuid:" + uuid + " failed. Connection not found");
-				String[] states = {"0", "0", "0", "No Connection Found", ""};
-				currentState = new StateDto(states);
+				currentState = new StateDto("No connection found");
 				currentState.setLastState(display.getLastState());
 			}
 		} else {
 			logger.debug("Sending image to display with uuid:" + uuid + " failed. Display not found");
-			String[] states = {"0", "0", "0", "No Display Found", ""};
-			currentState = new StateDto(states);
+			currentState = new StateDto( "No display found");
 		}
 		return new ResponseEntity(currentState, HttpStatus.BAD_REQUEST);
 
@@ -173,6 +172,55 @@ public class DisplayController {
 		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
 	}
+
+	@RequestMapping(value = "/auto-create", method = RequestMethod.POST)
+	public ResponseEntity autoCreateDisplay(@RequestParam("name") String name, @RequestParam("ip") String ip, @RequestParam("width") int width, @RequestParam("height") int height) throws IOException {
+
+		Display display = new Display();
+		display.setName(name);
+		display.setBatteryPercentage(new Random().nextInt(99));
+
+		Template template = templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME);
+
+		if (template != null)
+			display.setImage(template.getImage());
+		else {
+			logger.debug("Display creation failed. Template not found");
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
+		if (resolutionbyWidthAndHeight == null) {
+			Resolution resolution = new Resolution(width, height);
+			resolutionRepository.saveAndFlush(resolution);
+			display.setResolution(resolution);
+		} else
+			display.setResolution(resolutionbyWidthAndHeight);
+
+		Display savedDisplay = displayRepository.saveAndFlush(display);
+
+		logger.debug("AUTO-CREATE: Display with uuid:" + savedDisplay.getUuid() + " created.");
+
+		Connection connection = new Connection();
+		Location location = locationRepository.findByName("Meeting Room");
+
+		connection.setDisplay(savedDisplay);
+		connection.setNetworkAddress(ip);
+		connection.setLocation(location);
+		connection.setCoordinates(new Point(0,0));
+
+		Connection savedConnection = connectionRepository.save(connection);
+
+		logger.debug("AUTO-CREATE: Connection with uuid:" + savedConnection.getUuid() + " created.");
+
+		eDisplayRestService.sendImageToDisplayAsync(savedConnection, false);
+
+		logger.debug("AUTO-CREATE: Image sent to:" + savedDisplay.getUuid());
+
+
+		return new ResponseEntity<>( HttpStatus.CREATED);
+	}
+
 
 	@RequestMapping(value = "/simple-create", method = RequestMethod.POST)
 	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("networkAddress") String networkAddress, @RequestParam("locationUuid") String locationUuid) {

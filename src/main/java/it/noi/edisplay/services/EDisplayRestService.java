@@ -21,8 +21,8 @@ public class EDisplayRestService {
 
 	private final RestTemplate restTemplate;
 
-	@Value("${proxy.remote}")
-	private Boolean remote;
+	@Value("${proxy.enabled}")
+	private Boolean enabled;
 
 	@Value("${proxy.url}")
 	private String proxyIpAddress;
@@ -33,18 +33,17 @@ public class EDisplayRestService {
 
 	@Async
 	public CompletableFuture<StateDto> sendImageToDisplayAsync(Connection connection, boolean inverted) throws IOException {
-		ResponseEntity<String> stringResponseEntity;
-		if (!remote) {
+		StateDto stateDto;
+		if (!enabled) {
 			final String uri = "http://" + connection.getNetworkAddress();
 			String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
-			stringResponseEntity = restTemplate.postForEntity(uri, image, String.class);
+			stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 		} else {
 			String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
 			final String uri = "http://" + proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 			ImageDto imageDto = new ImageDto(image);
-			stringResponseEntity = restTemplate.postForEntity(uri, imageDto, String.class);
+			stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
 		}
-		StateDto stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
 		return CompletableFuture.completedFuture(stateDto);
 	}
 
@@ -52,20 +51,18 @@ public class EDisplayRestService {
 		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
 		try {
-			if (!remote) {
+			if (!enabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 				String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
-				stringResponseEntity = restTemplate.postForEntity(uri, image, String.class);
+				stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 			} else {
 				String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
 				final String uri = "http://" + proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 				ImageDto imageDto = new ImageDto(image);
-				stringResponseEntity = restTemplate.postForEntity(uri, imageDto, String.class);
+				stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
 			}
-			stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
 		} catch (ResourceAccessException e) {
-			String[] states = {"0", "0", "0", "Unknown Host", ""};
-			stateDto = new StateDto(states);
+			stateDto = new StateDto("Display not reachable");
 		}
 		return stateDto;
 	}
@@ -74,17 +71,15 @@ public class EDisplayRestService {
 		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
 		try {
-			if (!remote) {
+			if (!enabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
-				stringResponseEntity = restTemplate.postForEntity(uri, "2", String.class);
+				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			} else {
 				final String uri = "http://" + proxyIpAddress + "/clear?ip=" + connection.getNetworkAddress();
-				stringResponseEntity = restTemplate.postForEntity(uri, null, String.class);
+				stateDto = restTemplate.postForObject(uri, null, StateDto.class);
 			}
-			stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
 		} catch (ResourceAccessException e) {
-			String[] states = {"0", "0", "0", "Unknown Host", ""};
-			stateDto = new StateDto(states);
+			stateDto = new StateDto("Display not reachable");
 		}
 		return stateDto;
 	}
@@ -92,20 +87,16 @@ public class EDisplayRestService {
 	public StateDto getCurrentState(Connection connection) {
 		StateDto stateDto;
 		try {
-			if (!remote) {
+			if (!enabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
-				ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri, "3", String.class);//2 means clear display
-				String[] states = stringResponseEntity.getBody().replaceAll("\r\n", "").split(";");
-				stateDto = new StateDto(states);
+				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 
 			} else {
 				final String uri = "http://" + proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
-				ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uri, null, String.class);
-				stateDto = new StateDto(stringResponseEntity.getBody().replaceAll("\r\n", "").split(";"));
+				stateDto = restTemplate.postForObject(uri, null, StateDto.class);//2 means clear display
 			}
 		} catch (ResourceAccessException e) {
-			String[] states = {"0", "0", "0", "Unknown Host", ""};
-			stateDto = new StateDto(states);
+			stateDto = new StateDto("Display not reachable");
 		}
 		return stateDto;
 	}

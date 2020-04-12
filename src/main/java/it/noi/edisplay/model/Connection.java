@@ -46,7 +46,6 @@ public class Connection {
     @OneToOne
     private Display display;
 
-    @NotNull
     @ManyToOne
     private Location location;
 

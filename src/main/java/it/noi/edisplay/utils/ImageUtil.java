@@ -3,7 +3,6 @@ package it.noi.edisplay.utils;
 import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.Resolution;
 import org.imgscalr.Scalr;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
