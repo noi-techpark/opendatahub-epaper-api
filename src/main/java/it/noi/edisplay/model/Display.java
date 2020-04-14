@@ -23,6 +23,7 @@ public class Display {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
+
 	@NotNull
 	private String name;
 
@@ -57,6 +58,7 @@ public class Display {
 	public Display() {
 
 	}
+
 
 
 	public Integer getId() {

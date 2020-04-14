@@ -1,6 +1,7 @@
 package it.noi.edisplay.components;
 
 import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
@@ -132,6 +133,7 @@ public class DefaultDataLoader {
 					connection.setCoordinates(new Point(0, 0));
 					connection.setDisplay(savedDisplay);
 					connection.setLocation(savedLocation);
+					connection.setConnected(false);
 
 					connectionRepository.save(connection);
 				}

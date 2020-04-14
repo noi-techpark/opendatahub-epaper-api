@@ -9,7 +9,6 @@ create TABLE resolutions (
 
 create TABLE displays (
     id SERIAL,
-    mac VARCHAR(17) UNIQUE,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     name VARCHAR(50) NOT NULL,
     network_address VARCHAR(25) UNIQUE,
@@ -40,6 +39,8 @@ create TABLE connections (
     id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     network_address VARCHAR(25) NOT NULL,
+    mac VARCHAR(17) UNIQUE,
+	connected BOOLEAN,
 --    protocol protocol_type NOT NULL,
     created TIMESTAMP NOT NULL,
     last_update TIMESTAMP NOT NULL,
