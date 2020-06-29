@@ -3,6 +3,7 @@ services:
   app:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG}
     command: "mvn spring-boot:run"
+    restart: unless-stopped
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
