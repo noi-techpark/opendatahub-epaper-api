@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_PROJECT_NAME = "e-ink-display-api"
-        DOCKER_IMAGE = '755952719952.dkr.ecr.eu-west-1.amazonaws.com/e-ink-display-api'
+        DOCKER_IMAGE = '755952719952.dkr.ecr.eu-west-1.amazonaws.com/e-ink-displays-api'
         DOCKER_TAG = "test-$BUILD_NUMBER"
 
 		SERVER_PORT = "1012"
