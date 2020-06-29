@@ -12,4 +12,4 @@ services:
       SERVER_PORT: ${SERVER_PORT}
       APP_DEBUG: ${APP_DEBUG}
     ports:
-      - "1010:8081"
+      - "${SERVER_PORT}:8081"
