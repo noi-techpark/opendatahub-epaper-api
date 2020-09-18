@@ -146,6 +146,16 @@ public class DefaultDataLoader {
 		if (enabled) {
 			ArrayList<EventDto> events = openDataRestService.getEvents();
 
+
+			long currentTime = System.currentTimeMillis();
+//			long currentTime = 1585994400000L; //4 april 2020 12:00
+//			long currentTime = 1590044328000L; //21 MAY 2020 08:58
+//			long currentTime = 1590060480000L; //21 MAY 2020 13:28
+//			long currentTime = 1587212760000L; //18 april 2020 14:26
+
+			//removes events that are finished or will finish in the next 5 minutes
+			events.removeIf(eventDto -> eventDto.getEventEndDateUTC() - 300000 < currentTime);
+
 			// saves locations that already where the image has already been created, to prevent overwriting
 			ArrayList<String> checkedLocations = new ArrayList<>();
 
@@ -154,9 +164,9 @@ public class DefaultDataLoader {
 					Display display = displayRepository.findByName(event.getSpaceDesc().replace("NOI ", "") + " Display"); //needs to be optimized, if name changes it doesn't work anymore
 					if (display != null) {
 						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
-						Display savedDisplay = displayRepository.save(display);
+						Display savedDisplay = displayRepository.saveAndFlush(display);
 						Connection connection = connectionRepository.findByDisplay(savedDisplay);
-						eDisplayRestService.sendImageToDisplayAsync(connection, false);
+						eDisplayRestService.sendImageToDisplayAsync(connection, true);
 					}
 					checkedLocations.add(event.getSpaceDesc());
 				}

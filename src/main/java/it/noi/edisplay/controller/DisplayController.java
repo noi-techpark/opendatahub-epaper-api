@@ -178,7 +178,6 @@ public class DisplayController {
 
 	@RequestMapping(value = "/auto-create", method = RequestMethod.POST)
 	public ResponseEntity autoCreateDisplay(@RequestParam("name") String name, @RequestParam("ip") String ip, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("mac") String mac) throws IOException {
-
 		Connection connectionByMac = connectionRepository.findByMac(mac);
 
 		if (connectionByMac == null) {
@@ -231,6 +230,7 @@ public class DisplayController {
 				logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
 			} else {
 				connectionByMac.setConnected(true);
+				connectionByMac.setNetworkAddress(ip);
 				logger.debug("AUTO-CREATE: Connection with uuid:" + connectionByMac.getUuid() + " has new IP " + ip);
 			}
 			connectionRepository.save(connectionByMac);

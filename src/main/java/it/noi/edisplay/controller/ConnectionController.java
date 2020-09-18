@@ -120,13 +120,23 @@ public class ConnectionController {
 	public ResponseEntity updateConnection(@RequestBody ConnectionDto connectionDto) {
 		Connection connection = connectionRepository.findByUuid(connectionDto.getUuid());
 		Display display = displayRepository.findByUuid(connectionDto.getDisplayUuid());
+
+		//check if display has already other connection and delete it
+		Connection connectionDisplay = connectionRepository.findByDisplay(display);
+		if (connectionDisplay != null && !connectionDisplay.getUuid().equals(connection.getUuid())){
+			logger.debug("Deleted existing connection with uuid:" + connectionDisplay.getUuid());
+			connectionRepository.delete(connectionDisplay);
+		}
+
 		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());
-		if (connection == null || display == null || location == null) {
+		if (location == null) {
 			logger.debug("Update connection with uuid:" + connectionDto.getUuid() + " failed.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 
 		connection.setLocation(location);
+		connection.setConnected(true);
+		connection.setMac(connectionDisplay != null ? connectionDisplay.getMac() : null);
 		connection.setDisplay(display);
 		connection.setNetworkAddress(connectionDto.getNetworkAddress()); //TODO check if address is correct and reachable
 		connection.setCoordinates(new Point(connectionDto.getLongitude(), connectionDto.getLatitude()));

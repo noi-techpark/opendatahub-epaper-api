@@ -56,25 +56,29 @@ public class EventsScheduler {
 
 
 	@Scheduled(cron = "${cron.opendata.events}")
+//	@Scheduled(fixedDelay = 1000000)
 	public void loadNoiTodayEvents() {
 		if (enabled) {
 			logger.debug("Loading Events from OpenDataHub START");
 
 			events = openDataRestService.getEvents();
 
+			logger.debug("Loaded " + openDataRestService.getEvents().size() + " events");
 			logger.debug("Loading Events from OpenDataHub DONE");
 		}
 	}
 
 
 	@Scheduled(cron = "${cron.opendata.displays}")
+//	@Scheduled(fixedDelay = 1000000)
 	public void updateDisplays() throws IOException {
 		if (enabled) {
 			logger.debug("Send events to display START");
 
 			long currentTime = System.currentTimeMillis();
 //			long currentTime = 1585994400000L; //4 april 2020 12:00
-//			long currentTime = 1586003160000L; //4 april 2020 14:26
+//			long currentTime = 1590044328000L; //21 MAY 2020 08:58
+//			long currentTime = 1590060480000L; //21 MAY 2020 13:28
 //			long currentTime = 1587212760000L; //18 april 2020 14:26
 
 			//removes events that are finished or will finish in the next 5 minutes
@@ -82,7 +86,7 @@ public class EventsScheduler {
 
 			for (EventDto event : events) {
 				if (event.getEventStartDateUTC() - 300000 < currentTime && event.getEventStartDateUTC() > currentTime) { //events will start next 5 minutes
-					Display display = displayRepository.findByName(event.getSpaceDesc() + " Display"); //needs to be optimized, if name changes it doesn't work anymore
+					Display display = displayRepository.findByName(event.getSpaceDesc().replace("NOI ", "") + " Display"); //needs to be optimized, if name changes it doesn't work anymore
 					if (display != null) {
 						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 						Display savedDisplay = displayRepository.save(display);
@@ -98,7 +102,8 @@ public class EventsScheduler {
 	}
 
 	@PostConstruct
-	private void postConstruct() throws IOException {
+	private void postContrsuct(){
 		loadNoiTodayEvents();
 	}
+
 }
