@@ -30,11 +30,13 @@ def threaded_function(arg):
         print("udp ready")
         while 1:
             data, addr = connexion.recvfrom(120)
-            if len(data) == 17:
+            if len(data) == 17 and not data in display_ip_mac_list: #check if full mac address arrived and not already present in list
+                display_ip_mac_list[data] = addr[0]
                 print("messages : ",addr , data)
+                # generates random display name
                 name = generate_slug(3)
-                print(name)
                 URL = "http://" + str(addr[0])
+                print(name)
                 print(URL)
                 
                 #ask state of display
@@ -49,7 +51,7 @@ def threaded_function(arg):
                 res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : data})
                 print(res)
 
-                display_ip_mac_list[data] = addr[0]
+                
 
 
 @app.route('/send', methods=['POST'])
