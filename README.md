@@ -101,6 +101,7 @@ The service will be available at localhost and your specified server port.
 If you deploy the application on a remote server, you need to setup a local proxy.
 So the application can communicate with the proxy instead of  trying to communicate directly with the displays and the proxy will forward the requests.
 You can **install** the proxy that you can find in proxy directory on a local machine onr Raspberry Pi
+**Note:** You might need to config the firewall of the machine the proxy is running to allow incoming traffic for the UDP auto-connection
 
 ```
 pip install requirements.txt
