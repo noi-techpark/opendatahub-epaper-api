@@ -1,12 +1,13 @@
 package it.noi.edisplay.components;
 
 import it.noi.edisplay.dto.EventDto;
-import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
 import it.noi.edisplay.services.OpenDataRestService;
 import it.noi.edisplay.utils.ImageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -24,7 +25,7 @@ import java.util.Random;
 public class DefaultDataLoader {
 
 	public static final String EVENT_TEMPLATE_NAME = "NOI Template";
-
+	private Logger logger = LoggerFactory.getLogger(DefaultDataLoader.class);
 	@Value("${cron.enabled}")
 	private Boolean enabled;
 
@@ -149,6 +150,7 @@ public class DefaultDataLoader {
 
 			long currentTime = System.currentTimeMillis();
 //			long currentTime = 1585994400000L; //4 april 2020 12:00
+//			long currentTime = 1585994400000L; //4 april 2020 12:00
 //			long currentTime = 1590044328000L; //21 MAY 2020 08:58
 //			long currentTime = 1590060480000L; //21 MAY 2020 13:28
 //			long currentTime = 1587212760000L; //18 april 2020 14:26
@@ -160,19 +162,44 @@ public class DefaultDataLoader {
 			ArrayList<String> checkedLocations = new ArrayList<>();
 
 			for (EventDto event : events) {
-				if (!checkedLocations.contains(event.getSpaceDesc())) { //events will start next 5 minutes
-					Display display = displayRepository.findByName(event.getSpaceDesc().replace("NOI ", "") + " Display"); //needs to be optimized, if name changes it doesn't work anymore
-					if (display != null) {
-						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
-						Display savedDisplay = displayRepository.saveAndFlush(display);
-						Connection connection = connectionRepository.findByDisplay(savedDisplay);
-						eDisplayRestService.sendImageToDisplayAsync(connection, true);
+
+
+				String roomName = event.getSpaceDesc().replace("NOI ", "") + " Display";
+
+				if (roomName.contains("+")) {
+					String roomNumbers = roomName.replaceAll("\\D+", ""); //removes all non digits
+					// assuming that rooms are Seminar rooms, since no other rooms have this kind of notation
+					for (char roomNumber : roomNumbers.toCharArray()) {
+						logger.debug("Default Data Loader: Event with multiple rooms found: Seminar " + roomNumber);
+						String seminarRoomName = "Seminar " + roomNumber;
+						String seminarDisplayName = seminarRoomName + " Display";
+						if (!checkedLocations.contains(seminarDisplayName)) {
+							Display display = displayRepository.findByName(seminarDisplayName); //needs to be optimized, if name changes it doesn't work anymore
+							if (display != null) {
+								display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+								Display savedDisplay = displayRepository.save(display);
+								Connection connection = connectionRepository.findByDisplay(savedDisplay);
+								logger.debug("Default Data Loader: Send image multiple " + seminarRoomName);
+								eDisplayRestService.sendImageToDisplayAsync(connection, false);
+							}
+							checkedLocations.add(seminarDisplayName);
+						}
 					}
-					checkedLocations.add(event.getSpaceDesc());
+				} else if (!checkedLocations.contains(roomName)) {
+					Display display = displayRepository.findByName(roomName); //needs to be optimized, if name changes it doesn't work anymore
+					if (display != null) {
+						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+						Display savedDisplay = displayRepository.save(display);
+						Connection connection = connectionRepository.findByDisplay(savedDisplay);
+						logger.debug("Default Data Loader: Send image " + roomName);
+						eDisplayRestService.sendImageToDisplayAsync(connection, false);
+					}
+					checkedLocations.add(roomName);
 				}
 			}
 		}
 	}
-
-
 }
+
+
+

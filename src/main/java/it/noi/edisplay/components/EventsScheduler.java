@@ -86,13 +86,33 @@ public class EventsScheduler {
 
 			for (EventDto event : events) {
 				if (event.getEventStartDateUTC() - 300000 < currentTime && event.getEventStartDateUTC() > currentTime) { //events will start next 5 minutes
-					Display display = displayRepository.findByName(event.getSpaceDesc().replace("NOI ", "") + " Display"); //needs to be optimized, if name changes it doesn't work anymore
-					if (display != null) {
-						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
-						Display savedDisplay = displayRepository.save(display);
-						Connection connection = connectionRepository.findByDisplay(savedDisplay);
-						eDisplayRestService.sendImageToDisplay(connection, false);
+					String roomName = event.getSpaceDesc().replace("NOI ", "") + " Display";
+
+					if (roomName.contains("+")) {
+						String roomNumbers = roomName.replaceAll("\\D+", ""); //removes all non digits
+						// assuming that rooms are Seminar rooms, since no other rooms have this kind of notation
+						for (char roomNumber : roomNumbers.toCharArray()) {
+							logger.debug("EVENT_SCHEDULER: Event with multiple rooms found: Seminar " + roomNumber);
+							String seminarRoomName = "Seminar " + roomNumber + " Display";
+							Display display = displayRepository.findByName(seminarRoomName); //needs to be optimized, if name changes it doesn't work anymore
+							if (display != null) {
+								display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+								Display savedDisplay = displayRepository.save(display);
+								Connection connection = connectionRepository.findByDisplay(savedDisplay);
+								logger.debug("EVENT_SCHEDULER: Send image");
+								eDisplayRestService.sendImageToDisplay(connection, false);
+								logger.debug("EVENT_SCHEDULER: Send image done");
+							}
+						}
+					} else {
+						Display display = displayRepository.findByName(roomName); //needs to be optimized, if name changes it doesn't work anymore
+						if (display != null) {
+							display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+							Display savedDisplay = displayRepository.save(display);
+							Connection connection = connectionRepository.findByDisplay(savedDisplay);
+							eDisplayRestService.sendImageToDisplay(connection, false);
 //						eDisplayRestService.sendImageToDisplayAsync(connection, false); TODO check if async or not
+						}
 					}
 				}
 			}
@@ -102,7 +122,7 @@ public class EventsScheduler {
 	}
 
 	@PostConstruct
-	private void postContrsuct(){
+	private void postContrsuct() {
 		loadNoiTodayEvents();
 	}
 
