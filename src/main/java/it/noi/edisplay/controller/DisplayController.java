@@ -1,7 +1,6 @@
 package it.noi.edisplay.controller;
 
 
-import it.noi.edisplay.components.DefaultDataLoader;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
@@ -92,7 +91,7 @@ public class DisplayController {
 			}
 		} else {
 			logger.debug("Sending image to display with uuid:" + uuid + " failed. Display not found");
-			currentState = new StateDto( "No display found");
+			currentState = new StateDto("No display found");
 		}
 		return new ResponseEntity(currentState, HttpStatus.BAD_REQUEST);
 
@@ -181,47 +180,69 @@ public class DisplayController {
 		Connection connectionByMac = connectionRepository.findByMac(mac);
 
 		if (connectionByMac == null) {
-			logger.debug("AUTO-CREATE: CREATE STARTED");
-			Display display = new Display();
-			display.setName(name);
-			display.setBatteryPercentage(new Random().nextInt(99));
+			//check if name already exists and connect with that display
 
-			display.setImage(ImageUtil.getImageForEmptyEventDisplay(name, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+			Display displayByName = displayRepository.findByName(name);
 
-			Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
-			if (resolutionbyWidthAndHeight == null) {
-				Resolution resolution = new Resolution(width, height);
-				resolutionRepository.saveAndFlush(resolution);
-				display.setResolution(resolution);
-			} else
-				display.setResolution(resolutionbyWidthAndHeight);
+			if (displayByName != null) {
+				logger.debug("AUTO-CREATE: RECONNECT TO DISPLAY WITH NAME " + name);
 
-			Display savedDisplay = displayRepository.saveAndFlush(display);
+				Connection connectionByDisplay = connectionRepository.findByDisplay(displayByName);
+				connectionByDisplay.setMac(mac);
+				connectionByDisplay.setNetworkAddress(ip);
 
-			logger.debug("AUTO-CREATE: Display with uuid:" + savedDisplay.getUuid() + " created.");
+				connectionRepository.save(connectionByDisplay);
 
-			Connection connection = new Connection();
-			Location location = locationRepository.findByName("Meeting Room");
+				logger.debug("AUTO-CREATE: FINISHED WITH NEW IP " + ip);
 
-			connection.setDisplay(savedDisplay);
-			connection.setNetworkAddress(ip);
-			connection.setLocation(location);
-			connection.setMac(mac);
-			connection.setCoordinates(new Point(0, 0));
+				logger.debug("AUTO-CREATE: SENDING IMAGE NOW");
+				eDisplayRestService.sendImageToDisplay(connectionByDisplay, false);
+				logger.debug("AUTO-CREATE: SENDING IMAGE DONE");
 
-			StateDto state = eDisplayRestService.sendImageToDisplay(connection, false);
-			if (state.getErrorMessage() != null) {
-				connection.setConnected(false);
-				logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+				logger.debug("AUTO-CREATE: COMPLETED");
 			} else {
-				connection.setConnected(true);
-				logger.debug("AUTO-CREATE: Image sent to:" + savedDisplay.getUuid());
-			}
 
-			Connection savedConnection = connectionRepository.save(connection);
-			logger.debug("AUTO-CREATE: Connection with uuid:" + savedConnection.getUuid() + " created.");
-		}
-		else{
+				logger.debug("AUTO-CREATE: CREATE STARTED");
+				Display display = new Display();
+				display.setName(name);
+				display.setBatteryPercentage(new Random().nextInt(99));
+
+				display.setImage(ImageUtil.getImageForEmptyEventDisplay(name, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+
+				Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
+				if (resolutionbyWidthAndHeight == null) {
+					Resolution resolution = new Resolution(width, height);
+					resolutionRepository.saveAndFlush(resolution);
+					display.setResolution(resolution);
+				} else
+					display.setResolution(resolutionbyWidthAndHeight);
+
+				Display savedDisplay = displayRepository.saveAndFlush(display);
+
+				logger.debug("AUTO-CREATE: Display with uuid:" + savedDisplay.getUuid() + " created.");
+
+				Connection connection = new Connection();
+				Location location = locationRepository.findByName("Meeting Room");
+
+				connection.setDisplay(savedDisplay);
+				connection.setNetworkAddress(ip);
+				connection.setLocation(location);
+				connection.setMac(mac);
+				connection.setCoordinates(new Point(0, 0));
+
+				StateDto state = eDisplayRestService.sendImageToDisplay(connection, false);
+				if (state.getErrorMessage() != null) {
+					connection.setConnected(false);
+					logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+				} else {
+					connection.setConnected(true);
+					logger.debug("AUTO-CREATE: Image sent to:" + savedDisplay.getUuid());
+				}
+
+				Connection savedConnection = connectionRepository.save(connection);
+				logger.debug("AUTO-CREATE: Connection with uuid:" + savedConnection.getUuid() + " created.");
+			}
+		} else {
 			logger.debug("AUTO-CREATE: RECONNECT STARTED");
 			connectionByMac.setNetworkAddress(ip);
 			StateDto state = eDisplayRestService.sendImageToDisplay(connectionByMac, false);
@@ -236,7 +257,7 @@ public class DisplayController {
 			connectionRepository.save(connectionByMac);
 		}
 
-		return new ResponseEntity<>( HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 
