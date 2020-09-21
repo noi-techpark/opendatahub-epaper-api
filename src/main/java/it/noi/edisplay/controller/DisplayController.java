@@ -196,8 +196,7 @@ public class DisplayController {
 				logger.debug("AUTO-CREATE: FINISHED WITH NEW IP " + ip);
 
 				logger.debug("AUTO-CREATE: SENDING IMAGE NOW");
-				eDisplayRestService.sendImageToDisplay(connectionByDisplay, false);
-				logger.debug("AUTO-CREATE: SENDING IMAGE DONE");
+				eDisplayRestService.sendImageToDisplayAsync(connectionByDisplay, false);
 
 				logger.debug("AUTO-CREATE: COMPLETED");
 			} else {
