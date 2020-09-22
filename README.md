@@ -1,4 +1,4 @@
-# E-Ink-Display API
+# it.bz.opendatahub.epaper.api
 
 API for the E-Ink-Displays that offers API to make CRUD operations for you
 displays. Created with [Spring Boot
@@ -45,13 +45,13 @@ predefined Images that can be modified and loaded on the Displays.
 Get a copy of the repository:
 
 ```bash
-git clone https://github.com/noi-techpark/e-ink-displays-api.git
+git clone https://github.com/noi-techpark/it.bz.opendatahub.epaper.api.git
 ```
 
 Change directory:
 
 ```bash
-cd e-ink-displays-api
+cd it.bz.opendatahub.epaper.api
 ```
 
 ## Run Application
@@ -66,6 +66,8 @@ Create Database named **edisplays** with user **edisplay-user**
 CREATE DATABASE edisplays;
 CREATE USER edisplays-user;
 ```
+
+Make sure that a default schema called `public` exists, and that the owner is `edisplays-user`.
 
 #### Application
 Copy the file `src/main/resources/application.properties` to `src/main/resources/application-local.properties` and adjust the variables that get their values from environment variables. You can take a look at the `.env.example` for some help.
