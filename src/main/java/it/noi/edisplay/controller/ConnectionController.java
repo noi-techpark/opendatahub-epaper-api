@@ -1,12 +1,14 @@
 package it.noi.edisplay.controller;
 
 import it.noi.edisplay.dto.ConnectionDto;
+import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.Location;
 import it.noi.edisplay.repositories.ConnectionRepository;
 import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.LocationRepository;
+import it.noi.edisplay.services.EDisplayRestService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +39,9 @@ public class ConnectionController {
 
 	@Autowired
 	ModelMapper modelMapper;
-
-
 	Logger logger = LoggerFactory.getLogger(ConnectionController.class);
+	@Autowired
+	private EDisplayRestService eDisplayRestService;
 
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<ConnectionDto> get(@RequestParam String uuid) {
@@ -64,6 +66,8 @@ public class ConnectionController {
 			ConnectionDto connectionDto = modelMapper.map(connection, ConnectionDto.class);
 			connectionDto.setLongitude(connection.getCoordinates().getX());
 			connectionDto.setLatitude(connection.getCoordinates().getY());
+			connectionDto.setConnected(connection.getConnected());
+			connectionDto.setMac(connection.getMac());
 			dtoList.add(connectionDto);
 		}
 		logger.debug("All connections requested");
@@ -78,11 +82,24 @@ public class ConnectionController {
 		if (display == null || location == null) {
 			logger.debug("Creation of connection failed.");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
 		}
 
-		Connection connection = connectionRepository.save(new Connection(display, location , new Point(connectionDto.getLongitude(), connectionDto.getLatitude()), connectionDto.getNetworkAddress()));
-		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
-		return new ResponseEntity<>(modelMapper.map(connection, ConnectionDto.class), HttpStatus.OK);
+		Connection connection = new Connection(display, location, new Point(connectionDto.getLongitude(), connectionDto.getLatitude()), connectionDto.getNetworkAddress());
+
+		StateDto currentState = eDisplayRestService.getCurrentState(connection);
+		if (currentState.getErrorMessage() != null) {
+			connection.setConnected(false);
+			logger.debug("Trying to connect to physical display failed with error: " + currentState.getErrorMessage());
+		} else {
+			connection.setConnected(true);
+			connection.setMac(currentState.getMac());
+		}
+		Connection savedConnection = connectionRepository.save(connection);
+		logger.debug("Connection with uuid:" + savedConnection.getUuid() + " created.");
+
+
+		return new ResponseEntity<>(modelMapper.map(savedConnection, ConnectionDto.class), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
@@ -103,13 +120,23 @@ public class ConnectionController {
 	public ResponseEntity updateConnection(@RequestBody ConnectionDto connectionDto) {
 		Connection connection = connectionRepository.findByUuid(connectionDto.getUuid());
 		Display display = displayRepository.findByUuid(connectionDto.getDisplayUuid());
+
+		//check if display has already other connection and delete it
+		Connection connectionDisplay = connectionRepository.findByDisplay(display);
+		if (connectionDisplay != null && !connectionDisplay.getUuid().equals(connection.getUuid())){
+			logger.debug("Deleted existing connection with uuid:" + connectionDisplay.getUuid());
+			connectionRepository.delete(connectionDisplay);
+		}
+
 		Location location = locationRepository.findByUuid(connectionDto.getLocationUuid());
-		if (connection == null || display == null || location == null) {
+		if (location == null) {
 			logger.debug("Update connection with uuid:" + connectionDto.getUuid() + " failed.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 
 		connection.setLocation(location);
+		connection.setConnected(true);
+		connection.setMac(connectionDisplay != null ? connectionDisplay.getMac() : null);
 		connection.setDisplay(display);
 		connection.setNetworkAddress(connectionDto.getNetworkAddress()); //TODO check if address is correct and reachable
 		connection.setCoordinates(new Point(connectionDto.getLongitude(), connectionDto.getLatitude()));

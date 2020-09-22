@@ -1,12 +1,12 @@
 package it.noi.edisplay.controller;
 
 
-import it.noi.edisplay.dto.ConnectionDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
+import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static it.noi.edisplay.components.DefaultDataLoader.EVENT_TEMPLATE_NAME;
+
 
 /**
  * Controller class to create API for CRUD operations on Displays
@@ -32,28 +34,28 @@ public class DisplayController {
 
 
 	@Autowired
-	DisplayRepository displayRepository;
+	private DisplayRepository displayRepository;
 
 	@Autowired
-	TemplateRepository templateRepository;
+	private TemplateRepository templateRepository;
 
 	@Autowired
-	ConnectionRepository connectionRepository;
+	private ConnectionRepository connectionRepository;
 
 	@Autowired
-	ResolutionRepository resolutionRepository;
+	private ResolutionRepository resolutionRepository;
 
 	@Autowired
-	LocationRepository locationRepository;
+	private LocationRepository locationRepository;
 
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	EDisplayRestService eDisplayRestService;
+	private EDisplayRestService eDisplayRestService;
 
-	Logger logger = LoggerFactory.getLogger(DisplayController.class);
+	private Logger logger = LoggerFactory.getLogger(DisplayController.class);
 
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<DisplayDto> getDisplay(@PathVariable("uuid") String uuid) {
@@ -71,18 +73,27 @@ public class DisplayController {
 	@RequestMapping(value = "/send", method = RequestMethod.POST)
 	public ResponseEntity send(@RequestParam("uuid") String uuid, @RequestParam("inverted") Boolean inverted) throws IOException {
 		Display display = displayRepository.findByUuid(uuid);
+		StateDto currentState;
 		if (display != null) {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Sending image to display with uuid:" + uuid);
-				StateDto currentState = eDisplayRestService.sendImageToDisplay(display, connection, inverted);
+				currentState = eDisplayRestService.sendImageToDisplay(connection, inverted);
+				display.setLastState(new Date());
+				displayRepository.save(display);
+				currentState.setLastState(display.getLastState());
 				logger.debug("Image successful send to display with uuid " + uuid);
-				return new ResponseEntity(currentState,HttpStatus.OK);
-			} else
+				return new ResponseEntity(currentState, HttpStatus.OK);
+			} else {
 				logger.debug("Sending image to display with uuid:" + uuid + " failed. Connection not found");
-		} else
+				currentState = new StateDto("No connection found");
+				currentState.setLastState(display.getLastState());
+			}
+		} else {
 			logger.debug("Sending image to display with uuid:" + uuid + " failed. Display not found");
-		return new ResponseEntity(HttpStatus.BAD_REQUEST);
+			currentState = new StateDto("No display found");
+		}
+		return new ResponseEntity(currentState, HttpStatus.BAD_REQUEST);
 
 	}
 
@@ -112,8 +123,11 @@ public class DisplayController {
 			Connection connection = connectionRepository.findByDisplay(display);
 			if (connection != null) {
 				logger.debug("Clear display with uuid:" + uuid);
+				display.setLastState(new Date());
+				displayRepository.save(display);
 				StateDto currentState = eDisplayRestService.clearDisplay(connection);
-				return new ResponseEntity(currentState,HttpStatus.OK);
+				currentState.setLastState(display.getLastState());
+				return new ResponseEntity(currentState, HttpStatus.OK);
 			} else
 				logger.debug("Failed to clear display with uuid:" + uuid + ". Connection not found");
 		} else
@@ -161,6 +175,91 @@ public class DisplayController {
 		return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
 	}
 
+	@RequestMapping(value = "/auto-create", method = RequestMethod.POST)
+	public ResponseEntity autoCreateDisplay(@RequestParam("name") String name, @RequestParam("ip") String ip, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("mac") String mac) throws IOException {
+		Connection connectionByMac = connectionRepository.findByMac(mac);
+
+		if (connectionByMac == null) {
+			//check if name already exists and connect with that display
+
+			Display displayByName = displayRepository.findByName(name);
+
+			if (displayByName != null) {
+				logger.debug("AUTO-CREATE: RECONNECT TO DISPLAY WITH NAME " + name);
+
+				Connection connectionByDisplay = connectionRepository.findByDisplay(displayByName);
+				connectionByDisplay.setMac(mac);
+				connectionByDisplay.setNetworkAddress(ip);
+
+				connectionRepository.save(connectionByDisplay);
+
+				logger.debug("AUTO-CREATE: FINISHED WITH NEW IP " + ip);
+
+				logger.debug("AUTO-CREATE: SENDING IMAGE NOW");
+				eDisplayRestService.sendImageToDisplayAsync(connectionByDisplay, false);
+
+				logger.debug("AUTO-CREATE: COMPLETED");
+			} else {
+
+				logger.debug("AUTO-CREATE: CREATE STARTED");
+				Display display = new Display();
+				display.setName(name);
+				display.setBatteryPercentage(new Random().nextInt(99));
+
+				display.setImage(ImageUtil.getImageForEmptyEventDisplay(name, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+
+				Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
+				if (resolutionbyWidthAndHeight == null) {
+					Resolution resolution = new Resolution(width, height);
+					resolutionRepository.saveAndFlush(resolution);
+					display.setResolution(resolution);
+				} else
+					display.setResolution(resolutionbyWidthAndHeight);
+
+				Display savedDisplay = displayRepository.saveAndFlush(display);
+
+				logger.debug("AUTO-CREATE: Display with uuid:" + savedDisplay.getUuid() + " created.");
+
+				Connection connection = new Connection();
+				Location location = locationRepository.findByName("Meeting Room");
+
+				connection.setDisplay(savedDisplay);
+				connection.setNetworkAddress(ip);
+				connection.setLocation(location);
+				connection.setMac(mac);
+				connection.setCoordinates(new Point(0, 0));
+
+				StateDto state = eDisplayRestService.sendImageToDisplay(connection, false);
+				if (state.getErrorMessage() != null) {
+					connection.setConnected(false);
+					logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+				} else {
+					connection.setConnected(true);
+					logger.debug("AUTO-CREATE: Image sent to:" + savedDisplay.getUuid());
+				}
+
+				Connection savedConnection = connectionRepository.save(connection);
+				logger.debug("AUTO-CREATE: Connection with uuid:" + savedConnection.getUuid() + " created.");
+			}
+		} else {
+			logger.debug("AUTO-CREATE: RECONNECT STARTED");
+			connectionByMac.setNetworkAddress(ip);
+			StateDto state = eDisplayRestService.sendImageToDisplay(connectionByMac, false);
+			if (state.getErrorMessage() != null) {
+				connectionByMac.setConnected(false);
+				logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+			} else {
+				connectionByMac.setConnected(true);
+				connectionByMac.setNetworkAddress(ip);
+				logger.debug("AUTO-CREATE: Connection with uuid:" + connectionByMac.getUuid() + " has new IP " + ip);
+			}
+			connectionRepository.save(connectionByMac);
+		}
+
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+
+
 	@RequestMapping(value = "/simple-create", method = RequestMethod.POST)
 	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("networkAddress") String networkAddress, @RequestParam("locationUuid") String locationUuid) {
 		Display display = new Display();
@@ -190,7 +289,7 @@ public class DisplayController {
 
 		Location location = locationRepository.findByUuid(locationUuid);
 
-		Connection connection = connectionRepository.save(new Connection(savedDisplay, location , new Point(0, 0), networkAddress));
+		Connection connection = connectionRepository.save(new Connection(savedDisplay, location, new Point(0, 0), networkAddress));
 		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
 	}

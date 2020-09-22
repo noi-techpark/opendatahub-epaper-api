@@ -15,6 +15,12 @@ public class ConnectionDto {
 	private Double latitude;
 	private String displayUuid;
 	private String locationUuid;
+	private String mac;
+
+
+	@ApiModelProperty(hidden = true)
+	private Boolean connected;
+
 
 	@ApiModelProperty(hidden = true)
 	private LocationDto location;
@@ -100,5 +106,21 @@ public class ConnectionDto {
 
 	public void setLocation(LocationDto location) {
 		this.location = location;
+	}
+
+	public Boolean getConnected() {
+		return connected;
+	}
+
+	public void setConnected(Boolean connected) {
+		this.connected = connected;
+	}
+
+	public String getMac() {
+		return mac;
+	}
+
+	public void setMac(String mac) {
+		this.mac = mac;
 	}
 }

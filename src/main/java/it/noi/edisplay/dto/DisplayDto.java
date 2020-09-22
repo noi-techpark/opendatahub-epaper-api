@@ -12,6 +12,7 @@ public class DisplayDto {
 	private byte[] image;
 	private int batteryPercentage;
 	private ResolutionDto resolution;
+	private String mac;
 
 	@ApiModelProperty(hidden = true)
 	private ConnectionDto connection;
@@ -106,6 +107,15 @@ public class DisplayDto {
 
 	public ResolutionDto getResolution() {
 		return resolution;
+	}
+
+
+	public String getMac() {
+		return mac;
+	}
+
+	public void setMac(String mac) {
+		this.mac = mac;
 	}
 
 	public void setResolution(ResolutionDto resolution) {

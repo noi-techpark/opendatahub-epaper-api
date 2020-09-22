@@ -25,7 +25,11 @@ public class Connection {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull
+	private String mac;
+
+	private Boolean connected;
+
+	@NotNull
     private String uuid;
 
     @NotNull
@@ -46,7 +50,6 @@ public class Connection {
     @OneToOne
     private Display display;
 
-    @NotNull
     @ManyToOne
     private Location location;
 
@@ -60,7 +63,16 @@ public class Connection {
         this.location = location;
         this.networkAddress = networkAddress;
         this.coordinates = coordinates;
+        connected = false;
     }
+
+	public String getMac() {
+		return mac;
+	}
+
+	public void setMac(String mac) {
+		this.mac = mac;
+	}
 
     public String getUuid() {
         return uuid;
@@ -134,4 +146,11 @@ public class Connection {
         this.setUuid(UUID.randomUUID().toString());
     }
 
+	public Boolean getConnected() {
+		return connected;
+	}
+
+	public void setConnected(Boolean connected) {
+		this.connected = connected;
+	}
 }

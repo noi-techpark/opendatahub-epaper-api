@@ -39,6 +39,8 @@ create TABLE connections (
     id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
     network_address VARCHAR(25) NOT NULL,
+    mac VARCHAR(17) UNIQUE,
+	connected BOOLEAN,
 --    protocol protocol_type NOT NULL,
     created TIMESTAMP NOT NULL,
     last_update TIMESTAMP NOT NULL,
