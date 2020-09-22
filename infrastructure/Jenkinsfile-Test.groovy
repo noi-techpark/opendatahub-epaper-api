@@ -7,10 +7,22 @@ pipeline {
         DOCKER_TAG = "test-$BUILD_NUMBER"
 
 		SERVER_PORT = "1012"
+		SERVER_ADDR = "https://api.epaper.opendatahub.bz.it"
 
-        DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper?currentSchema=public"
+        DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
         DB_USERNAME = "epaper"
         DB_PASSWORD = credentials('epaper-api-test-db-password')
+
+		APP_DEBUG = true
+
+		PROXY_ENABLED = false
+		PROXY_URL = "TBD" // TODO
+
+		NOI_EVENTS_ENABLED = true
+		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
+		NOI_CRON_DISPLAYS = "0 0/10 6-22 * * ?"
+
+		CRON_HEARTBEAT = "TBD" // TODO
     }
 
     stages {
@@ -24,10 +36,22 @@ pipeline {
                     echo 'DOCKER_TAG=${DOCKER_TAG}' >> .env
 
 					echo 'SERVER_PORT=${SERVER_PORT}' >> .env
+					echo 'SERVER_ADDR=${SERVER_ADDR}' >> .env
 
                     echo 'DB_URL=${DB_URL}' >> .env
                     echo 'DB_USERNAME=${DB_USERNAME}' >> .env
                     echo 'DB_PASSWORD=${DB_PASSWORD}' >> .env
+
+					echo 'APP_DEBUG=${APP_DEBUG}' >> .env
+
+					echo 'PROXY_ENABLED=${PROXY_ENABLED}' >> .env
+					echo 'PROXY_URL=${PROXY_URL}' >> .env
+
+					echo 'NOI_EVENTS_ENABLED=${NOI_EVENTS_ENABLED}' >> .env
+					echo 'NOI_CRON_EVENTS=${NOI_CRON_EVENTS}' >> .env
+					echo 'NOI_CRON_DISPLAYS=${NOI_CRON_DISPLAYS}' >> .env
+
+					echo 'CRON_HEARTBEAT=${CRON_HEARTBEAT}' >> .env
                 """
             }
         }
