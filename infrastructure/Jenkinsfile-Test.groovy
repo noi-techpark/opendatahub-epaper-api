@@ -8,7 +8,7 @@ pipeline {
 
 		SERVER_PORT = "1012"
 
-        DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
+        DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper?currentSchema=public"
         DB_USERNAME = "epaper"
         DB_PASSWORD = credentials('epaper-api-test-db-password')
     }
