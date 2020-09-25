@@ -177,6 +177,7 @@ public class DisplayController {
 
 	@RequestMapping(value = "/auto-create", method = RequestMethod.POST)
 	public ResponseEntity autoCreateDisplay(@RequestParam("name") String name, @RequestParam("ip") String ip, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("mac") String mac) throws IOException {
+
 		Connection connectionByMac = connectionRepository.findByMac(mac);
 
 		if (connectionByMac == null) {
@@ -242,7 +243,7 @@ public class DisplayController {
 				logger.debug("AUTO-CREATE: Connection with uuid:" + savedConnection.getUuid() + " created.");
 			}
 		} else {
-			logger.debug("AUTO-CREATE: RECONNECT STARTED");
+			logger.debug("AUTO-CREATE: RECONNECT BY MAC ADDRESS STARTED");
 			connectionByMac.setNetworkAddress(ip);
 			StateDto state = eDisplayRestService.sendImageToDisplay(connectionByMac, false);
 			if (state.getErrorMessage() != null) {

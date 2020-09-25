@@ -31,14 +31,16 @@ def threaded_function(arg):
         while 1:
             data, addr = connexion.recvfrom(120)
             if len(data) == 17 and not data in display_ip_mac_list: #check if full mac address arrived and not already present in list
+                name = ""
                 display_ip_mac_list[data] = addr[0]
                 print("messages : ",addr , data)
-                # generates random display name
-                name = generate_slug(3)
+               
                 URL = "http://" + str(addr[0])
-                print(name)
+
                 print(URL)
-                
+
+                #TODO create threads to be non blocking
+
                 #ask state of display
                 response = requests.get(URL, data = "3")
                 json = response.json()
@@ -47,9 +49,21 @@ def threaded_function(arg):
                 width = json["width"]
                 height = json["height"]
 
+                # generates random display name or use predefined one
+                if len(json["display_name"]) > 0:
+                    name = json["display_name"]
+                else:
+                    name = generate_slug(3)
+                print(name)
+               
+                
+
                 #create-display
                 res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : data})
                 print(res)
+
+                #remove from list to be bale to reconnecnt again
+                display_ip_mac_list.pop(data)
 
                 
 
