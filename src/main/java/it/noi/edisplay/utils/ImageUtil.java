@@ -21,7 +21,7 @@ import java.util.TimeZone;
 
 public class ImageUtil {
 
-	private static final String DEFAULT_FONT = "monospace";
+	private static final String DEFAULT_FONT = "Terminus";
 
 	public static byte[] convertToMonochrome(BufferedImage image) throws IOException {
 		BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
