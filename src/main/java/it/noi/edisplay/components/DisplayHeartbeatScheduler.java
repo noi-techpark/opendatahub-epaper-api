@@ -30,7 +30,7 @@ public class DisplayHeartbeatScheduler {
 			if (state.getErrorMessage() != null){
 				connection.setConnected(false);
 				connectionRepository.save(connection);
-				logger.debug("Heartbeat: No connection with uuid : " + connection.getUuid() + " possible");
+				logger.debug("Heartbeat: No connection with uuid : " + connection.getUuid() + " possible: " +  state.getErrorMessage() );
 			}
 		}
 	}

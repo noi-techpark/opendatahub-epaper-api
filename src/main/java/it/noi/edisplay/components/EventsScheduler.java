@@ -19,6 +19,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @Component
 public class EventsScheduler {
@@ -54,9 +55,11 @@ public class EventsScheduler {
 
 	private ArrayList<EventDto> events;
 
+	// saves which event is visible on every used display, so it can be checked if event is already on display
+	private HashMap<String, String> displayUuidToEventMapping = new HashMap<String, String>();
+
 
 	@Scheduled(cron = "${cron.opendata.events}")
-//	@Scheduled(fixedDelay = 1000000)
 	public void loadNoiTodayEvents() {
 		if (enabled) {
 			logger.debug("Loading Events from OpenDataHub START");
@@ -70,51 +73,66 @@ public class EventsScheduler {
 
 
 	@Scheduled(cron = "${cron.opendata.displays}")
-//	@Scheduled(fixedDelay = 1000000)
 	public void updateDisplays() throws IOException {
 		if (enabled) {
 			logger.debug("Send events to display START");
 
 			long currentTime = System.currentTimeMillis();
-//			long currentTime = 1585994400000L; //4 april 2020 12:00
-//			long currentTime = 1590044328000L; //21 MAY 2020 08:58
-//			long currentTime = 1590060480000L; //21 MAY 2020 13:28
-//			long currentTime = 1587212760000L; //18 april 2020 14:26
 
 			//removes events that are finished or will finish in the next 5 minutes
 			events.removeIf(eventDto -> eventDto.getEventEndDateUTC() - 300000 < currentTime);
 
-			for (EventDto event : events) {
-				if (event.getEventStartDateUTC() - 300000 < currentTime && event.getEventStartDateUTC() > currentTime) { //events will start next 5 minutes
-					String roomName = event.getSpaceDesc().replace("NOI ", "") + " Display";
+			ArrayList<String> checkedDisplays = new ArrayList<>();
 
-					if (roomName.contains("+")) {
-						String roomNumbers = roomName.replaceAll("\\D+", ""); //removes all non digits
-						// assuming that rooms are Seminar rooms, since no other rooms have this kind of notation
-						for (char roomNumber : roomNumbers.toCharArray()) {
-							logger.debug("EVENT_SCHEDULER: Event with multiple rooms found: Seminar " + roomNumber);
-							String seminarRoomName = "Seminar " + roomNumber + " Display";
-							Display display = displayRepository.findByName(seminarRoomName); //needs to be optimized, if name changes it doesn't work anymore
-							if (display != null) {
+			for (EventDto event : events) {
+				String roomName = event.getSpaceDesc().replace("NOI ", "") + " Display";
+
+
+				if (roomName.contains("+")) {
+					String roomNumbers = roomName.replaceAll("\\D+", ""); //removes all non digits
+					// assuming that rooms are Seminar rooms, since no other rooms have this kind of notation
+					for (char roomNumber : roomNumbers.toCharArray()) {
+						logger.debug("EVENT_SCHEDULER: Event with multiple rooms found: Seminar " + roomNumber);
+						String seminarRoomName = "Seminar " + roomNumber + " Display";
+						Display display = displayRepository.findByName(seminarRoomName); //needs to be optimized, if name changes it doesn't work anymore
+
+
+						if (display != null) {
+							if (!checkedDisplays.contains(display.getUuid())) {
+								//check display/event mapping: if display not in list or event different, update event
+								if (!displayUuidToEventMapping.containsKey(display.getUuid()) || !displayUuidToEventMapping.get(display.getUuid()).equals(event.getEventDescriptionEN())) {
+									//update display
+									logger.debug("EVENT_SCHEDULER: Event updated to " + event.getEventDescriptionEN() + " for display " + seminarRoomName);
+									display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+									Display savedDisplay = displayRepository.save(display);
+									Connection connection = connectionRepository.findByDisplay(savedDisplay);
+									displayUuidToEventMapping.put(display.getUuid(), event.getEventDescriptionEN());
+									logger.debug("EVENT_SCHEDULER: Send image");
+									eDisplayRestService.sendImageToDisplayAsync(connection, false);
+								}
+								checkedDisplays.add(display.getUuid());
+							}
+						}
+					}
+				} else {
+					Display display = displayRepository.findByName(roomName); //needs to be optimized, if name changes it doesn't work anymore
+					if (display != null) {
+						if (!checkedDisplays.contains(display.getUuid())) {
+
+							if (!displayUuidToEventMapping.containsKey(display.getUuid()) || !displayUuidToEventMapping.get(display.getUuid()).equals(event.getEventDescriptionEN())) {
+								logger.debug("EVENT_SCHEDULER: Event updated to " + event.getEventDescriptionEN() + " for display " + roomName);
 								display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 								Display savedDisplay = displayRepository.save(display);
 								Connection connection = connectionRepository.findByDisplay(savedDisplay);
+								displayUuidToEventMapping.put(display.getUuid(), event.getEventDescriptionEN());
 								logger.debug("EVENT_SCHEDULER: Send image");
-								eDisplayRestService.sendImageToDisplay(connection, false);
-								logger.debug("EVENT_SCHEDULER: Send image done");
+								eDisplayRestService.sendImageToDisplayAsync(connection, false);
 							}
-						}
-					} else {
-						Display display = displayRepository.findByName(roomName); //needs to be optimized, if name changes it doesn't work anymore
-						if (display != null) {
-							display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
-							Display savedDisplay = displayRepository.save(display);
-							Connection connection = connectionRepository.findByDisplay(savedDisplay);
-							eDisplayRestService.sendImageToDisplay(connection, false);
-//						eDisplayRestService.sendImageToDisplayAsync(connection, false); TODO check if async or not
+							checkedDisplays.add(display.getUuid());
 						}
 					}
 				}
+
 			}
 
 			logger.debug("Send events to display END");
