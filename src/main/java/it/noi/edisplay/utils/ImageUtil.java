@@ -148,7 +148,7 @@ public class ImageUtil {
 
 		Graphics graphics = bufferedImage.getGraphics();
 		graphics.setColor(Color.BLACK);
-		graphics.setFont(new Font("Monospaced", Font.PLAIN, 30));
+		graphics.setFont(new Font("monospace", Font.PLAIN, 30));
 		graphics.drawString(roomName, 20, 50);
 
 
