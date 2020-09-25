@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -59,9 +60,9 @@ public class ConnectionController {
 	}
 
 	@RequestMapping(value = "/all", method = RequestMethod.GET)
-	public ResponseEntity<ArrayList> getAllConnections() {
-		ArrayList<Connection> list = modelMapper.map(connectionRepository.findAll(), ArrayList.class);
-		ArrayList<ConnectionDto> dtoList = new ArrayList<>();
+	public ResponseEntity<List> getAllConnections() {
+		List<Connection> list = modelMapper.map(connectionRepository.findAll(), ArrayList.class);
+		List<ConnectionDto> dtoList = new ArrayList<>();
 		for (Connection connection : list) {
 			ConnectionDto connectionDto = modelMapper.map(connection, ConnectionDto.class);
 			connectionDto.setLongitude(connection.getCoordinates().getX());
