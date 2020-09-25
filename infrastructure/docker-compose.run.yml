@@ -4,12 +4,9 @@ services:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG}
     command: "mvn spring-boot:run"
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      SERVER_ADDR: ${SERVER_ADDR}
       SERVER_PORT: ${SERVER_PORT}
-      APP_DEBUG: ${APP_DEBUG}
     ports:
       - "${SERVER_PORT}:8081"

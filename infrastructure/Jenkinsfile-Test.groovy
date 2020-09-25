@@ -7,7 +7,6 @@ pipeline {
         DOCKER_TAG = "test-$BUILD_NUMBER"
 
 		SERVER_PORT = "1012"
-		SERVER_ADDR = "https://api.epaper.opendatahub.bz.it"
 
         DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
         DB_USERNAME = "epaper"
@@ -16,7 +15,7 @@ pipeline {
 		APP_DEBUG = true
 
 		PROXY_ENABLED = false
-		PROXY_URL = "TBD" // TODO
+		PROXY_URL = "https://gentle-octopus-30.serverless.social/"
 
 		NOI_EVENTS_ENABLED = true
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
@@ -36,7 +35,6 @@ pipeline {
                     echo 'DOCKER_TAG=${DOCKER_TAG}' >> .env
 
 					echo 'SERVER_PORT=${SERVER_PORT}' >> .env
-					echo 'SERVER_ADDR=${SERVER_ADDR}' >> .env
 
                     echo 'DB_URL=${DB_URL}' >> .env
                     echo 'DB_USERNAME=${DB_USERNAME}' >> .env
