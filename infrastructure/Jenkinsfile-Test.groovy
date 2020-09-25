@@ -22,7 +22,7 @@ pipeline {
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
 		NOI_CRON_DISPLAYS = "0 0/10 6-22 * * ?"
 
-		CRON_HEARTBEAT = "TBD" // TODO
+		CRON_HEARTBEAT = "0 0 0/1 * * ?"
     }
 
     stages {
