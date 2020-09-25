@@ -3,7 +3,6 @@ FROM maven:3-jdk-8-alpine as base
 RUN mkdir -p /code
 WORKDIR /code
 
-
 # DEV stage ###################################################################
 FROM base AS dev
 
@@ -14,7 +13,7 @@ RUN addgroup -g $JENKINS_GROUP_ID jenkins && \
     adduser -D -u $JENKINS_USER_ID -G jenkins jenkins
 
 # Not for BASE, because we do not need maven package caches for production
-COPY docker/entrypoint-java.sh /entrypoint-java.sh
+COPY infrastructure/docker/entrypoint-java.sh /entrypoint-java.sh
 ENTRYPOINT [ "/entrypoint-java.sh" ]
 
 # BUILD stage #################################################################

@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/dockerfile-java
+      dockerfile: infrastructure/docker/Dockerfile
       target: dev
     volumes:
       - ./:/code

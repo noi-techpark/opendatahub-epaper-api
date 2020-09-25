@@ -3,6 +3,7 @@ services:
   app:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG}
     command: "mvn spring-boot:run"
+    restart: unless-stopped
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
@@ -11,4 +12,4 @@ services:
       SERVER_PORT: ${SERVER_PORT}
       APP_DEBUG: ${APP_DEBUG}
     ports:
-      - "1010:8081"
+      - "${SERVER_PORT}:8081"
