@@ -19,5 +19,6 @@ ENTRYPOINT [ "/entrypoint-java.sh" ]
 # BUILD stage #################################################################
 FROM base as build
 
+RUN apk add terminus-font
 COPY src /code/src
 COPY pom.xml /code/pom.xml
