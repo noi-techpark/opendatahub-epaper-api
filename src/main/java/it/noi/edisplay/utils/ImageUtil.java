@@ -21,6 +21,7 @@ import java.util.TimeZone;
 
 public class ImageUtil {
 
+	private static final String DEFAULT_FONT = "monospace";
 
 	public static byte[] convertToMonochrome(BufferedImage image) throws IOException {
 		BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
@@ -86,7 +87,7 @@ public class ImageUtil {
 
 		Graphics graphics = bufferedImage.getGraphics();
 		graphics.setColor(Color.BLACK);
-		graphics.setFont(new Font("Monospaced", Font.PLAIN, 26));
+		graphics.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 26));
 
 		graphics.drawString(eventDto.getSpaceDesc(), 20, 50);
 
@@ -106,7 +107,7 @@ public class ImageUtil {
 			graphics.drawString(firstLine.toString(), 20, 200);
 			graphics.drawString(secondLine.toString(), 20, 250);
 		}
-		graphics.setFont(new Font("Monospaced", Font.PLAIN, 18));
+		graphics.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 18));
 
 
 		//check if  company name fits, else split in two lines
@@ -127,7 +128,7 @@ public class ImageUtil {
 		}
 
 
-		graphics.setFont(new Font("Monospaced", Font.PLAIN, 20));
+		graphics.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 20));
 
 		DateFormat formatter = new SimpleDateFormat("HH:mm");
 		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -148,7 +149,7 @@ public class ImageUtil {
 
 		Graphics graphics = bufferedImage.getGraphics();
 		graphics.setColor(Color.BLACK);
-		graphics.setFont(new Font("monospace", Font.PLAIN, 30));
+		graphics.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 30));
 		graphics.drawString(roomName, 20, 50);
 
 
