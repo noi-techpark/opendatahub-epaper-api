@@ -21,6 +21,8 @@ predefined Images that can be modified and loaded on the Displays.
     - [Application](#application)
   - [Execute with Docker](#execute-with-docker)
   - [Execute with local proxy if you deploy on remote server](#execute-with-local-proxy-if-you-deploy-on-remote-server)
+  - [Show today.noi.bz.it events](#show-todaynoibzit-events)
+  - [Heartbeat](#heartbeat)
 - [Set up to send image to display](#set-up-to-send-image-to-display)
 - [Data Transport Objects (DTO)](#data-transport-objects-dto)
   - [DisplayDto](#displaydto)
@@ -101,7 +103,7 @@ The service will be available at localhost and your specified server port.
 If you deploy the application on a remote server, you need to setup a local proxy.
 So the application can communicate with the proxy instead of  trying to communicate directly with the displays and the proxy will forward the requests.
 You can **install** the proxy that you can find in proxy directory on a local machine onr Raspberry Pi
-**Note:** You might need to config the firewall of the machine the proxy is running to allow incoming traffic for the UDP auto-connection
+**Note:** You need to config the firewall of the machine the proxy is running to allow incoming traffic for the UDP auto-connection
 
 ```
 pip install requirements.txt
@@ -114,21 +116,45 @@ python proxy.py
 
 The you need make you proxy visible to the internet. There are many ways, one is using localtunnel.
 With the following commands you can install and run it on the proxys port.
-(NOTE: at time of writing, localtunnel does not work, so you need to set custom host serverless.social. Check if still needed)
+(NOTE: at time of writing, localtunnel does not work, so you need to set custom host serverless.social)
 ```
 npm install -g localtunnel
 lt -h "http://serverless.social" -p 5000
 ```
 
-Then localtunnel gives you an unique URL that represents you proxy that you can put in application.properties.
+Make copy of .env.example and name it .env if you're using Docker. Otherwise just use application.properties as .env file.
+Then localtunnel gives you an unique URL that represents you proxy that you can change values in .env.
 Set remote to true and paste the URL to remoteIPAddress
 ```
-remote = true
-proxyIpAddress = your-url.serverlees.social
+PROXY_ENABLED=true
+PROXY_URL=YOUR_PROXY_URL
 ```
 Then your API is ready to communicate with the proxy.
 Note: Make sure that ou proxy is in the same network as your displays.
 
+### Show today.noi.bz.it events
+
+You can show events info from today.noi.bz.it on displays. To do so enable in .env file following values
+NOI_EVENTS_ENABLED enables the service
+NOI_CRON_EVENTS is the cron job that fetches the events periodically from the OpenDataHub
+NOI_CRON_DISPLAYS is the cron job that defines how often the displays get checked if a new event should be displayed
+
+```
+NOI_EVENTS_ENABLED=false
+NOI_CRON_EVENTS=0 0 0/12 * * ?
+NOI_CRON_DISPLAYS=0 0/10 6-24 * * ?
+```
+NOTE: The cron jobs annotations don't need to be modified. Just if you prefer other update times
+
+### Heartbeat
+
+The backend makes periodically a state request to the displays to see if they are still connected.
+You can modify the interval in .env file
+(Future plans: make heartbeat also refreshing display image every month/week, to prevent ghosting of image on e-in display)
+
+```
+CRON_HEARTBEAT=0 0 0/1 * * ?
+```
 
 ## Set up to send image to display
 
