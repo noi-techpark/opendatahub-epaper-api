@@ -80,7 +80,7 @@ public class EventsScheduler {
 			long currentTime = System.currentTimeMillis();
 
 			//removes events that are finished or will finish in the next 5 minutes
-			events.removeIf(eventDto -> eventDto.getEventEndDateUTC() - 300000 < currentTime);
+			events.removeIf(eventDto -> eventDto.getRoomEndDateUTC() - 300000 < currentTime);
 
 			ArrayList<String> checkedDisplays = new ArrayList<>();
 

@@ -18,11 +18,11 @@ public class EventDto {
 	@JsonProperty("CompanyName")
 	private String companyName;
 
-	@JsonProperty("EventStartDateUTC")
-	private Long eventStartDateUTC;
+	@JsonProperty("RoomStartDateUTC")
+	private Long roomStartDateUTC;
 
-	@JsonProperty("EventEndDateUTC")
-	private Long eventEndDateUTC;
+	@JsonProperty("RoomEndDateUTC")
+	private Long roomEndDateUTC;
 
 	public String getSpaceDesc() {
 		return spaceDesc;
@@ -48,19 +48,19 @@ public class EventDto {
 		this.companyName = companyName;
 	}
 
-	public Long getEventStartDateUTC() {
-		return eventStartDateUTC;
+	public Long getRoomStartDateUTC() {
+		return roomStartDateUTC;
 	}
 
-	public void setEventStartDateUTC(Long eventStartDateUTC) {
-		this.eventStartDateUTC = eventStartDateUTC;
+	public void setRoomStartDateUTC(Long roomStartDateUTC) {
+		this.roomStartDateUTC = roomStartDateUTC;
 	}
 
-	public Long getEventEndDateUTC() {
-		return eventEndDateUTC;
+	public Long getRoomEndDateUTC() {
+		return roomEndDateUTC;
 	}
 
-	public void setEventEndDateUTC(Long eventEndDateUTC) {
-		this.eventEndDateUTC = eventEndDateUTC;
+	public void setRoomEndDateUTC(Long roomEndDateUTC) {
+		this.roomEndDateUTC = roomEndDateUTC;
 	}
 }

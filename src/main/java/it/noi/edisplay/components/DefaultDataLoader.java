@@ -156,7 +156,7 @@ public class DefaultDataLoader {
 //			long currentTime = 1587212760000L; //18 april 2020 14:26
 
 			//removes events that are finished or will finish in the next 5 minutes
-			events.removeIf(eventDto -> eventDto.getEventEndDateUTC() - 300000 < currentTime);
+			events.removeIf(eventDto -> eventDto.getRoomEndDateUTC() - 300000 < currentTime);
 
 			// saves locations that already where the image has already been created, to prevent overwriting
 			ArrayList<String> checkedLocations = new ArrayList<>();
