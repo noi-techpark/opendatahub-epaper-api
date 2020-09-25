@@ -6,7 +6,10 @@ import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.DataBuffer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,7 +49,30 @@ public class ImageUtil {
 				else
 					result.append(bufferedImage.getRGB(j, i) == -1 ? 1 : 0);
 
+
+
+
 		return result.toString();
+	}
+
+	private String getCodeFromImg(BufferedImage in) {
+		BufferedImage blackWhite = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+		ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+		op.filter(in, blackWhite);
+
+		DataBuffer buf = blackWhite.getRaster().getDataBuffer();
+		int byteWidth = (in.getWidth() + 7) /8;
+		StringBuffer str = new StringBuffer();
+		str.append("{\n");
+		int i=0,max=buf.getSize();
+		while(i < max) {
+			for(int j=0;j<byteWidth;++j) {
+				str.append("0x"+Integer.toString(buf.getElem(i++),16)+(i != max ?",":""));
+			}
+			str.append("\n");
+		}
+		str.append("};\n");
+		return str.toString();
 	}
 
 	public static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
@@ -105,13 +131,13 @@ public class ImageUtil {
 
 		DateFormat formatter = new SimpleDateFormat("HH:mm");
 		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-		graphics.drawString(formatter.format(eventDto.getEventStartDateUTC() + 7200000), 400, 330); //TODO replace 7200000 with correct time conversion
+		graphics.drawString(formatter.format(eventDto.getRoomStartDateUTC()+ 7200000), 400, 330); //TODO replace 7200000 with correct time conversion
 		graphics.drawString("to", 470, 330);
-		graphics.drawString(formatter.format(eventDto.getEventEndDateUTC() + 7200000), 500, 330);
+		graphics.drawString(formatter.format(eventDto.getRoomEndDateUTC() + 7200000), 500, 330);
 
 		DateFormat dayFormatter = new SimpleDateFormat("dd/MM");
 		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-		graphics.drawString(dayFormatter.format(eventDto.getEventStartDateUTC() + 7200000), 320, 330);
+		graphics.drawString(dayFormatter.format(eventDto.getRoomStartDateUTC() + 7200000), 320, 330);
 
 		return convertToMonochrome(bufferedImage);
 	}
