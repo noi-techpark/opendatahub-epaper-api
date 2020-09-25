@@ -15,7 +15,7 @@ pipeline {
 		APP_DEBUG = true
 
 		PROXY_ENABLED = true
-		PROXY_URL = "https://gentle-octopus-30.serverless.social/"
+		PROXY_URL = "https://young-snail-31.serverless.social/"
 
 		NOI_EVENTS_ENABLED = true
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
