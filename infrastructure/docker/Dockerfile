@@ -1,4 +1,4 @@
-FROM maven:3-jdk-8-alpine as base
+FROM maven:3-jdk-8 as base
 
 RUN mkdir -p /code
 WORKDIR /code
