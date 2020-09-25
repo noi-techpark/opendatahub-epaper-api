@@ -9,4 +9,4 @@ services:
     environment:
       SERVER_PORT: ${SERVER_PORT}
     ports:
-      - "${SERVER_PORT}:8081"
+      - "${SERVER_PORT}:${SERVER_PORT}"
