@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -41,6 +42,9 @@ public class DefaultDataLoader {
 	@Autowired
 	private ConnectionRepository connectionRepository;
 
+	@Autowired
+	private ImageUtil imageUtil;
+
 
 	@Autowired
 	private TemplateRepository templateRepository;
@@ -53,7 +57,7 @@ public class DefaultDataLoader {
 
 
 	@PostConstruct
-	public void onStartUp() throws IOException {
+	public void onStartUp() throws IOException, FontFormatException {
 
 		if (templateRepository.findAll().size() == 0) {
 
@@ -68,10 +72,10 @@ public class DefaultDataLoader {
 			freeSoftwareLabTemplate.setName("Free Software Lab");
 			noiTemplate.setName(EVENT_TEMPLATE_NAME);
 
-			officeTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/max-mustermann.png").getInputStream())));
-			meetingRoomTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/meeting-room.png").getInputStream())));
-			freeSoftwareLabTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/free-software-lab.png").getInputStream())));
-			noiTemplate.setImage(ImageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/noi.png").getInputStream())));
+			officeTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/max-mustermann.png").getInputStream())));
+			meetingRoomTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/meeting-room.png").getInputStream())));
+			freeSoftwareLabTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/free-software-lab.png").getInputStream())));
+			noiTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/noi.png").getInputStream())));
 
 
 			templateRepository.save(officeTemplate);
@@ -117,7 +121,7 @@ public class DefaultDataLoader {
 
 					Display display = new Display();
 					display.setName(eventLocation + " Display");
-					display.setImage(ImageUtil.getImageForEmptyEventDisplay(location.getName(), templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+					display.setImage(imageUtil.getImageForEmptyEventDisplay(location.getName(), templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
 
 					if (resolutionRepository.findAll().size() == 0) {
 						Resolution resolution = new Resolution();
@@ -143,7 +147,7 @@ public class DefaultDataLoader {
 		}
 	}
 
-	public void setNextEventOnDisplay() throws IOException {
+	public void setNextEventOnDisplay() throws IOException, FontFormatException {
 		if (enabled) {
 			ArrayList<EventDto> events = openDataRestService.getEvents();
 
@@ -176,7 +180,7 @@ public class DefaultDataLoader {
 						if (!checkedLocations.contains(seminarDisplayName)) {
 							Display display = displayRepository.findByName(seminarDisplayName); //needs to be optimized, if name changes it doesn't work anymore
 							if (display != null) {
-								display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+								display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 								Display savedDisplay = displayRepository.save(display);
 								Connection connection = connectionRepository.findByDisplay(savedDisplay);
 								logger.debug("Default Data Loader: Send image multiple " + seminarRoomName);
@@ -188,7 +192,7 @@ public class DefaultDataLoader {
 				} else if (!checkedLocations.contains(roomName)) {
 					Display display = displayRepository.findByName(roomName); //needs to be optimized, if name changes it doesn't work anymore
 					if (display != null) {
-						display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+						display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 						Display savedDisplay = displayRepository.save(display);
 						Connection connection = connectionRepository.findByDisplay(savedDisplay);
 						logger.debug("Default Data Loader: Send image " + roomName);

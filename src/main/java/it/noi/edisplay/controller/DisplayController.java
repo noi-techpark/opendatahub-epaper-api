@@ -53,6 +53,9 @@ public class DisplayController {
 	private ModelMapper modelMapper;
 
 	@Autowired
+	private ImageUtil imageUtil;
+
+	@Autowired
 	private EDisplayRestService eDisplayRestService;
 
 	private Logger logger = LoggerFactory.getLogger(DisplayController.class);
@@ -207,7 +210,7 @@ public class DisplayController {
 				display.setName(name);
 				display.setBatteryPercentage(new Random().nextInt(99));
 
-				display.setImage(ImageUtil.getImageForEmptyEventDisplay(name, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+				display.setImage(imageUtil.getImageForEmptyEventDisplay(name, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
 
 				Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
 				if (resolutionbyWidthAndHeight == null) {
