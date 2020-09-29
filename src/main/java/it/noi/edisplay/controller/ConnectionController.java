@@ -44,6 +44,13 @@ public class ConnectionController {
 	@Autowired
 	private EDisplayRestService eDisplayRestService;
 
+	@RequestMapping(value = "/testproxyconnection", method = RequestMethod.GET)
+	public ResponseEntity<ConnectionDto> test() {
+		logger.debug("Connection with with Proxy established.");
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
 	public ResponseEntity<ConnectionDto> get(@RequestParam String uuid) {
 		Connection connectionByUuid = connectionRepository.findByUuid(uuid);

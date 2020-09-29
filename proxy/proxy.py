@@ -69,6 +69,7 @@ def threaded_function(arg):
 @app.route('/test', methods=['GET'])
 def test():
 	print ("Proxy Connection Test OK")
+	return True
 
 @app.route('/send', methods=['POST'])
 def send():
