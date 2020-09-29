@@ -108,4 +108,17 @@ public class EDisplayRestService {
 		}
 		return stateDto;
 	}
+
+	public String testProxy() {
+		try {
+			if (!enabled) {
+				return "PROXY not enabled. See API configuration for details...";
+			}
+
+			final String uri = "http://" + proxyIpAddress + "/test";
+			return  restTemplate.getForObject(uri, null);
+		} catch (ResourceAccessException e) {
+			return "Proxy not reachable";
+		}
+	}
 }

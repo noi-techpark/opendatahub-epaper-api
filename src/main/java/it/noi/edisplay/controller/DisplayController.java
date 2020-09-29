@@ -344,4 +344,11 @@ public class DisplayController {
 		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.ACCEPTED);
 	}
 
+	@RequestMapping(value = "/testproxyconnection", method = RequestMethod.GET)
+	public ResponseEntity<String> test() {
+		logger.debug("Connection with with Proxy established.");
+		String response = eDisplayRestService.testProxy();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
