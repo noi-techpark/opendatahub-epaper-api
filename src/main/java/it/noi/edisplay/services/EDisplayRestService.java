@@ -84,7 +84,7 @@ public class EDisplayRestService {
 				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			} else {
 				final String uri = "http://" + proxyIpAddress + "/clear?ip=" + connection.getNetworkAddress();
-				stateDto = restTemplate.postForObject(uri, null, StateDto.class);
+				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			}
 		} catch (ResourceAccessException e) {
 			stateDto = new StateDto("Display not reachable");
@@ -101,7 +101,7 @@ public class EDisplayRestService {
 
 			} else {
 				final String uri = "http://" + proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
-				stateDto = restTemplate.postForObject(uri, null, StateDto.class);//2 means clear display
+				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 			}
 		} catch (ResourceAccessException e) {
 			stateDto = new StateDto("Display not reachable");
