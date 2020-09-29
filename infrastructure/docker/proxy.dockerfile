@@ -8,4 +8,6 @@ COPY proxy/proxy.py .
 
 RUN pip install -r requirements.txt
 
+EXPOSE 5006/udp
+
 CMD [ "python" ]

@@ -9,3 +9,4 @@ services:
     tty: true
     ports:
       - "5000:5000"
+      - "5006:5006/udp"
