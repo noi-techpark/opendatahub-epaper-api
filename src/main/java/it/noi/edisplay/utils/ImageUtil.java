@@ -3,27 +3,28 @@ package it.noi.edisplay.utils;
 import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.Resolution;
 import org.imgscalr.Scalr;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.DataBuffer;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
 
+@Component
 public class ImageUtil {
 
 	private static final String DEFAULT_FONT = "Terminus";
 
-	public static byte[] convertToMonochrome(BufferedImage image) throws IOException {
+	public byte[] convertToMonochrome(BufferedImage image) throws IOException {
 		BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
 		Graphics2D g2d = blackWhite.createGraphics();
 		g2d.drawImage(image, 0, 0, null);
@@ -33,7 +34,7 @@ public class ImageUtil {
 		return baos.toByteArray();
 	}
 
-	public static String getBinaryImage(byte[] image, boolean inverted, Resolution resolution) throws IOException {
+	public  String getBinaryImage(byte[] image, boolean inverted, Resolution resolution) throws IOException {
 		StringBuilder result = new StringBuilder();
 		InputStream in = new ByteArrayInputStream(image);
 		BufferedImage bufferedImage = ImageIO.read(in);
@@ -56,15 +57,34 @@ public class ImageUtil {
 		return result.toString();
 	}
 
-	private String getCodeFromImg(BufferedImage in) {
-		BufferedImage blackWhite = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+	public byte[] getBMPfromImage(byte[] bytes) throws IOException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		InputStream in = new ByteArrayInputStream(bytes);
+		BufferedImage image = ImageIO.read(in);
+
+		// writes to the output image in specified format
+		ImageIO.write(image, "BMP", outputStream);
+		outputStream.flush();
+		return  outputStream.toByteArray();
+	}
+
+
+	public String getCodeFromImage(byte[] bytes) throws IOException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		InputStream in = new ByteArrayInputStream(bytes);
+		BufferedImage image = ImageIO.read(in);
+
+
+		BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
 		ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
-		op.filter(in, blackWhite);
+		op.filter(image, blackWhite);
 
 		DataBuffer buf = blackWhite.getRaster().getDataBuffer();
-		int byteWidth = (in.getWidth() + 7) /8;
+		int byteWidth = (image.getWidth() + 7) /8;
 		StringBuffer str = new StringBuffer();
-		str.append("{\n");
+//		str.append("{\n");
 		int i=0,max=buf.getSize();
 		while(i < max) {
 			for(int j=0;j<byteWidth;++j) {
@@ -72,7 +92,7 @@ public class ImageUtil {
 			}
 			str.append("\n");
 		}
-		str.append("};\n");
+//		str.append("};\n");
 		return str.toString();
 	}
 
@@ -81,9 +101,10 @@ public class ImageUtil {
 	}
 
 
-	public static byte[] getImageForEvent(EventDto eventDto, byte[] image) throws IOException {
+	public  byte[] getImageForEvent(EventDto eventDto, byte[] image) throws IOException, FontFormatException {
 		InputStream in = new ByteArrayInputStream(image);
 		BufferedImage bufferedImage = ImageIO.read(in);
+
 
 		Graphics graphics = bufferedImage.getGraphics();
 		graphics.setColor(Color.BLACK);
@@ -143,7 +164,7 @@ public class ImageUtil {
 		return convertToMonochrome(bufferedImage);
 	}
 
-	public static byte[] getImageForEmptyEventDisplay(String roomName, byte[] image) throws IOException {
+	public byte[] getImageForEmptyEventDisplay(String roomName, byte[] image) throws IOException {
 		InputStream in = new ByteArrayInputStream(image);
 		BufferedImage bufferedImage = ImageIO.read(in);
 

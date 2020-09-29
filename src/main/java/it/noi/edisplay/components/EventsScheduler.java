@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.awt.*;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -53,6 +54,9 @@ public class EventsScheduler {
 	@Autowired
 	private EDisplayRestService eDisplayRestService;
 
+	@Autowired
+	private ImageUtil imageUtil;
+
 	private ArrayList<EventDto> events;
 
 	// saves which event is visible on every used display, so it can be checked if event is already on display
@@ -73,7 +77,7 @@ public class EventsScheduler {
 
 
 	@Scheduled(cron = "${cron.opendata.displays}")
-	public void updateDisplays() throws IOException {
+	public void updateDisplays() throws IOException, FontFormatException {
 		if (enabled) {
 			logger.debug("Send events to display START");
 
@@ -103,7 +107,7 @@ public class EventsScheduler {
 								if (!displayUuidToEventMapping.containsKey(display.getUuid()) || !displayUuidToEventMapping.get(display.getUuid()).equals(event.getEventDescriptionEN())) {
 									//update display
 									logger.debug("EVENT_SCHEDULER: Event updated to " + event.getEventDescriptionEN() + " for display " + seminarRoomName);
-									display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+									display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 									Display savedDisplay = displayRepository.save(display);
 									Connection connection = connectionRepository.findByDisplay(savedDisplay);
 									displayUuidToEventMapping.put(display.getUuid(), event.getEventDescriptionEN());
@@ -121,7 +125,7 @@ public class EventsScheduler {
 
 							if (!displayUuidToEventMapping.containsKey(display.getUuid()) || !displayUuidToEventMapping.get(display.getUuid()).equals(event.getEventDescriptionEN())) {
 								logger.debug("EVENT_SCHEDULER: Event updated to " + event.getEventDescriptionEN() + " for display " + roomName);
-								display.setImage(ImageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+								display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
 								Display savedDisplay = displayRepository.save(display);
 								Connection connection = connectionRepository.findByDisplay(savedDisplay);
 								displayUuidToEventMapping.put(display.getUuid(), event.getEventDescriptionEN());

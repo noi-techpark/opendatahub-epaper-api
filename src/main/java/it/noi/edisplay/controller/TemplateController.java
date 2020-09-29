@@ -34,6 +34,9 @@ public class TemplateController {
 	@Autowired
 	ModelMapper modelMapper;
 
+	@Autowired
+	private ImageUtil imageUtil;
+
 	Logger logger = LoggerFactory.getLogger(TemplateController.class);
 
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
@@ -66,7 +69,7 @@ public class TemplateController {
 		try {
 			InputStream in = new ByteArrayInputStream(image.getBytes());
 			BufferedImage bImageFromConvert = ImageIO.read(in);
-			template.setImage(ImageUtil.convertToMonochrome(bImageFromConvert));
+			template.setImage(imageUtil.convertToMonochrome(bImageFromConvert));
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.debug("Template with creation failed. Image creation error.");

@@ -4,11 +4,13 @@ import it.noi.edisplay.dto.ImageDto;
 import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.utils.ImageUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,6 +29,10 @@ public class EDisplayRestService {
 	@Value("${proxy.url}")
 	private String proxyIpAddress;
 
+
+	@Autowired
+	private ImageUtil imageUtil;
+
 	public EDisplayRestService(RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder.build();
 	}
@@ -36,10 +42,10 @@ public class EDisplayRestService {
 		StateDto stateDto;
 		if (!enabled) {
 			final String uri = "http://" + connection.getNetworkAddress();
-			String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
+			String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
 			stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 		} else {
-			String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
+			String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
 			final String uri = "http://" + proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 			ImageDto imageDto = new ImageDto(image);
 			stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
@@ -53,16 +59,18 @@ public class EDisplayRestService {
 		try {
 			if (!enabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
-				String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
+				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
 				stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 			} else {
-				String image = ImageUtil.getBinaryImage(connection.getDisplay().getImage(), inverted, connection.getDisplay().getResolution());
+				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
 				final String uri = "http://" + proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 				ImageDto imageDto = new ImageDto(image);
 				stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
 			}
 		} catch (ResourceAccessException e) {
 			stateDto = new StateDto("Display not reachable");
+		} catch (HttpServerErrorException e) {
+			stateDto = new StateDto("Sending failed, please try again");
 		}
 		return stateDto;
 	}

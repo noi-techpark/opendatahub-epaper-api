@@ -9,7 +9,8 @@ from coolname import generate_slug
 from requests.exceptions import ConnectionError
 
 
-PROXY_ADDRESS = "localhost:8081"
+PROXY_ADDRESS = "localhost:8080"
+
 DISPLAY_CREATE_URL = "http://" + PROXY_ADDRESS + "/display/auto-create/"
 
 connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -17,6 +18,7 @@ connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 display_ip_mac_list = {}
 
 app = Flask(__name__)
+
 
 def threaded_function(arg):
     with app.test_request_context(): #to be in flask request context
@@ -37,7 +39,7 @@ def threaded_function(arg):
                
                 URL = "http://" + str(addr[0])
 
-                print(URL)
+                print(URL)  
 
                 #TODO create threads to be non blocking
 
@@ -72,10 +74,9 @@ def threaded_function(arg):
 def send():
     req_data = request.get_json()
     print(request.args['ip'])
-
     URL = "http://" + request.args['ip']
     try:
-        response = requests.get(url = URL, data = req_data["image"])
+        response = requests.post(url = URL, data = req_data["image"], timeout=None)
         return response.json()
     except ConnectionError:
         print("ConnectionError")
@@ -86,7 +87,7 @@ def clear():
     print(request.args['ip'])
     URL = "http://" + request.args['ip']
     try:
-        response = requests.get(url = URL, data = "2") # 2 as data means clear 
+        response = requests.get(url = URL, data = "2", timeout=None) # 2 as data means clear 
         return response.json()
     except ConnectionError:
         print("ConnectionError")
@@ -97,7 +98,7 @@ def state():
     print(request.args['ip'])
     URL = "http://" + request.args['ip']
     try:
-        response = requests.get(url = URL, data = "3") # 3 as data means get state
+        response = requests.get(url = URL, data = "3", timeout=None) # 3 as data means get state
         return response.json()
     except ConnectionError:
         print("ConnectionError")
