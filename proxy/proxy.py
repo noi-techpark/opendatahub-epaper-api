@@ -66,7 +66,9 @@ def threaded_function(arg):
                 display_ip_mac_list.pop(data)
 
 
-
+@app.route('/test', methods=['GET'])
+def test():
+	print ("Proxy Connection Test OK")
 
 @app.route('/send', methods=['POST'])
 def send():
