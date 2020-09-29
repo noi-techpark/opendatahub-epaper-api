@@ -9,9 +9,7 @@ from coolname import generate_slug
 from requests.exceptions import ConnectionError
 
 
-PROXY_ADDRESS = "localhost:8080"
-
-DISPLAY_CREATE_URL = "http://" + PROXY_ADDRESS + "/display/auto-create/"
+DISPLAY_CREATE_URL = "https://api.epaper.opendatahub.testingmachine.eu/display/auto-create/"
 
 connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -36,10 +34,10 @@ def threaded_function(arg):
                 name = ""
                 display_ip_mac_list[data] = addr[0]
                 print("messages : ",addr , data)
-               
+
                 URL = "http://" + str(addr[0])
 
-                print(URL)  
+                print(URL)
 
                 #TODO create threads to be non blocking
 
@@ -57,8 +55,8 @@ def threaded_function(arg):
                 else:
                     name = generate_slug(3)
                 print(name)
-               
-                
+
+
 
                 #create-display
                 res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : data})
@@ -67,7 +65,7 @@ def threaded_function(arg):
                 #remove from list to be bale to reconnecnt again
                 display_ip_mac_list.pop(data)
 
-                
+
 
 
 @app.route('/send', methods=['POST'])
@@ -87,7 +85,7 @@ def clear():
     print(request.args['ip'])
     URL = "http://" + request.args['ip']
     try:
-        response = requests.get(url = URL, data = "2", timeout=None) # 2 as data means clear 
+        response = requests.get(url = URL, data = "2", timeout=None) # 2 as data means clear
         return response.json()
     except ConnectionError:
         print("ConnectionError")
@@ -108,6 +106,6 @@ def state():
 if __name__ == '__main__':
     thread = Thread(target = threaded_function, args = (10, ))
     thread.start()
-    app.run()
+    app.run(debug=False, host='0.0.0.0', port=5000)
 
 
