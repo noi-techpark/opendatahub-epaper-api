@@ -1,8 +1,7 @@
-FROM maven:3-jdk-8-alpine as base
+FROM maven:3-jdk-8 as base
 
 RUN mkdir -p /code
 WORKDIR /code
-
 
 # DEV stage ###################################################################
 FROM base AS dev
@@ -10,11 +9,11 @@ FROM base AS dev
 ARG JENKINS_GROUP_ID=1000
 ARG JENKINS_USER_ID=1000
 
-RUN addgroup -g $JENKINS_GROUP_ID jenkins && \
-    adduser -D -u $JENKINS_USER_ID -G jenkins jenkins
+RUN groupadd --gid $JENKINS_GROUP_ID jenkins && \
+    useradd --uid $JENKINS_USER_ID --gid $JENKINS_GROUP_ID --create-home jenkins
 
 # Not for BASE, because we do not need maven package caches for production
-COPY docker/entrypoint-java.sh /entrypoint-java.sh
+COPY infrastructure/docker/entrypoint-java.sh /entrypoint-java.sh
 ENTRYPOINT [ "/entrypoint-java.sh" ]
 
 # BUILD stage #################################################################

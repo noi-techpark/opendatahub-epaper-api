@@ -3,14 +3,16 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/dockerfile-java
+      dockerfile: infrastructure/docker/Dockerfile
       target: dev
     volumes:
       - ./:/code
     working_dir: /code
-    command: "mvn spring-boot:run"
+    command: ["mvn test spring-boot:run"]
     depends_on:
       - postgres
+    env_file:
+      - .env
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}

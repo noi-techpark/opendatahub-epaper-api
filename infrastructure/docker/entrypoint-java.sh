@@ -3,7 +3,7 @@
 mkdir -p ~/.m2
 cat > ~/.m2/settings.xml << EOF
 <settings>
-    <localRepository>$PWD/docker/.m2</localRepository>
+    <localRepository>$PWD/infrastructure/docker/.m2</localRepository>
 </settings>
 EOF
 
