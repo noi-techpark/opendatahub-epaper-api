@@ -13,7 +13,7 @@ DISPLAY_CREATE_URL = "https://api.epaper.opendatahub.testingmachine.eu/display/a
 
 connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-display_ip_mac_list = {}
+display_ip_mac_list = []
 
 app = Flask(__name__)
 
@@ -30,12 +30,13 @@ def threaded_function(arg):
         print("udp ready")
         while 1:
             data, addr = connexion.recvfrom(120)
-            if len(data) == 17 and not data in display_ip_mac_list: #check if full mac address arrived and not already present in list
+            if not data in display_ip_mac_list: #check if full mac address arrived and not already present in list
                 name = ""
-                display_ip_mac_list[data] = addr[0]
+                data = data.decode('utf-8')
+                display_ip_mac_list.append(data)
                 print("messages : ",addr , data)
 
-                URL = "http://" + str(addr[0])
+                URL = "http://" + str(data)
 
                 print(URL)
 
@@ -59,11 +60,11 @@ def threaded_function(arg):
 
 
                 #create-display
-                res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : data})
+                res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["mac"]})
                 print(res)
 
                 #remove from list to be bale to reconnecnt again
-                display_ip_mac_list.pop(data)
+                display_ip_mac_list.remove(data)
 
 
 @app.route('/test', methods=['GET'])
