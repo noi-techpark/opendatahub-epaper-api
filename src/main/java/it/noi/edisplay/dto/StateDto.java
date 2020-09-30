@@ -97,7 +97,7 @@ public class StateDto {
 		this.lastState = lastState;
 	}
 
-	public String getDisplayName() {git sta
+	public String getDisplayName() {
 		return displayName;
 	}
 
