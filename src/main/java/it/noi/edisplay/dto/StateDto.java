@@ -5,6 +5,7 @@ import java.util.Date;
 public class StateDto {
 
 
+	String displayName;
 	boolean sleeping;
 	boolean hasImage;
 	int width;
@@ -94,5 +95,13 @@ public class StateDto {
 
 	public void setLastState(Date lastState) {
 		this.lastState = lastState;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 }

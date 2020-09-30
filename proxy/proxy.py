@@ -9,7 +9,8 @@ from coolname import generate_slug
 from requests.exceptions import ConnectionError
 
 
-DISPLAY_CREATE_URL = "https://api.epaper.opendatahub.testingmachine.eu/display/auto-create/"
+#DISPLAY_CREATE_URL = "https://api.epaper.opendatahub.testingmachine.eu/display/auto-create/"
+DISPLAY_CREATE_URL = "https://silly-bat-79.loca.lt/display/auto-create/"
 
 connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -43,7 +44,8 @@ def threaded_function(arg):
                 #TODO create threads to be non blocking
 
                 #ask state of display
-                response = requests.get(URL, data = "3")
+                print("UDP get state")
+                response = requests.get(URL, data = "3", timeout=None)
                 json = response.json()
                 print(json)
 
@@ -51,8 +53,8 @@ def threaded_function(arg):
                 height = json["height"]
 
                 # generates random display name or use predefined one
-                if len(json["display_name"]) > 0:
-                    name = json["display_name"]
+                if len(json["displayName"]) > 0:
+                    name = json["displayName"]
                 else:
                     name = generate_slug(3)
                 print(name)
@@ -60,7 +62,8 @@ def threaded_function(arg):
 
 
                 #create-display
-                res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["mac"]})
+                print("UDP autiocreate")
+                res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["mac"]}, timeout=None)
                 print(res)
 
                 #remove from list to be bale to reconnecnt again
@@ -77,8 +80,10 @@ def send():
     req_data = request.get_json()
     print(request.args['ip'])
     URL = "http://" + request.args['ip']
+    print("SEND to " + URL)
     try:
         response = requests.post(url = URL, data = req_data["image"], timeout=None)
+        print(response.json())
         return response.json()
     except ConnectionError:
         print("ConnectionError")
