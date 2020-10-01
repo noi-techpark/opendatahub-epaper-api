@@ -133,4 +133,8 @@ public class EDisplayRestService {
 			return "Proxy not reachable";
 		}
 	}
+
+	public void setProxyIpAddress(String proxyIpAddress) {
+		this.proxyIpAddress = proxyIpAddress;
+	}
 }

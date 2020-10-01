@@ -358,4 +358,14 @@ public class DisplayController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@RequestMapping(value = "/proxy-register", method = RequestMethod.GET)
+	public ResponseEntity<String> proxyRegister(@RequestParam("url") String url) {
+		logger.debug("Registering new proxy URL: " + url);
+		eDisplayRestService.setProxyIpAddress(url);
+		String response = eDisplayRestService.testProxy();
+		logger.debug("Registering done");
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+
 }

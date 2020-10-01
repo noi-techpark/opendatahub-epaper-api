@@ -10,7 +10,10 @@ from coolname import generate_slug
 from requests.exceptions import ConnectionError
 
 
-DISPLAY_CREATE_URL = "https://api.epaper.opendatahub.testingmachine.eu/display/auto-create/"
+
+API_URL = "https://api.epaper.opendatahub.testingmachine.eu"
+DISPLAY_CREATE_URL =  API_URL + "/display/auto-create/"
+LOCAL_TUNNEL_REGISTER_URL =  API_URL + "/display/proxy-register/"
 #DISPLAY_CREATE_URL = "https://weak-fireant-56.loca.lt/display/auto-create/"
 
 connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -114,6 +117,16 @@ def state():
 
 
 if __name__ == '__main__':
+
+    #read localtunnel URL from log file and post to API
+    local_tunnel_url = open('local-tunnel.log', 'r').read()
+    print(local_tunnel_url)
+    local_tunnel_url = local_tunnel_url.replace("your url is: ", "").replace("\n","")
+    print(local_tunnel_url)
+    res = requests.post(DISPLAY_CREATE_URL, data = {"url" : local_tunnel_url})
+    print(res)
+
+    #start proxy
     thread = Thread(target = threaded_function, args = (10, ))
     thread.start()
     app.run(debug=False, host='0.0.0.0', port=5000)
