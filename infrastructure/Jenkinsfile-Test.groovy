@@ -15,7 +15,7 @@ pipeline {
 		APP_DEBUG = true
 
 		PROXY_ENABLED = true
-		PROXY_URL = "localhost:19998"
+		PROXY_URL = "http://localhost:19998"
 
 		NOI_EVENTS_ENABLED = true
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
