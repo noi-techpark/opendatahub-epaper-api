@@ -128,9 +128,14 @@ public class EDisplayRestService {
 			}
 
 			final String uri = proxyIpAddress + "/test";
+			System.out.println(uri);
 			return  restTemplate.getForObject(uri, String.class);
 		} catch (ResourceAccessException e) {
 			return "Proxy not reachable";
 		}
+	}
+
+	public void setProxyIpAddress(String proxyIpAddress) {
+		this.proxyIpAddress = proxyIpAddress;
 	}
 }
