@@ -8,10 +8,13 @@ from threading import Thread
 from time import sleep
 from coolname import generate_slug
 from requests.exceptions import ConnectionError
+from decouple import config
 
 
 
-API_URL = "https://api.epaper.opendatahub.testingmachine.eu"
+API_URL = config('API_URL')
+print(API_URL)
+
 DISPLAY_CREATE_URL =  API_URL + "/display/auto-create/"
 LOCAL_TUNNEL_REGISTER_URL =  API_URL + "/display/proxy-register/"
 #DISPLAY_CREATE_URL = "https://weak-fireant-56.loca.lt/display/auto-create/"
@@ -123,7 +126,7 @@ if __name__ == '__main__':
     print(local_tunnel_url)
     local_tunnel_url = local_tunnel_url.replace("your url is: ", "").replace("\n","")
     print(local_tunnel_url)
-    res = requests.post(DISPLAY_CREATE_URL, data = {"url" : local_tunnel_url})
+    res = requests.post(LOCAL_TUNNEL_REGISTER_URL, data = {"url" : local_tunnel_url})
     print(res)
 
     #start proxy
