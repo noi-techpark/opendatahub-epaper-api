@@ -22,6 +22,8 @@ pipeline {
 		NOI_CRON_DISPLAYS = "0 0/10 6-22 * * ?"
 
 		CRON_HEARTBEAT = "0 0 0/1 * * ?"
+
+		API_URL = "https://api.epaper.opendatahub.testingmachine.eu"
     }
 
     stages {
@@ -29,7 +31,6 @@ pipeline {
             steps {
                 sh """
                     rm -f .env
-                    cp .env.example .env
                     echo 'COMPOSE_PROJECT_NAME=${DOCKER_PROJECT_NAME}' >> .env
                     echo 'DOCKER_IMAGE=${DOCKER_IMAGE}' >> .env
                     echo 'DOCKER_TAG=${DOCKER_TAG}' >> .env
@@ -50,6 +51,10 @@ pipeline {
 					echo 'NOI_CRON_DISPLAYS=${NOI_CRON_DISPLAYS}' >> .env
 
 					echo 'CRON_HEARTBEAT=${CRON_HEARTBEAT}' >> .env
+
+					cd proxy
+					rm -f .env
+					echo 'API_URL=${API_URL} >> .env'
                 """
             }
         }
