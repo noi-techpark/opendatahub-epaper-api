@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -21,7 +23,10 @@ import java.util.concurrent.CompletableFuture;
 public class EDisplayRestService {
 
 
-	private final RestTemplate restTemplate;
+	private final int HTTP_CONNECT_TIMEOUT = 1500000;
+	private final int HTTP_READ_TIMEOUT = 1000000;
+
+	private RestTemplate restTemplate;
 
 	@Value("${proxy.enabled}")
 	private Boolean enabled;
@@ -34,8 +39,11 @@ public class EDisplayRestService {
 	private ImageUtil imageUtil;
 
 	public EDisplayRestService(RestTemplateBuilder restTemplateBuilder) {
+		restTemplateBuilder.setConnectTimeout(HTTP_CONNECT_TIMEOUT);
+		restTemplateBuilder.setReadTimeout(HTTP_READ_TIMEOUT);
 		this.restTemplate = restTemplateBuilder.build();
 	}
+
 
 	@Async
 	public CompletableFuture<StateDto> sendImageToDisplayAsync(Connection connection, boolean inverted) throws IOException {
@@ -69,7 +77,9 @@ public class EDisplayRestService {
 			}
 		} catch (ResourceAccessException e) {
 			stateDto = new StateDto("Display not reachable");
+			e.printStackTrace();
 		} catch (HttpServerErrorException e) {
+			e.printStackTrace();
 			stateDto = new StateDto("Sending failed, please try again");
 		}
 		return stateDto;
@@ -88,6 +98,7 @@ public class EDisplayRestService {
 			}
 		} catch (ResourceAccessException e) {
 			stateDto = new StateDto("Display not reachable");
+			e.printStackTrace();
 		}
 		return stateDto;
 	}
@@ -104,6 +115,7 @@ public class EDisplayRestService {
 				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 			}
 		} catch (ResourceAccessException e) {
+			e.printStackTrace();
 			stateDto = new StateDto("Display not reachable");
 		}
 		return stateDto;
@@ -116,7 +128,7 @@ public class EDisplayRestService {
 			}
 
 			final String uri = proxyIpAddress + "/test";
-			return  restTemplate.getForObject(uri, null);
+			return  restTemplate.getForObject(uri, String.class);
 		} catch (ResourceAccessException e) {
 			return "Proxy not reachable";
 		}
