@@ -46,7 +46,7 @@ public class EDisplayRestService {
 			stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 		} else {
 			String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
-			final String uri = "http://" + proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
+			final String uri = proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 			ImageDto imageDto = new ImageDto(image);
 			stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
 		}
@@ -63,7 +63,7 @@ public class EDisplayRestService {
 				stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 			} else {
 				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
-				final String uri = "http://" + proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
+				final String uri = proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 				ImageDto imageDto = new ImageDto(image);
 				stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
 			}
@@ -83,7 +83,7 @@ public class EDisplayRestService {
 				final String uri = "http://" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			} else {
-				final String uri = "http://" + proxyIpAddress + "/clear?ip=" + connection.getNetworkAddress();
+				final String uri = proxyIpAddress + "/clear?ip=" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			}
 		} catch (ResourceAccessException e) {
@@ -100,7 +100,7 @@ public class EDisplayRestService {
 				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 
 			} else {
-				final String uri = "http://" + proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
+				final String uri = proxyIpAddress + "/state?ip=" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 			}
 		} catch (ResourceAccessException e) {
@@ -115,7 +115,7 @@ public class EDisplayRestService {
 				return "PROXY not enabled. See API configuration for details...";
 			}
 
-			final String uri = "http://" + proxyIpAddress + "/test";
+			final String uri = proxyIpAddress + "/test";
 			return  restTemplate.getForObject(uri, null);
 		} catch (ResourceAccessException e) {
 			return "Proxy not reachable";
