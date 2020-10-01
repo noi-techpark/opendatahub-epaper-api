@@ -8,11 +8,12 @@ from threading import Thread
 from time import sleep
 from coolname import generate_slug
 from requests.exceptions import ConnectionError
+from decouple import config
 
 
 
-#API_URL = "https://api.epaper.opendatahub.testingmachine.eu"
-API_URL = "https://purple-chicken-18.loca.lt"
+API_URL = config('API_URL')
+print(API_URL)
 
 DISPLAY_CREATE_URL =  API_URL + "/display/auto-create/"
 LOCAL_TUNNEL_REGISTER_URL =  API_URL + "/display/proxy-register/"
