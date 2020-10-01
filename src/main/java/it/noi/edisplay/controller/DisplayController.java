@@ -199,9 +199,16 @@ public class DisplayController {
 
 				logger.debug("AUTO-CREATE: FINISHED WITH NEW IP " + ip);
 
-				logger.debug("AUTO-CREATE: SENDING IMAGE NOW");
-				eDisplayRestService.sendImageToDisplayAsync(connectionByDisplay, false);
+				StateDto state = eDisplayRestService.sendImageToDisplay(connectionByDisplay, false);
+				if (state.getErrorMessage() != null) {
+					connectionByDisplay.setConnected(false);
+					logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+				} else {
+					connectionByDisplay.setConnected(true);
+					logger.debug("AUTO-CREATE: Image sent");
+				}
 
+				connectionRepository.save(connectionByDisplay);
 				logger.debug("AUTO-CREATE: COMPLETED");
 			} else {
 
@@ -233,14 +240,14 @@ public class DisplayController {
 				connection.setMac(mac);
 				connection.setCoordinates(new Point(0, 0));
 
-				eDisplayRestService.sendImageToDisplayAsync(connection, false);
-//				if (state.getErrorMessage() != null) {
-//					connection.setConnected(false);
-//					logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
-//				} else {
-//					connection.setConnected(true);
-//					logger.debug("AUTO-CREATE: Image sent to:" + savedDisplay.getUuid());
-//				}
+				StateDto state = eDisplayRestService.sendImageToDisplay(connection, false);
+				if (state.getErrorMessage() != null) {
+					connection.setConnected(false);
+					logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+				} else {
+					connection.setConnected(true);
+					logger.debug("AUTO-CREATE: Image sent to:" + savedDisplay.getUuid());
+				}
 
 				Connection savedConnection = connectionRepository.save(connection);
 				logger.debug("AUTO-CREATE: Connection with uuid:" + savedConnection.getUuid() + " created.");
@@ -248,15 +255,15 @@ public class DisplayController {
 		} else {
 			logger.debug("AUTO-CREATE: RECONNECT BY MAC ADDRESS STARTED");
 			connectionByMac.setNetworkAddress(ip);
-			eDisplayRestService.sendImageToDisplayAsync(connectionByMac, false);
-//			if (state.getErrorMessage() != null) {
-//				connectionByMac.setConnected(false);
-//				logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
-//			} else {
-//				connectionByMac.setConnected(true);
-//				connectionByMac.setNetworkAddress(ip);
-//				logger.debug("AUTO-CREATE: Connection with uuid:" + connectionByMac.getUuid() + " has new IP " + ip);
-//			}
+			StateDto state = eDisplayRestService.sendImageToDisplay(connectionByMac, false);
+			if (state.getErrorMessage() != null) {
+				connectionByMac.setConnected(false);
+				logger.debug("Trying to connect to physical display failed with error: " + state.getErrorMessage());
+			} else {
+				connectionByMac.setConnected(true);
+				connectionByMac.setNetworkAddress(ip);
+				logger.debug("AUTO-CREATE: Connection with uuid:" + connectionByMac.getUuid() + " has new IP " + ip);
+			}
 			connectionRepository.save(connectionByMac);
 		}
 
