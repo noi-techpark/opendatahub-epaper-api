@@ -6,7 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.geo.Point;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
 
@@ -29,13 +29,13 @@ public class Connection {
 
 	private Boolean connected;
 
-	@NotNull
+//	@NotNull
     private String uuid;
 
-    @NotNull
+//    @NotNull
     private String networkAddress;
 
-    @NotNull
+//    @NotNull
     private Point coordinates;
 
     @CreationTimestamp
@@ -46,7 +46,7 @@ public class Connection {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
-    @NotNull
+//    @NotNull
     @OneToOne
     private Display display;
 

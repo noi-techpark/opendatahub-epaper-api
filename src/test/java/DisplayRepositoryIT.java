@@ -82,7 +82,7 @@ public class DisplayRepositoryIT {
         assertDisplay(updateLastState, foundDisplay, updatedDisplay);
 
         //delete
-        displayRepository.delete(display.getId());
+        displayRepository.delete(display);
         Display deletedDisplay;
 
         deletedDisplay = displayRepository.findByUuid(display.getUuid());

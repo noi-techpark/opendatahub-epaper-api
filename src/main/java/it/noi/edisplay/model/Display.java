@@ -5,7 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
 
@@ -24,10 +24,10 @@ public class Display {
 	private Integer id;
 
 
-	@NotNull
+//	@NotNull
 	private String name;
 
-	@NotNull
+//	@NotNull
 	private String uuid;
 
 	@CreationTimestamp
@@ -46,7 +46,7 @@ public class Display {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date lastState;
 
-	@NotNull
+//	@NotNull
 	@ManyToOne
 	private Resolution resolution;
 

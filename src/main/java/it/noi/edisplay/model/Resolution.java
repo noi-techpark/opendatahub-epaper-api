@@ -1,7 +1,7 @@
 package it.noi.edisplay.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 
@@ -21,13 +21,10 @@ public class Resolution {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@NotNull
 	private String uuid;
 
-	@NotNull
 	private int width;
 
-	@NotNull
 	private int height;
 
 	public  Resolution(){

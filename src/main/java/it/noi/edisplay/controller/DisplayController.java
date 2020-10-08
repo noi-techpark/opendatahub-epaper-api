@@ -58,6 +58,7 @@ public class DisplayController {
 	@Autowired
 	private EDisplayRestService eDisplayRestService;
 
+
 	private Logger logger = LoggerFactory.getLogger(DisplayController.class);
 
 	@RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)

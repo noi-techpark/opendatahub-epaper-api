@@ -10,6 +10,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -29,18 +30,25 @@ public class EDisplayRestService {
 	private RestTemplate restTemplate;
 
 	@Value("${proxy.enabled}")
-	private Boolean enabled;
+	private Boolean proxyEnabled;
 
 	@Value("${proxy.url}")
 	private String proxyIpAddress;
+
+	@Value("${websocket.enabled}")
+	private Boolean webSocketEnabled;
+
+	@Autowired
+	private SimpMessagingTemplate webSocket;
+
 
 
 	@Autowired
 	private ImageUtil imageUtil;
 
 	public EDisplayRestService(RestTemplateBuilder restTemplateBuilder) {
-		restTemplateBuilder.setConnectTimeout(HTTP_CONNECT_TIMEOUT);
-		restTemplateBuilder.setReadTimeout(HTTP_READ_TIMEOUT);
+//		restTemplateBuilder.setConnectTimeout(HTTP_CONNECT_TIMEOUT);
+//		restTemplateBuilder.setReadTimeout(HTTP_READ_TIMEOUT);
 		this.restTemplate = restTemplateBuilder.build();
 	}
 
@@ -48,7 +56,7 @@ public class EDisplayRestService {
 	@Async
 	public CompletableFuture<StateDto> sendImageToDisplayAsync(Connection connection, boolean inverted) throws IOException {
 		StateDto stateDto;
-		if (!enabled) {
+		if (!proxyEnabled) {
 			final String uri = "http://" + connection.getNetworkAddress();
 			String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
 			stateDto = restTemplate.postForObject(uri, image, StateDto.class);
@@ -65,11 +73,19 @@ public class EDisplayRestService {
 		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
 		try {
-			if (!enabled) {
+			if (webSocketEnabled){
+				final String uri = "http://" + connection.getNetworkAddress();
+				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
+//				webSocket.convertAndSend("/topic/send-image",image +":" +uri);
+				webSocket.convertAndSend("/topic/send-image","hello client");
+				stateDto = new StateDto(); //TODO return state from websocket, but how?
+			}
+			else if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
 				stateDto = restTemplate.postForObject(uri, image, StateDto.class);
-			} else {
+			}
+			else {
 				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
 				final String uri = proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 				ImageDto imageDto = new ImageDto(image);
@@ -89,7 +105,7 @@ public class EDisplayRestService {
 		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
 		try {
-			if (!enabled) {
+			if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			} else {
@@ -106,7 +122,7 @@ public class EDisplayRestService {
 	public StateDto getCurrentState(Connection connection) {
 		StateDto stateDto;
 		try {
-			if (!enabled) {
+			if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 
@@ -123,7 +139,7 @@ public class EDisplayRestService {
 
 	public String testProxy() {
 		try {
-			if (!enabled) {
+			if (!proxyEnabled) {
 				return "PROXY not enabled. See API configuration for details...";
 			}
 
