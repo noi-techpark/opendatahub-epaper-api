@@ -10,3 +10,4 @@ services:
       SERVER_PORT: ${SERVER_PORT}
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
+      - "80:1100"
