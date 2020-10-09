@@ -1,9 +1,14 @@
-package it.noi.edisplay.messages;
+package it.noi.edisplay.dto;
 
 public class WebSocketMessage {
 
     private String from;
     private String text;
+
+    public WebSocketMessage(String from,String text){
+    	this.text = text;
+    	this.from = from;
+	}
 
 	public String getFrom() {
 		return from;

@@ -2,14 +2,14 @@ package it.noi.edisplay.services;
 
 import it.noi.edisplay.dto.ImageDto;
 import it.noi.edisplay.dto.StateDto;
+import it.noi.edisplay.dto.WSImageDto;
+import it.noi.edisplay.dto.WSRequestDto;
 import it.noi.edisplay.model.Connection;
 import it.noi.edisplay.utils.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -74,10 +74,9 @@ public class EDisplayRestService {
 		StateDto stateDto;
 		try {
 			if (webSocketEnabled){
-				final String uri = "http://" + connection.getNetworkAddress();
-				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
+				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),inverted,connection.getDisplay().getResolution());
 //				webSocket.convertAndSend("/topic/send-image",image +":" +uri);
-				webSocket.convertAndSend("/topic/send-image","hello client");
+				webSocket.convertAndSend("/topic/send-image",new WSImageDto(connection.getNetworkAddress(),image));
 				stateDto = new StateDto(); //TODO return state from websocket, but how?
 			}
 			else if (!proxyEnabled) {
@@ -105,7 +104,11 @@ public class EDisplayRestService {
 		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
 		try {
-			if (!proxyEnabled) {
+			if (webSocketEnabled) {
+				webSocket.convertAndSend("/topic/clear",new WSRequestDto(connection.getNetworkAddress()));
+				stateDto = new StateDto(); //TODO return state from websocket, but how?
+			}
+			else if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "2", StateDto.class);
 			} else {
@@ -122,7 +125,11 @@ public class EDisplayRestService {
 	public StateDto getCurrentState(Connection connection) {
 		StateDto stateDto;
 		try {
-			if (!proxyEnabled) {
+			if (webSocketEnabled){
+				webSocket.convertAndSend("/topic/state",new WSRequestDto(connection.getNetworkAddress()));
+				stateDto = new StateDto(); //TODO return state from websocket, but how?
+			}
+			else if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 				stateDto = restTemplate.postForObject(uri, "3", StateDto.class);//2 means clear display
 
