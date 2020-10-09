@@ -14,8 +14,10 @@ pipeline {
 
 		APP_DEBUG = true
 
-		PROXY_ENABLED = true
+		PROXY_ENABLED = false
 		PROXY_URL = "http://localhost:19998"
+
+		WEBSOCKET_ENABLED = true
 
 		NOI_EVENTS_ENABLED = true
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
@@ -45,6 +47,8 @@ pipeline {
 
 					echo 'PROXY_ENABLED=${PROXY_ENABLED}' >> .env
 					echo 'PROXY_URL=${PROXY_URL}' >> .env
+
+					echo 'WEBSOCKET_ENABLED=${WEBSOCKET_ENABLED}' >> .env
 
 					echo 'NOI_EVENTS_ENABLED=${NOI_EVENTS_ENABLED}' >> .env
 					echo 'NOI_CRON_EVENTS=${NOI_CRON_EVENTS}' >> .env
