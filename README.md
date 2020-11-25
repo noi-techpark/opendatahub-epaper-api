@@ -24,12 +24,6 @@ predefined Images that can be modified and loaded on the Displays.
   - [Show today.noi.bz.it events](#show-todaynoibzit-events)
   - [Heartbeat](#heartbeat)
 - [Set up to send image to display](#set-up-to-send-image-to-display)
-- [Data Transport Objects (DTO)](#data-transport-objects-dto)
-  - [DisplayDto](#displaydto)
-  - [LocationDto](#locationdto)
-  - [ConnectionDto](#connectiondto)
-  - [TemplateDto](#templatedto)
-  - [StateDto](#statedto)
 - [Swagger](#swagger)
 - [Unit Tests](#unit-tests)
 - [Integration test](#integration-test)
@@ -107,6 +101,9 @@ So the application can communicate with the proxy instead of  trying to communic
 You can **install** the proxy that you can find in proxy directory on a local machine onr Raspberry Pi
 **Note:** You need to config the firewall of the machine the proxy is running to allow incoming traffic for the UDP auto-connection
 
+
+
+
 ```
 pip install requirements.txt
 ```
@@ -163,18 +160,6 @@ CRON_HEARTBEAT=0 0 0/1 * * ?
 - Start the API
 - Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/e-ink-displays-backend)
 - Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to use the webapp to send the image
-
-## Data Transport Objects (DTO)
-### DisplayDto
-Contains all information about a E-Ink Display like name, uuid, timestamps etc. We the structure inside [DisplayDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/DisplayDto.java)
-### LocationDto
-Contains all information about a Display like name, uuid, timestamps etc. We the structure inside [LocationDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/LocationDto.java)
-### ConnectionDto
-Contains all information about a Connection between a Display and a Location like corresponding Display/Location, network address, protocol type etc. We the structure inside [ConnectionDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/ConnectionDto.java)
-### TemplateDto
-Contains all information about a Template, that can be used to create an Content for the Displays like name, monochromatic image bytes, uuid etc. We the structure inside [TemplateDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/TemplateDto.java)
-### StateDto
-Contains all information about a state of a display. We the structure inside [StateDto](https://github.com/noi-techpark/e-ink-displays-api/blob/development/src/main/java/it/noi/edisplay/dto/StateDto.java)
 
 ## Swagger
 
