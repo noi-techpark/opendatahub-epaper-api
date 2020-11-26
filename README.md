@@ -1,8 +1,19 @@
 # it.bz.opendatahub.epaper.api
 
-API for the E-Ink-Displays that offers API to make CRUD operations for you
-displays. Created with [Spring Boot
-Framework](https://spring.io/projects/spring-boot),
+REST API for the E-Ink-Displays System Webapp.
+Communicates with Ardunios over WIFI HTTP to send images and make state requests.
+
+2 python proxies to be able to communicate if API is on remote server, because in that case the server is outside the local WIFI network
+and can't communicate directly with Arduinos.
+
+So instead of using something like dyndns on every Ardunio, we choose to sue one proxy to have only one open connection.
+There are 2 types of proxies, one that needs a tunnel (like ngrok or localtunnel, or also dyndns) and yhe communicates over HTTP with the API.
+The other one uses Web Sockets to create one bidirectional connection to the remote API, so only the URL of the remote API and no tunnel is necessary.
+
+The Ardunios can also auto connect to the API over UDP with the proxy, so the displays can be just plugged in and connect automatically.
+But that is only possible with the python proxies, so auto connect doesn't work without proxy.
+
+Created with [Spring BootFramework](https://spring.io/projects/spring-boot),
 [Hibernate](https://hibernate.org/) and
 [PostgreSQL](https://www.postgresql.org/) with [Flyway](https://flywaydb.org/)
 DB Version control system. The API can do CRUD operations on Displays,
@@ -58,7 +69,7 @@ Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway
 ### Execute without Docker
 
 #### Database
-Install PostgreSQL on your machine
+Install PostgreSQL on your machine (tested and developed on PSQL 12.5)
 Create Database named **edisplays** with user **edisplay-user**
 ```sql
 CREATE DATABASE edisplays;
@@ -103,10 +114,10 @@ The proxies are written in python, so check that you installed at least python v
 If you deploy the application on a remote server, you need to setup a local proxy.
 So the application can communicate with the proxy instead of  trying to communicate directly with the displays and the proxy will forward the requests.
 You can **install** the proxy that you can find in proxy directory on a local machine or a Raspberry Pi
-**Note:** You need to config the firewall of the machine the proxy is running to allow incoming traffic for the UDP auto-connection
+**Note:** You need to config the firewall of the machine the proxy is running to allow incoming traffic for the **UDP** auto-connection
 
 
-There are 2 types of proxies, the normal proxy that uses HTTP to talk to the API and another one that uses Web Sockets.
+There are **2 types of proxies**, the normal proxy that uses **HTTP** to talk to the API and another one that uses **Web Sockets**.
 If you want to use HTTP, you need to make the proxy visible to the API, by using SSH tunnels or tunnels with localtunnel, ngrok or even dynamic dns.
 But by using the Web Socket proxy, only the API needs a link, because once the proxy connected to the API the connection stays awake.
 Web Socket are also bidirectional, so ones the connection is opened, the proxy can communicate with the API and backwards with the same connection.
@@ -202,9 +213,9 @@ NOTE: The cron jobs annotations don't need to be modified. Just if you prefer ot
 
 ### Heartbeat
 
-The backend makes periodically a state request to the displays to see if they are still connected.
+The API makes periodically a state request to the displays to see if they are still connected.
 You can modify the interval in .env file
-(Future plans: make heartbeat also refreshing display image every month/week, to prevent ghosting of image on e-in display)
+(Future plans: make heartbeat also refreshing display image every month/week, to prevent ghosting of image on e-ink display)
 
 ```
 CRON_HEARTBEAT=0 0 0/1 * * ?
