@@ -6,7 +6,6 @@ import json
 import requests
 from flask import jsonify
 from decouple import config
-from socket import *
 import socket
 from coolname import generate_slug
 
@@ -15,7 +14,8 @@ WS_URL = config('WS_URL')
 API_URL = config('API_URL')
 # API_URL = "http://localhost:8081"
 
-print(API_URL)
+print(f"API_URL = {API_URL}")
+print(f"WS_URL = {WS_URL}")
 
 DISPLAY_CREATE_URL =  API_URL + "/display/auto-create/"
 
@@ -25,8 +25,8 @@ display_ip_mac_list = []
 
 def is_json(myjson):
   try:
-    json_object = json.loads(myjson)
-  except ValueError as e:
+    json.loads(myjson)
+  except ValueError: # as e:
     # print(e)
     return False
   return True
@@ -42,15 +42,23 @@ def on_message(ws, message):
         if "destination" in line:
             dest = line.split(":")[1]
 
-        line = line[:-1] # remove last char of string to be valid JSON
-        if is_json(line):
-            msg = json.loads(line)
+        maybe_json = line[:-1] # remove last char of string to be valid JSON
+        if is_json(maybe_json):
+            msg = json.loads(maybe_json)
         else:
-            print(line)
+            print(f"non json line received: {line}")
 
     # if msg[""]
     # send image
+
     print("dest: " + dest)
+
+    if dest == "no dest":
+        return
+
+    if msg.length == 0:
+        return
+
     print(msg['ip'])
     URL = "http://" + msg["ip"]
 
@@ -120,7 +128,7 @@ def threaded_function(arg):
     except socket.error:
         print("connexion failed")
         connexion.close()
-        sys.exit()
+        exit()
     print("udp ready")
     while 1:
         data, addr = connexion.recvfrom(120)

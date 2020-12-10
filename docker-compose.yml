@@ -8,7 +8,7 @@ services:
     volumes:
       - ./:/code
     working_dir: /code
-    command: ["mvn test spring-boot:run"]
+    command: ["mvn", "-B", "spring-boot:run", "-Dspring-boot.run.profiles=local"]
     depends_on:
       - postgres
     env_file:
