@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_PROJECT_NAME = "e-ink-display-api"
+        COMPOSE_PROJECT_NAME = "e-ink-display-api"
         DOCKER_IMAGE = '755952719952.dkr.ecr.eu-west-1.amazonaws.com/e-ink-displays-api'
         DOCKER_TAG = "test-$BUILD_NUMBER"
 
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 sh """
                     rm -f .env
-                    echo 'COMPOSE_PROJECT_NAME=${DOCKER_PROJECT_NAME}' >> .env
+                    echo 'COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}' >> .env
                     echo 'DOCKER_IMAGE=${DOCKER_IMAGE}' >> .env
                     echo 'DOCKER_TAG=${DOCKER_TAG}' >> .env
 
