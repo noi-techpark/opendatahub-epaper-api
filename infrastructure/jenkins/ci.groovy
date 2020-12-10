@@ -26,7 +26,8 @@ pipeline {
 					cd proxy
 					echo "API_URL=$API_URL" > .env
 					touch local-tunnel.log
-					timeout 5 python3 proxy.py
+					echo "Run proxy.py. If the timeout must kill it, everything should be fine"
+					timeout 5 python3 proxy.py || test "124" = "$?" -o "128+9" = "$?"
 				'''
             }
         }
@@ -40,7 +41,8 @@ pipeline {
                 sh '''
 					cd websocket-proxy
 					echo "API_URL=$API_URL" > .env
-					timeout 5 python3 websocket-proxy.py
+					echo "Run websocket-proxy.py. If the timeout must kill it, everything should be fine"
+					timeout 5 python3 websocket-proxy.py || test "124" = "$?" -o "128+9" = "$?"
 				'''
             }
         }
