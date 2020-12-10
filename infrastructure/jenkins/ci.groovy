@@ -15,7 +15,7 @@ pipeline {
                 sh 'mvn -B -U clean test'
             }
         }
-        stage('Test Python Proxy') {
+        stage('Test Python Tunnel Proxy') {
 			agent {
 				dockerfile {
 					filename 'infrastructure/docker/proxy.dockerfile'
@@ -23,9 +23,24 @@ pipeline {
 			}
             steps {
                 sh '''
+					cd proxy
 					echo "API_URL=$API_URL" > .env
 					touch local-tunnel.log
-					python3 proxy.py
+					timeout 5 python3 proxy.py
+				'''
+            }
+        }
+        stage('Test Python Web Socket Proxy') {
+			agent {
+				dockerfile {
+					filename 'infrastructure/docker/proxy.dockerfile'
+				}
+			}
+            steps {
+                sh '''
+					cd websocket-proxy
+					echo "API_URL=$API_URL" > .env
+					timeout 5 python3 websocket-proxy.py
 				'''
             }
         }
