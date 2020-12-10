@@ -2,6 +2,7 @@ pipeline {
     agent none
 	environment {
 		API_URL = "https://api.epaper.opendatahub.testingmachine.eu"
+		WS_URL = "ws://localhost/ws"
     }
     stages {
         stage('Test Java API') {
@@ -41,6 +42,7 @@ pipeline {
                 sh '''
 					cd websocket-proxy
 					echo "API_URL=$API_URL" > .env
+					echo "WS_URL=$WS_URL" >> .env
 					echo "Run websocket-proxy.py. If the timeout must kill it, everything should be fine"
 					timeout -s SIGKILL 5 python3 websocket-proxy.py || test "137" = "$?"
 				'''
