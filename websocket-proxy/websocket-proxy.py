@@ -92,13 +92,15 @@ def on_close(wss):
 
 
 def on_open(ws):
+
     def run(*args):
+        print("### open wss ###")
         ws.send("CONNECT\naccept-version:1.0,1.1,2.0\n\n\x00\n")
 
         time.sleep(1)
         # ws.close()
         # print("Thread terminating...")
-        
+
         sub = stomper.subscribe("/topic/send-image", "proxy", ack='auto')
         ws.send(sub)
         sub = stomper.subscribe("/topic/clear", "proxy", ack='auto')
@@ -114,7 +116,7 @@ def threaded_function(arg):
     # with app.test_request_context(): #to be in flask request context
     # import requests
     try:
-        connexion.bind('', 5006)
+        connexion.bind(('', 5006))
     except socket.error:
         print("connexion failed")
         connexion.close()
@@ -165,18 +167,23 @@ if __name__ == "__main__":
     thread = Thread(target = threaded_function, args = (10, ))
     thread.start()
 
-    # websocket.enableTrace(True)
+    websocket.enableTrace(True)
 
 
-   
 
-    ws = websocket.WebSocketApp("ws://localhost:8081/ws",
+    # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ws = websocket.WebSocketApp(WS_URL,
                                 on_message = on_message,
                                 on_error = on_error,
                                 on_close = on_close)
 
+    ws.on_open = on_open
+
+
+
+    ws.run_forever()
     # to reconnect, but causes stack overflow
-    
+
     # ws.on_open = on_open
     # while True:
     #      # websocket.enableTrace(True)
