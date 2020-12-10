@@ -1,5 +1,8 @@
 pipeline {
     agent none
+	environment {
+		API_URL = "https://api.epaper.opendatahub.testingmachine.eu"
+    }
     stages {
         stage('Test Java API') {
 			agent {
@@ -19,7 +22,11 @@ pipeline {
 				}
 			}
             steps {
-                sh 'python3 /code/proxy.py'
+                sh '''
+					echo "API_URL=$API_URL" > .env
+					touch local-tunnel.log
+					python3 proxy.py
+				'''
             }
         }
     }
