@@ -17,12 +17,10 @@ services:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      SERVER_ADDR: ${SERVER_ADDR}
-      SERVER_PORT: ${SERVER_PORT}
       APP_DEBUG: ${APP_DEBUG}
     tty: true
     ports:
-      - "8999:8081"
+      - "${SERVER_PORT}:${SERVER_PORT}"
   postgres:
     image: "postgres:11-alpine"
     environment:
