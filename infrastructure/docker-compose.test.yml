@@ -2,7 +2,7 @@ version: "3.4"
 services:
   api:
     build:
-      context: .
+      context: ../
       dockerfile: infrastructure/docker/java.dockerfile
       target: dev
     volumes:
