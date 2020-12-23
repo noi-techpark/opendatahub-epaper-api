@@ -42,11 +42,14 @@ pipeline {
             }
         }
         stage('Test') {
+			agent {
+				dockerfile {
+					filename 'infrastructure/docker/java.dockerfile'
+					additionalBuildArgs '--build-arg JENKINS_USER_ID=$(id -u jenkins) --build-arg JENKINS_GROUP_ID=$(id -g jenkins)'
+				}
+			}
             steps {
-                sh '''
-                    docker-compose --no-ansi -f infrastructure/docker-compose.test.yml build --pull --build-arg JENKINS_USER_ID=$(id -u jenkins) --build-arg JENKINS_GROUP_ID=$(id -g jenkins)
-                    docker-compose --no-ansi -f infrastructure/docker-compose.test.yml run --rm --no-deps -u $(id -u jenkins):$(id -g jenkins) api "mvn -U -B clean test"
-                '''
+                sh 'mvn -B -U clean test'
             }
         }
         stage('Build') {
