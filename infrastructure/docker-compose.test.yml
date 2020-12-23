@@ -10,7 +10,7 @@ services:
     working_dir: /code
     command: "mvn -B spring-boot:run"
     env_file:
-      - .env
+      - ../.env
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
