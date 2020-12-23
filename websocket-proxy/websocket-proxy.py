@@ -124,7 +124,7 @@ def threaded_function(arg):
     try:
         connexion.bind(('', 5006))
     except socket.error:
-        print("connexion failed")
+        print("connection failed")
         connexion.close()
         exit()
     print("udp ready")
@@ -158,10 +158,8 @@ def threaded_function(arg):
                 name = generate_slug(3)
             print(name)
 
-
-
             #create-display
-            print("UDP autiocreate")
+            print("UDP auto-create")
             res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["mac"]}, timeout=None)
             print(res)
 
