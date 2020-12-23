@@ -10,9 +10,7 @@ import socket
 from coolname import generate_slug
 
 WS_URL = config('WS_URL')
-
 API_URL = config('API_URL')
-# API_URL = "http://localhost:8081"
 
 print(f"API_URL = {API_URL}")
 print(f"WS_URL = {WS_URL}")
@@ -56,7 +54,7 @@ def on_message(ws, message):
     if dest == "no dest":
         return
 
-    if msg.length == 0:
+    if len(msg) == 0:
         return
 
     print(msg['ip'])
