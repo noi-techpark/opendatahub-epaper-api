@@ -8,7 +8,7 @@ services:
     volumes:
       - ./:/code
     working_dir: /code
-    command: ["mvn", "-B", "spring-boot:run", "-Dspring-boot.run.profiles=local"]
+    command: "mvn -B spring-boot:run" # -Dspring-boot.run.profiles=local"
     depends_on:
       - postgres
     env_file:
@@ -26,8 +26,11 @@ services:
   postgres:
     image: "postgres:11-alpine"
     environment:
-      POSTGRES_DB: epaper
-      POSTGRES_USER: epaper
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    hostname: postgres
+    volumes:
+      - /tmp/epaper_pgdata:/var/lib/postgresql/data
     ports:
-      - "5555:5432"
+      - "${POSTGRES_PORT}:5432"
