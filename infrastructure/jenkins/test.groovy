@@ -17,8 +17,6 @@ pipeline {
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
 		NOI_CRON_DISPLAYS = "0 0/10 6-22 * * ?"
 		CRON_HEARTBEAT = "0 0 0/1 * * ?"
-		POSTGRES_PORT = 5555 // Just for testing (ignore). FIXME: Create a docker-compose.test.yml
-		POSTGRES_DB = "epaper" // Just for testing (ignore). FIXME: Create a docker-compose.test.yml
     }
     stages {
         stage('Configure') {
@@ -40,16 +38,14 @@ pipeline {
 					echo 'NOI_CRON_EVENTS=${NOI_CRON_EVENTS}' >> .env
 					echo 'NOI_CRON_DISPLAYS=${NOI_CRON_DISPLAYS}' >> .env
 					echo 'CRON_HEARTBEAT=${CRON_HEARTBEAT}' >> .env
-					echo 'POSTGRES_PORT=${POSTGRES_PORT}' >> .env
-					echo 'POSTGRES_DB=${POSTGRES_DB}' >> .env
                 """
             }
         }
         stage('Test') {
             steps {
                 sh '''
-                    docker-compose --no-ansi build --pull --build-arg JENKINS_USER_ID=$(id -u jenkins) --build-arg JENKINS_GROUP_ID=$(id -g jenkins)
-                    docker-compose --no-ansi run --rm --no-deps -u $(id -u jenkins):$(id -g jenkins) app "mvn -U -B clean test"
+                    docker-compose --no-ansi -f infrastructure/docker-compose.test.yml build --pull --build-arg JENKINS_USER_ID=$(id -u jenkins) --build-arg JENKINS_GROUP_ID=$(id -g jenkins)
+                    docker-compose --no-ansi -f infrastructure/docker-compose.test.yml run --rm --no-deps -u $(id -u jenkins):$(id -g jenkins) api "mvn -U -B clean test"
                 '''
             }
         }

@@ -1,0 +1,19 @@
+version: "3.4"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/java.dockerfile
+      target: dev
+    volumes:
+      - ./:/code
+    working_dir: /code
+    command: "mvn -B spring-boot:run"
+    env_file:
+      - .env
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_DEBUG: ${APP_DEBUG}
+    tty: true
