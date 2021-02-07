@@ -3,11 +3,9 @@ package it.noi.edisplay.utils;
 import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.Resolution;
 import org.imgscalr.Scalr;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -23,6 +21,7 @@ import java.util.TimeZone;
 public class ImageUtil {
 
 	private static final String DEFAULT_FONT = "Terminus";
+
 
 	public byte[] convertToMonochrome(BufferedImage image) throws IOException {
 		BufferedImage blackWhite = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
