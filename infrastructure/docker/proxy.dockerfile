@@ -6,7 +6,11 @@ WORKDIR /code
 COPY proxy/requirements.txt .
 COPY proxy/proxy.py .
 
-RUN pip install -r requirements.txt
+COPY websocket-proxy/requirements.txt requirements-websocket.txt
+COPY websocket-proxy/websocket-proxy.py .
+
+RUN pip install -r requirements.txt \
+	&& pip install -r requirements-websocket.txt
 
 EXPOSE 5006/udp
 
