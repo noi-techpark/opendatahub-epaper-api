@@ -72,11 +72,11 @@ Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway
 Install PostgreSQL on your machine (tested and developed on PSQL 12.5)
 Create Database named **edisplays** with user **edisplay-user**
 ```sql
-CREATE DATABASE edisplays;
-CREATE USER edisplays-user;
+CREATE DATABASE epaper;
+CREATE USER epaper;
 ```
 
-Make sure that a default schema called `public` exists, and that the owner is `edisplays-user`.
+Make sure that a default schema called `public` exists, and that the owner is `epaper`.
 
 #### Application
 Copy the file `src/main/resources/application.properties` to `src/main/resources/application-local.properties` and adjust the variables that get their values from environment variables. You can take a look at the `.env.example` for some help.

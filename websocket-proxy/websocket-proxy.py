@@ -1,3 +1,6 @@
+# uses WebSockets for communiaction bewtween API and proxy AND http between proxy and displays
+
+
 import websocket
 from threading import Thread
 import time
@@ -51,43 +54,64 @@ def on_message(ws, message):
 
     print("dest: " + dest)
 
-    if dest == "no dest":
-        return
 
-    if len(msg) == 0:
-        return
+    if "ip" in msg: # checks if ip exists in dict
+        print(msg['ip'])
+        URL = "http://" + msg["ip"]
 
-    print(msg['ip'])
-    URL = "http://" + msg["ip"]
+        if dest == "/topic/send-image":
+            try:
+                print("SEND IMAGE to " + URL)
 
-    if dest == "/topic/send-image":
-        try:
-            print("SEND IMAGE to " + URL)
-            response = requests.get(url = URL, data = msg["image"], timeout=None)
-            state_dto = jsonify(response.json())
-        except ConnectionError:
-            print("ConnectionError")
-            state_dto = {"errorMessage" : "ConnectionError"}
-    elif dest == "/topic/clear":
-        try:
-            print("SEND CLEAR to " + URL)
-            response = requests.get(url = URL, data = "2", timeout=None) # 2 means clear
-            state_dto = jsonify(response.json())
-        except ConnectionError:
-            print("ConnectionError")
-            state_dto = {"errorMessage" : "ConnectionError"}
-    elif dest == "/topic/state":
-        try:
-            print("SEND STATE to " + URL)
-            response = requests.get(url = URL, data = "3", timeout=None) # 2 means clear
-            state_dto = jsonify(response.json())
-        except ConnectionError:
-            print("ConnectionError")
-            state_dto = {"errorMessage" : "ConnectionError"}
+                #split image in 2 parts and send separatly
+                image = str(msg["image"])
 
-    print(state_dto)
-    ws.send(stomper.send("/app/state",state_dto))
+                firstpart = image[0:61440]
+                secondpart = image[61440:122880]
+                thirdpart = image[122880:122880 + 61440]
+                fourthpart = image[122880 + 61440:245760]
 
+                print("sending first part")
+                response = requests.get(url = URL, data = firstpart, timeout=None)
+                print(response)
+
+                print("sending second part")
+                response = requests.get(url = URL, data = secondpart, timeout=None)
+                print(response)
+
+                print("sending third part")
+                response = requests.get(url = URL, data = thirdpart, timeout=None)
+                print(response)
+
+                print("sending fourth part")
+                response = requests.get(url = URL, data = fourthpart, timeout=None)
+                print(response)
+
+
+
+                state_dto = response.json()
+            except ConnectionError:
+                print("ConnectionError")
+                state_dto = {"errorMessage" : "ConnectionError"}
+        elif dest == "/topic/clear":
+            try:
+                print("SEND CLEAR to " + URL)
+                response = requests.get(url = URL, data = "2", timeout=None) # 2 means clear
+                state_dto = jsonify(response.json())
+            except ConnectionError:
+                print("ConnectionError")
+                state_dto = {"errorMessage" : "ConnectionError"}
+        elif dest == "/topic/state":
+            try:
+                print("SEND STATE to " + URL)
+                response = requests.get(url = URL, data = "3", timeout=None) # 2 means clear
+                state_dto = jsonify(response.json())
+            except ConnectionError:
+                print("ConnectionError")
+                state_dto = {"errorMessage" : "ConnectionError"}
+
+        print(state_dto)
+        ws.send(stomper.send("/app/state",state_dto))
 
 def on_error(ws, error):
     print("### error ###")
@@ -118,7 +142,7 @@ def on_open(ws):
     Thread(target=run).start()
 
 # UDP autoreconnect
-def threaded_function(arg):
+def udp_autoconnect(arg):
     # with app.test_request_context(): #to be in flask request context
     # import requests
     try:
@@ -148,27 +172,28 @@ def threaded_function(arg):
             json = response.json()
             print(json)
 
-            width = json["width"]
-            height = json["height"]
+            width = json["w"]
+            height = json["h"]
 
             # generates random display name or use predefined one
-            if len(json["displayName"]) > 0:
-                name = json["displayName"]
+            if len(json["d"]) > 0:
+                name = json["d"]
             else:
                 name = generate_slug(3)
             print(name)
 
             #create-display
-            print("UDP auto-create")
-            res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["mac"]}, timeout=None)
+            
+            print("UDP autocreate")
+            res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["m"]}, timeout=None)
             print(res)
 
             #remove from list to be bale to reconnecnt again
             display_ip_mac_list.remove(data)
 
 if __name__ == "__main__":
-    #Start UDO autoreconnect
-    thread = Thread(target = threaded_function, args = (10, ))
+    #Start UDP autoreconnect
+    thread = Thread(target = udp_autoconnect, args = (10, ))
     thread.start()
 
     websocket.enableTrace(True)

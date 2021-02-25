@@ -81,7 +81,11 @@ public class EDisplayRestService {
 			}
 			else if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
-				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
+
+				// get Code from image is C array like in first proitype
+//				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
+				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
+
 				stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 			}
 			else {
