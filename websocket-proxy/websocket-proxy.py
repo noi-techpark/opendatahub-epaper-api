@@ -66,38 +66,36 @@ def on_message(ws, message):
                 #split image in 2 parts and send separatly
                 image = str(msg["image"])
 
-                firstpart = image[0:61440]
-                secondpart = image[61440:122880]
-                thirdpart = image[122880:122880 + 61440]
-                fourthpart = image[122880 + 61440:245760]
-
-                print("sending first part")
-                response = requests.get(url = URL, data = firstpart, timeout=None)
+                print("sending image")
+                response = requests.post(url = URL, data = image, timeout=None)
                 print(response)
+                print("sending image done")
 
-                print("sending second part")
-                response = requests.get(url = URL, data = secondpart, timeout=None)
-                print(response)
 
-                print("sending third part")
-                response = requests.get(url = URL, data = thirdpart, timeout=None)
-                print(response)
+                # print("sending second part")
+                # response = requests.get(url = URL, data = secondpart, timeout=None)
+                # print(response)
 
-                print("sending fourth part")
-                response = requests.get(url = URL, data = fourthpart, timeout=None)
-                print(response)
+                # print("sending third part")
+                # response = requests.get(url = URL, data = thirdpart, timeout=None)
+                # print(response)
+
+                # print("sending fourth part")
+                # response = requests.get(url = URL, data = fourthpart, timeout=None)
+                # print(response)
 
 
 
                 state_dto = response.json()
             except ConnectionError:
                 print("ConnectionError")
-                state_dto = {"errorMessage" : "ConnectionError"}
+                # state_dto = {"errorMessage" : "ConnectionError"}
+
         elif dest == "/topic/clear":
             try:
                 print("SEND CLEAR to " + URL)
                 response = requests.get(url = URL, data = "2", timeout=None) # 2 means clear
-                state_dto = jsonify(response.json())
+                state_dto = response.json()
             except ConnectionError:
                 print("ConnectionError")
                 state_dto = {"errorMessage" : "ConnectionError"}
@@ -105,13 +103,13 @@ def on_message(ws, message):
             try:
                 print("SEND STATE to " + URL)
                 response = requests.get(url = URL, data = "3", timeout=None) # 2 means clear
-                state_dto = jsonify(response.json())
+                state_dto = response.json()
             except ConnectionError:
                 print("ConnectionError")
-                state_dto = {"errorMessage" : "ConnectionError"}
+                # state_dto = {"errorMessage" : "ConnectionError"}
 
         print(state_dto)
-        ws.send(stomper.send("/app/state",state_dto))
+        # ws.send(stomper.send("/app/state",state_dto))
 
 def on_error(ws, error):
     print("### error ###")
@@ -183,7 +181,6 @@ def udp_autoconnect(arg):
             print(name)
 
             #create-display
-            
             print("UDP autocreate")
             res = requests.post(DISPLAY_CREATE_URL, data = {"ip" : addr[0], "name" : name, "width" :width, "height" : height, "mac" : json["m"]}, timeout=None)
             print(res)
