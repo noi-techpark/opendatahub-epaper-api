@@ -58,6 +58,9 @@ def on_message(ws, message):
                 #split image in 2 parts and send separatly
                 image = f'1{msg["name"][0:8].upper()}-{msg["image"]}-'
 
+                # with open("/code2/" + msg["name"][0:8].upper() + ".TXT", "w") as f:
+                #    f.write(msg["image"])
+
                 print(f"sending image: {image[0:20]}...")
                 response = requests.post(url = URL, data = image, timeout=None)
                 print(response)
