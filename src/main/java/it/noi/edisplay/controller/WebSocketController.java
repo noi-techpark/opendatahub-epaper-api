@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class WebSocketController  {
 
-	private Gson gson = new Gson();
+	// private Gson gson = new Gson();
 
 	@MessageMapping("/state")
 //	@SendTo("/topic/state")

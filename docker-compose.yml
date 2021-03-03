@@ -32,20 +32,20 @@ services:
       - /tmp/epaper_pgdata:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:5432"
-  wsproxy:
-    env_file:
-      - websocket-proxy/.env
-    build:
-      context: .
-      dockerfile: ./infrastructure/docker/proxy.dockerfile
-    depends_on:
-      - api
-    working_dir: /code
-    command: "python /code/websocket-proxy.py"
-    environment:
-      API_URL: "http://api:8999"
-      WS_URL: "ws://api:8999/ws"
-    tty: true
-    ports:
-      - "5000:5000"
-      - "5006:5006/udp"
+  # wsproxy:
+  #   env_file:
+  #     - websocket-proxy/.env
+  #   build:
+  #     context: .
+  #     dockerfile: ./infrastructure/docker/proxy.dockerfile
+  #   depends_on:
+  #     - api
+  #   working_dir: /code
+  #   command: "python /code/websocket-proxy.py"
+  #   environment:
+  #     API_URL: "http://api:8999"
+  #     WS_URL: "ws://api:8999/ws"
+  #   tty: true
+  #   ports:
+  #     - "5000:5000"
+  #     - "5006:5006/udp"

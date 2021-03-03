@@ -70,7 +70,6 @@ public class ImageUtil {
 
 
 	public String getCodeFromImage(byte[] bytes) throws IOException {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 		InputStream in = new ByteArrayInputStream(bytes);
 		BufferedImage image = ImageIO.read(in);

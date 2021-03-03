@@ -4,10 +4,12 @@ public class WSImageDto {
 
     private String ip;
     private String image;
+	private String name;
 
-    public WSImageDto(final String ip, final String image) {
+    public WSImageDto(final String ip, final String image, final String name) {
     	this.ip = ip;
     	this.image = image;
+		this.name = name;
     }
 
 	public String getIp() {
@@ -24,5 +26,13 @@ public class WSImageDto {
 
 	public void setImage(String image) {
 		this.image = image;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

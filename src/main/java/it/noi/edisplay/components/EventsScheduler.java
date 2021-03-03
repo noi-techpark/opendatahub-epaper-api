@@ -7,7 +7,6 @@ import it.noi.edisplay.model.Display;
 import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
 import it.noi.edisplay.services.OpenDataRestService;
-import it.noi.edisplay.utils.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.awt.*;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -26,7 +23,6 @@ import java.util.HashMap;
 public class EventsScheduler {
 
 	private static final Logger logger = LoggerFactory.getLogger(EventsScheduler.class);
-	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 
 	@Value("${cron.enabled}")
@@ -34,9 +30,6 @@ public class EventsScheduler {
 
 	@Autowired
 	private OpenDataRestService openDataRestService;
-
-	@Autowired
-	private LocationRepository locationRepository;
 
 	@Autowired
 	private DisplayRepository displayRepository;
@@ -49,18 +42,12 @@ public class EventsScheduler {
 	private ConnectionRepository connectionRepository;
 
 	@Autowired
-	private ResolutionRepository resolutionRepository;
-
-	@Autowired
 	private EDisplayRestService eDisplayRestService;
-
-	@Autowired
-	private ImageUtil imageUtil;
 
 	private ArrayList<EventDto> events;
 
 	// saves which event is visible on every used display, so it can be checked if event is already on display
-	private HashMap<String, String> displayUuidToEventMapping = new HashMap<String, String>();
+	private HashMap<String, String> displayUuidToEventMapping = new HashMap<>();
 
 
 	@Scheduled(cron = "${cron.opendata.events}")
@@ -77,7 +64,7 @@ public class EventsScheduler {
 
 
 	@Scheduled(cron = "${cron.opendata.displays}")
-	public void updateDisplays() throws IOException, FontFormatException {
+	public void updateDisplays() throws IOException {
 		if (enabled) {
 			logger.debug("Send events to display START");
 
@@ -107,7 +94,7 @@ public class EventsScheduler {
 								if (!displayUuidToEventMapping.containsKey(display.getUuid()) || !displayUuidToEventMapping.get(display.getUuid()).equals(event.getEventDescriptionEN())) {
 									//update display
 									logger.debug("EVENT_SCHEDULER: Event updated to " + event.getEventDescriptionEN() + " for display " + seminarRoomName);
-									display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+									display.setTemplate(templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME));
 									Display savedDisplay = displayRepository.save(display);
 									Connection connection = connectionRepository.findByDisplay(savedDisplay);
 									displayUuidToEventMapping.put(display.getUuid(), event.getEventDescriptionEN());
@@ -125,7 +112,7 @@ public class EventsScheduler {
 
 							if (!displayUuidToEventMapping.containsKey(display.getUuid()) || !displayUuidToEventMapping.get(display.getUuid()).equals(event.getEventDescriptionEN())) {
 								logger.debug("EVENT_SCHEDULER: Event updated to " + event.getEventDescriptionEN() + " for display " + roomName);
-								display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+								display.setTemplate(templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME));
 								Display savedDisplay = displayRepository.save(display);
 								Connection connection = connectionRepository.findByDisplay(savedDisplay);
 								displayUuidToEventMapping.put(display.getUuid(), event.getEventDescriptionEN());

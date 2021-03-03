@@ -57,7 +57,7 @@ public class DefaultDataLoader {
 
 
 	@PostConstruct
-	public void onStartUp() throws IOException, FontFormatException {
+	public void onStartUp() throws IOException {
 
 		if (templateRepository.findAll().size() == 0) {
 
@@ -121,7 +121,7 @@ public class DefaultDataLoader {
 
 					Display display = new Display();
 					display.setName(eventLocation + " Display");
-					display.setImage(imageUtil.getImageForEmptyEventDisplay(location.getName(), templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+					display.setTemplate(templateRepository.findByName(EVENT_TEMPLATE_NAME));
 
 					if (resolutionRepository.findAll().size() == 0) {
 						Resolution resolution = new Resolution();
@@ -147,7 +147,7 @@ public class DefaultDataLoader {
 		}
 	}
 
-	public void setNextEventOnDisplay() throws IOException, FontFormatException {
+	public void setNextEventOnDisplay() throws IOException {
 		if (enabled) {
 			ArrayList<EventDto> events = openDataRestService.getEvents();
 
@@ -180,7 +180,7 @@ public class DefaultDataLoader {
 						if (!checkedLocations.contains(seminarDisplayName)) {
 							Display display = displayRepository.findByName(seminarDisplayName); //needs to be optimized, if name changes it doesn't work anymore
 							if (display != null) {
-								display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+								display.setTemplate(templateRepository.findByName(EVENT_TEMPLATE_NAME));
 								Display savedDisplay = displayRepository.save(display);
 								Connection connection = connectionRepository.findByDisplay(savedDisplay);
 								logger.debug("Default Data Loader: Send image multiple " + seminarRoomName);
@@ -192,7 +192,7 @@ public class DefaultDataLoader {
 				} else if (!checkedLocations.contains(roomName)) {
 					Display display = displayRepository.findByName(roomName); //needs to be optimized, if name changes it doesn't work anymore
 					if (display != null) {
-						display.setImage(imageUtil.getImageForEvent(event, templateRepository.findByName(DefaultDataLoader.EVENT_TEMPLATE_NAME).getImage()));
+						display.setTemplate(templateRepository.findByName(EVENT_TEMPLATE_NAME));
 						Display savedDisplay = displayRepository.save(display);
 						Connection connection = connectionRepository.findByDisplay(savedDisplay);
 						logger.debug("Default Data Loader: Send image " + roomName);

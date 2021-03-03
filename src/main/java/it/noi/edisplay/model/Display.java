@@ -50,16 +50,16 @@ public class Display {
 	@ManyToOne
 	private Resolution resolution;
 
-	private byte[] image;
+	@ManyToOne
+	private Template template;
+
+	// private byte[] image;
 
 	private int batteryPercentage;
-
 
 	public Display() {
 
 	}
-
-
 
 	public Integer getId() {
 		return id;
@@ -109,13 +109,13 @@ public class Display {
 		this.lastState = lastState;
 	}
 
-	public byte[] getImage() {
-		return image;
-	}
+	// public byte[] getImage() {
+	// 	return image;
+	// }
 
-	public void setImage(byte[] image) {
-		this.image = image;
-	}
+	// public void setImage(byte[] image) {
+	// 	this.image = image;
+	// }
 
 	public int getBatteryPercentage() {
 		return batteryPercentage;
@@ -147,5 +147,13 @@ public class Display {
 
 	public void setResolution(Resolution resolution) {
 		this.resolution = resolution;
+	}
+
+	public Template getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(Template template) {
+		this.template = template;
 	}
 }

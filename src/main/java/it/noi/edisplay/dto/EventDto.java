@@ -2,8 +2,6 @@ package it.noi.edisplay.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Date;
-
 /**
  * DTO to read Events from OpenDataHub opendatahub.bz.it
  */

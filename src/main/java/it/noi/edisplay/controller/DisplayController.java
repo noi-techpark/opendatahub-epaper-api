@@ -6,7 +6,6 @@ import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.services.EDisplayRestService;
-import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +50,6 @@ public class DisplayController {
 
 	@Autowired
 	private ModelMapper modelMapper;
-
-	@Autowired
-	private ImageUtil imageUtil;
 
 	@Autowired
 	private EDisplayRestService eDisplayRestService;
@@ -159,7 +155,7 @@ public class DisplayController {
 		Template template = templateRepository.findByUuid(templateUuid);
 
 		if (template != null)
-			display.setImage(template.getImage());
+			display.setTemplate(template);
 		else {
 			logger.debug("Display creation failed. Template not found");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -218,7 +214,7 @@ public class DisplayController {
 				display.setName(name);
 				display.setBatteryPercentage(new Random().nextInt(99));
 
-				display.setImage(imageUtil.getImageForEmptyEventDisplay(name, templateRepository.findByName(EVENT_TEMPLATE_NAME).getImage()));
+				display.setTemplate(templateRepository.findByName(EVENT_TEMPLATE_NAME));
 
 				Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
 				if (resolutionbyWidthAndHeight == null) {
@@ -281,7 +277,7 @@ public class DisplayController {
 		Template template = templateRepository.findByUuid(templateUuid);
 
 		if (template != null)
-			display.setImage(template.getImage());
+			display.setTemplate(template);
 		else {
 			logger.debug("Display creation failed. Template not found");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -335,7 +331,7 @@ public class DisplayController {
 			logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Template not found.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
-		display.setImage(template.getImage());
+		display.setTemplate(template);
 
 		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
 		if (resolutionbyWidthAndHeight == null) {

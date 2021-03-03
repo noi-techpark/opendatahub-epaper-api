@@ -24,14 +24,6 @@ connexion = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 display_ip_mac_list = []
 
-def is_json(myjson):
-  try:
-    json.loads(myjson)
-  except ValueError: # as e:
-    # print(e)
-    return False
-  return True
-
 def on_message(ws, message):
     print("### message ###")
     msg = {}
@@ -43,16 +35,16 @@ def on_message(ws, message):
         if "destination" in line:
             dest = line.split(":")[1]
 
-        maybe_json = line[:-1] # remove last char of string to be valid JSON
-        if is_json(maybe_json):
-            msg = json.loads(maybe_json)
-        else:
+        try:
+            msg = json.loads(line[:-1]) # remove last char of string to be valid JSON
+        except ValueError:
             print(f"non json line received: {line}")
 
     # if msg[""]
     # send image
 
     print("dest: " + dest)
+    # print("msg" + str(msg))
 
 
     if "ip" in msg: # checks if ip exists in dict
@@ -64,9 +56,9 @@ def on_message(ws, message):
                 print("SEND IMAGE to " + URL)
 
                 #split image in 2 parts and send separatly
-                image = str(msg["image"])
+                image = f'1{msg["name"][0:8].upper()}-{msg["image"]}-'
 
-                print("sending image")
+                print(f"sending image: {image[0:20]}...")
                 response = requests.post(url = URL, data = image, timeout=None)
                 print(response)
                 print("sending image done")

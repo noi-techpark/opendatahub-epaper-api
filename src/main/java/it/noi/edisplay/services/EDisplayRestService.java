@@ -5,6 +5,7 @@ import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.dto.WSImageDto;
 import it.noi.edisplay.dto.WSRequestDto;
 import it.noi.edisplay.model.Connection;
+import it.noi.edisplay.model.Template;
 import it.noi.edisplay.utils.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +24,8 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class EDisplayRestService {
 
-
-	private final int HTTP_CONNECT_TIMEOUT = 1500000;
-	private final int HTTP_READ_TIMEOUT = 1000000;
+	// private final int HTTP_CONNECT_TIMEOUT = 1500000;
+	// private final int HTTP_READ_TIMEOUT = 1000000;
 
 	private RestTemplate restTemplate;
 
@@ -41,8 +41,6 @@ public class EDisplayRestService {
 	@Autowired
 	private SimpMessagingTemplate webSocket;
 
-
-
 	@Autowired
 	private ImageUtil imageUtil;
 
@@ -52,16 +50,16 @@ public class EDisplayRestService {
 		this.restTemplate = restTemplateBuilder.build();
 	}
 
-
 	@Async
 	public CompletableFuture<StateDto> sendImageToDisplayAsync(Connection connection, boolean inverted) throws IOException {
 		StateDto stateDto;
+		Template template = connection.getDisplay().getTemplate();
 		if (!proxyEnabled) {
 			final String uri = "http://" + connection.getNetworkAddress();
-			String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
+			String image = imageUtil.getCodeFromImage(template.getImage());
 			stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 		} else {
-			String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
+			String image = imageUtil.getBinaryImage(template.getImage(), false, connection.getDisplay().getResolution());
 			final String uri = proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 			ImageDto imageDto = new ImageDto(image);
 			stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
@@ -70,26 +68,25 @@ public class EDisplayRestService {
 	}
 
 	public StateDto sendImageToDisplay(Connection connection, boolean inverted) throws IOException {
-		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
+		Template template = connection.getDisplay().getTemplate();
 		try {
-			if (webSocketEnabled){
-				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),inverted,connection.getDisplay().getResolution());
+			if (webSocketEnabled) {
+				String image = imageUtil.getBinaryImage(template.getImage(),inverted,connection.getDisplay().getResolution());
 //				webSocket.convertAndSend("/topic/send-image",image +":" +uri);
-				webSocket.convertAndSend("/topic/send-image",new WSImageDto(connection.getNetworkAddress(),image));
+				webSocket.convertAndSend("/topic/send-image",new WSImageDto(connection.getNetworkAddress(),image, template.getUuid()));
 				stateDto = new StateDto(); //TODO return state from websocket, but how?
 			}
 			else if (!proxyEnabled) {
 				final String uri = "http://" + connection.getNetworkAddress();
 
 				// get Code from image is C array like in first proitype
-//				String image = imageUtil.getCodeFromImage(connection.getDisplay().getImage());
-				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
+				String image = imageUtil.getBinaryImage(template.getImage(),false,connection.getDisplay().getResolution());
 
 				stateDto = restTemplate.postForObject(uri, image, StateDto.class);
 			}
 			else {
-				String image = imageUtil.getBinaryImage(connection.getDisplay().getImage(),false,connection.getDisplay().getResolution());
+				String image = imageUtil.getBinaryImage(template.getImage(),false,connection.getDisplay().getResolution());
 				final String uri = proxyIpAddress + "/send?ip=" + connection.getNetworkAddress();
 				ImageDto imageDto = new ImageDto(image);
 				stateDto = restTemplate.postForObject(uri, imageDto, StateDto.class);
@@ -105,7 +102,6 @@ public class EDisplayRestService {
 	}
 
 	public StateDto clearDisplay(Connection connection) {
-		ResponseEntity<String> stringResponseEntity;
 		StateDto stateDto;
 		try {
 			if (webSocketEnabled) {
