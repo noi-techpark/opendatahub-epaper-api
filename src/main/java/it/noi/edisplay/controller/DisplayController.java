@@ -124,6 +124,7 @@ public class DisplayController {
 			if (connection != null) {
 				logger.debug("Clear display with uuid:" + uuid);
 				display.setLastState(new Date());
+				display.setErrorMessage("");
 				displayRepository.save(display);
 				StateDto currentState = eDisplayRestService.clearDisplay(connection);
 				currentState.setLastState(display.getLastState());
@@ -344,6 +345,7 @@ public class DisplayController {
 
 		display.setName(displayDto.getName());
 		display.setLastState(displayDto.getLastState());
+		display.setErrorMessage(displayDto.getErrorMessage());
 		logger.debug("Updated display with uuid:" + display.getUuid());
 		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.ACCEPTED);
 	}
