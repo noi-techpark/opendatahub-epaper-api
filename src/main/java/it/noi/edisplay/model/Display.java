@@ -46,6 +46,8 @@ public class Display {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date lastState;
 
+	private String errorMessage;
+	
 //	@NotNull
 	@ManyToOne
 	private Resolution resolution;
@@ -116,6 +118,14 @@ public class Display {
 	// public void setImage(byte[] image) {
 	// 	this.image = image;
 	// }
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
 
 	public int getBatteryPercentage() {
 		return batteryPercentage;

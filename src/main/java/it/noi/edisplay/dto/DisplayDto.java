@@ -12,6 +12,7 @@ public class DisplayDto {
 	private ResolutionDto resolution;
 	private TemplateDto template;
 	private String mac;
+	private String errorMessage;
 
 	@ApiModelProperty(hidden = true)
 	private ConnectionDto connection;
@@ -115,7 +116,6 @@ public class DisplayDto {
 		return resolution;
 	}
 
-
 	public String getMac() {
 		return mac;
 	}
@@ -126,5 +126,13 @@ public class DisplayDto {
 
 	public void setResolution(ResolutionDto resolution) {
 		this.resolution = resolution;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 }
