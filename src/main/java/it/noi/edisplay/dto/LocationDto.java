@@ -9,6 +9,10 @@ import java.sql.Date;
 public class LocationDto {
 
 	private String name;
+	
+    private String description;
+    
+    private String roomCode;
 
 	@ApiModelProperty(hidden = true)
 	private String uuid;
@@ -47,6 +51,22 @@ public class LocationDto {
 
 	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getRoomCode() {
+		return roomCode;
+	}
+
+	public void setRoomCode(String roomCode) {
+		this.roomCode = roomCode;
 	}
 
 }

@@ -9,14 +9,14 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * Entity class for Displays that contains all needed information for an E-Display
+ * Entity class for Displays that contains all needed information for an
+ * E-Display
  *
  * @Author Simon Dalvai
  */
 @Entity
 @Table(name = "locations")
 public class Location {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +28,10 @@ public class Location {
 //    @NotNull
     private String name;
 
+    private String description;
+
+    private String roomCode;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
@@ -35,7 +39,6 @@ public class Location {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
-
 
     public Location() {
 
@@ -49,13 +52,28 @@ public class Location {
         this.id = id;
     }
 
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getRoomCode() {
+        return roomCode;
+    }
+
+    public void setRoomCode(String setRoomCode) {
+        this.roomCode = setRoomCode;
     }
 
     public Date getCreated() {
@@ -81,7 +99,6 @@ public class Location {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
-
 
     @PrePersist
     public void prePersist() {
