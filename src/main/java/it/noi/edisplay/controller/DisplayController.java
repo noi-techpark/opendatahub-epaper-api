@@ -148,18 +148,27 @@ public class DisplayController {
 	}
 
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
-	public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height) {
+	public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("locationUuid") String locationUuid) {
 		Display display = new Display();
 		display.setName(name);
 		display.setBatteryPercentage(new Random().nextInt(99));
 
 		Template template = templateRepository.findByUuid(templateUuid);
-
 		if (template != null)
 			display.setTemplate(template);
 		else {
 			logger.debug("Display creation failed. Template not found");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		if (locationUuid != null) {
+    		Location location = locationRepository.findByUuid(locationUuid);
+            if (location != null)
+                display.setLocation(location);
+            else {
+                logger.debug("Display creation failed. Location not found");
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
 		}
 
 		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
@@ -334,6 +343,16 @@ public class DisplayController {
 		}
 		display.setTemplate(template);
 
+		if (displayDto.getLocationUuid() != null) {
+            Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
+            if (location != null)
+                display.setLocation(location);
+            else {
+                logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Location not found");
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+		}
+		
 		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
 		if (resolutionbyWidthAndHeight == null) {
 			Resolution resolution = new Resolution(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
@@ -341,7 +360,6 @@ public class DisplayController {
 			display.setResolution(resolution);
 		} else
 			display.setResolution(resolutionbyWidthAndHeight);
-
 
 		display.setName(displayDto.getName());
 		display.setLastState(displayDto.getLastState());

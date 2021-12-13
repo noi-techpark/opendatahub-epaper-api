@@ -54,6 +54,9 @@ public class Display {
 
 	@ManyToOne
 	private Template template;
+	
+	@ManyToOne
+	private Location location;
 
 	// private byte[] image;
 
@@ -166,4 +169,12 @@ public class Display {
 	public void setTemplate(Template template) {
 		this.template = template;
 	}
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
 }
