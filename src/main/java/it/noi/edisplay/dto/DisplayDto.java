@@ -13,6 +13,7 @@ public class DisplayDto {
 	private TemplateDto template;
 	private String mac;
 	private String errorMessage;
+	private String locationUuid;
 
 	@ApiModelProperty(hidden = true)
 	private ConnectionDto connection;
@@ -135,4 +136,12 @@ public class DisplayDto {
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+
+    public String getLocationUuid() {
+        return locationUuid;
+    }
+
+    public void setLocationUuid(String locationUuid) {
+        this.locationUuid = locationUuid;
+    }
 }
