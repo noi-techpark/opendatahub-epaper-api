@@ -17,7 +17,7 @@ public class OpenDataRestService {
 	private final RestTemplate restTemplate;
 	private String eventsUrl = "https://tourism.opendatahub.bz.it/api/EventShort/GetbyRoomBooked?startdate=%s&eventlocation=NOI&datetimeformat=uxtimestamp&onlyactive=true";
 	private String eventLocationUrl = "http://tourism.opendatahub.bz.it/api/EventShort/RoomMapping";
-	private String placesUrl = "https://mobility.api.opendatahub.bz.it/v2/flat/NOI-Place?limit=0&select=scode,smetadata.name.it";
+	private String placesUrl = "https://mobility.api.opendatahub.bz.it/v2/flat/NOI-Place?select=scode,smetadata.name.it,smetadata.room_label&limit=-1&where=smetadata.type.in.(Meetingroom,Seminarroom)";
 
 
 	public OpenDataRestService(RestTemplateBuilder restTemplateBuilder) {

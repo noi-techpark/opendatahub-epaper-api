@@ -8,6 +8,9 @@ public class NOIPlaceData {
 
     @JsonProperty("smetadata.name.it")
     private String name;
+    
+    @JsonProperty("smetadata.room_label")
+    private String roomLabel;
 
     public String getScode() {
         return scode;
@@ -23,5 +26,13 @@ public class NOIPlaceData {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getRoomLabel() {
+        return roomLabel;
+    }
+
+    public void setRoomLabel(String roomLabel) {
+        this.roomLabel = roomLabel;
     }
 }

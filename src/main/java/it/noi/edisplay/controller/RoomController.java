@@ -38,6 +38,7 @@ public class RoomController {
 			RoomDto room = new RoomDto();
 			room.setCode(place.getScode());
 			room.setName(place.getName());
+			room.setLabel(place.getRoomLabel());
 			roomList.add(room);
 		}
 
