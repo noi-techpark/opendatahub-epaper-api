@@ -2,6 +2,8 @@ package it.noi.edisplay.services;
 
 
 import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.dto.NOIPlaceDto;
+
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +17,7 @@ public class OpenDataRestService {
 	private final RestTemplate restTemplate;
 	private String eventsUrl = "https://tourism.opendatahub.bz.it/api/EventShort/GetbyRoomBooked?startdate=%s&eventlocation=NOI&datetimeformat=uxtimestamp&onlyactive=true";
 	private String eventLocationUrl = "http://tourism.opendatahub.bz.it/api/EventShort/RoomMapping";
+	private String placesUrl = "https://mobility.api.opendatahub.bz.it/v2/flat/NOI-Place?select=scode,smetadata.name.it,smetadata.room_label&limit=-1&where=smetadata.type.in.(Meetingroom,Seminarroom)";
 
 
 	public OpenDataRestService(RestTemplateBuilder restTemplateBuilder) {
@@ -38,5 +41,9 @@ public class OpenDataRestService {
 			result.add(s.split(":")[0].replaceAll("\"", ""));
 
 		return result;
+	}
+	
+	public NOIPlaceDto getNOIPlaces() {
+		return restTemplate.getForObject(placesUrl, NOIPlaceDto.class);
 	}
 }

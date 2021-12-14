@@ -82,6 +82,9 @@ public class LocationController {
 		}
 
 		location.setName(locationDto.getName());
+		location.setDescription(locationDto.getDescription());
+		location.setRoomCode(locationDto.getRoomCode());
+		
 		locationRepository.saveAndFlush(location);
 		logger.debug("Updated location with uuid:" + location.getUuid());
 		return new ResponseEntity(HttpStatus.ACCEPTED);
