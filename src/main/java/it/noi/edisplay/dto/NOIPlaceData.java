@@ -12,6 +12,9 @@ public class NOIPlaceData {
     @JsonProperty("smetadata.room_label")
     private String roomLabel;
 
+    @JsonProperty("smetadata.todaynoibzit")
+    private String todaynoibzit;
+
     public String getScode() {
         return scode;
     }
@@ -34,5 +37,13 @@ public class NOIPlaceData {
 
     public void setRoomLabel(String roomLabel) {
         this.roomLabel = roomLabel;
+    }
+
+    public String getTodaynoibzit() {
+        return todaynoibzit;
+    }
+
+    public void setTodaynoibzit(String todaynoibzit) {
+        this.todaynoibzit = todaynoibzit;
     }
 }
