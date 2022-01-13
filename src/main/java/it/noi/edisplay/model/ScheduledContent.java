@@ -30,6 +30,9 @@ public class ScheduledContent {
     @ManyToOne
     private Display display;
 
+    @OneToOne(mappedBy = "scheduledContent")
+    private DisplayContent displayContent;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
@@ -125,5 +128,13 @@ public class ScheduledContent {
 
     public void setEventDescription(String description) {
         this.eventDescription = description;
+    }
+
+    public DisplayContent getDisplayContent() {
+        return displayContent;
+    }
+
+    public void setDisplayContent(DisplayContent displayContent) {
+        this.displayContent = displayContent;
     }
 }

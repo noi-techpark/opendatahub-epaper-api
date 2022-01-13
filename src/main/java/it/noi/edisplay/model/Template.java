@@ -6,6 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 //import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,19 +21,23 @@ public class Template {
 
     private String name;
 
+    private String description;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
+
+    private byte[] image;
 
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
-    private byte[] image;
+    @OneToOne(mappedBy = "template")
+    private DisplayContent displayContent;
 
     public Template() {
     }
-
 
     public Integer getId() {
         return id;
@@ -53,7 +58,6 @@ public class Template {
     public byte[] getImage() {
         return image;
     }
-
 
     public void setImage(byte[] image) {
         this.image = image;
@@ -86,5 +90,13 @@ public class Template {
     @PrePersist
     public void prePersist() {
         this.setUuid(UUID.randomUUID().toString());
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

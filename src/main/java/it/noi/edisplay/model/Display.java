@@ -1,6 +1,5 @@
 package it.noi.edisplay.model;
 
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -9,9 +8,9 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
-
 /**
- * Entity class for Displays that contains all needed information for an E-Display
+ * Entity class for Displays that contains all needed information for an
+ * E-Display
  *
  * @Author Simon Dalvai
  */
@@ -19,156 +18,147 @@ import java.util.UUID;
 @Table(name = "displays")
 public class Display {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-
-
-//	@NotNull
-	private String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
 //	@NotNull
-	private String uuid;
+    private String name;
 
-	@CreationTimestamp
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date created;
-
-	//Saves timestamp when logical display gets updated
-	@UpdateTimestamp
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date lastUpdate;
-
-	//Saves timestamp when real physical display gets updated
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date lastRealDisplayUpdate;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date lastState;
-
-	private String errorMessage;
-	
 //	@NotNull
-	@ManyToOne
-	private Resolution resolution;
+    private String uuid;
 
-	@ManyToOne
-	private Template template;
-	
-	@ManyToOne
-	private Location location;
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date created;
 
-	// private byte[] image;
+    // Saves timestamp when logical display gets updated
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastUpdate;
 
-	private int batteryPercentage;
+    // Saves timestamp when real physical display gets updated
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastRealDisplayUpdate;
 
-	public Display() {
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastState;
 
-	}
+    private String errorMessage;
 
-	public Integer getId() {
-		return id;
-	}
+//	@NotNull
+    @ManyToOne
+    private Resolution resolution;
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    @ManyToOne
+    private Template template;
 
-	public String getName() {
-		return name;
-	}
+    @ManyToOne
+    private Location location;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    @OneToOne(mappedBy = "display")
+    private DisplayContent displayContent;
 
-	public String getUuid() {
-		return uuid;
-	}
+    private int batteryPercentage;
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
+    public Display() {
 
-	public Date getCreated() {
-		return created;
-	}
+    }
 
-	public void setCreated(Date created) {
-		this.created = created;
-	}
+    public Integer getId() {
+        return id;
+    }
 
-	public Date getLastUpdate() {
-		return lastUpdate;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public void setLastUpdate(Date lastUpdate) {
-		this.lastUpdate = lastUpdate;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public Date getLastState() {
-		return lastState;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setLastState(Date lastState) {
-		this.lastState = lastState;
-	}
+    public String getUuid() {
+        return uuid;
+    }
 
-	// public byte[] getImage() {
-	// 	return image;
-	// }
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
-	// public void setImage(byte[] image) {
-	// 	this.image = image;
-	// }
+    public Date getCreated() {
+        return created;
+    }
 
-	public String getErrorMessage() {
-		return errorMessage;
-	}
+    public void setCreated(Date created) {
+        this.created = created;
+    }
 
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
-	}
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
 
-	public int getBatteryPercentage() {
-		return batteryPercentage;
-	}
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
 
-	public void setBatteryPercentage(int batteryPercentage) {
-		this.batteryPercentage = batteryPercentage;
-	}
+    public Date getLastState() {
+        return lastState;
+    }
 
-	public Date getLastRealDisplayUpdate() {
-		return lastRealDisplayUpdate;
-	}
+    public void setLastState(Date lastState) {
+        this.lastState = lastState;
+    }
 
-	public void setLastRealDisplayUpdate(Date lastRealDisplayUpdate) {
-		this.lastRealDisplayUpdate = lastRealDisplayUpdate;
-	}
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
-	@PrePersist
-	public void prePersist() {
-		this.setUuid(UUID.randomUUID().toString());
-		if (lastState == null)
-			lastState = new Date();
-	}
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
+    public int getBatteryPercentage() {
+        return batteryPercentage;
+    }
 
-	public Resolution getResolution() {
-		return resolution;
-	}
+    public void setBatteryPercentage(int batteryPercentage) {
+        this.batteryPercentage = batteryPercentage;
+    }
 
-	public void setResolution(Resolution resolution) {
-		this.resolution = resolution;
-	}
+    public Date getLastRealDisplayUpdate() {
+        return lastRealDisplayUpdate;
+    }
 
-	public Template getTemplate() {
-		return template;
-	}
+    public void setLastRealDisplayUpdate(Date lastRealDisplayUpdate) {
+        this.lastRealDisplayUpdate = lastRealDisplayUpdate;
+    }
 
-	public void setTemplate(Template template) {
-		this.template = template;
-	}
+    @PrePersist
+    public void prePersist() {
+        this.setUuid(UUID.randomUUID().toString());
+        if (lastState == null)
+            lastState = new Date();
+    }
+
+    public Resolution getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(Resolution resolution) {
+        this.resolution = resolution;
+    }
+
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
 
     public Location getLocation() {
         return location;
