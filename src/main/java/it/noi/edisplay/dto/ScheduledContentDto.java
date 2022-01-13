@@ -24,6 +24,8 @@ public class ScheduledContentDto {
     private Timestamp originalEndDate;
 
     private String originalEventDescription;
+    
+    private DisplayContentDto displayContent;
 
     @ApiModelProperty(hidden = true)
     private String uuid;
@@ -126,5 +128,13 @@ public class ScheduledContentDto {
 
     public void setOriginalEventDescription(String originalEventDescription) {
         this.originalEventDescription = originalEventDescription;
+    }
+
+    public DisplayContentDto getDisplayContent() {
+        return displayContent;
+    }
+
+    public void setDisplayContent(DisplayContentDto displayContent) {
+        this.displayContent = displayContent;
     }
 }
