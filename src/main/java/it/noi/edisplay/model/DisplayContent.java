@@ -2,6 +2,7 @@ package it.noi.edisplay.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -47,15 +48,15 @@ public class DisplayContent {
     private Display display;
     
     @OneToOne
-    @JoinColumn(name = "template_id", referencedColumnName = "id")
+    @JoinColumn(name = "template_id")
     private Template template;
     
     @OneToOne
     @JoinColumn(name = "scheduled_content_id", referencedColumnName = "id")
     private ScheduledContent scheduledContent;
 
-//    @OneToMany
-//    private List<ImageField> fields;
+    @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL)
+    private List<ImageField> imageFields;
 
     public DisplayContent() {
     }
@@ -97,14 +98,6 @@ public class DisplayContent {
         this.setUuid(UUID.randomUUID().toString());
     }
 
-//    public List<ImageField> getDefaultFields() {
-//        return fields;
-//    }
-//
-//    public void setDefaultFields(List<ImageField> defaultFields) {
-//        this.fields = defaultFields;
-//    }
-
     public String getImageUrl() {
         return imageUrl;
     }
@@ -119,5 +112,40 @@ public class DisplayContent {
 
     public void setImageHash(String imageHash) {
         this.imageHash = imageHash;
+    }
+
+    public List<ImageField> getImageFields() {
+        return imageFields;
+    }
+
+    public void setImageFields(List<ImageField> imageFields) {
+        for (ImageField field : imageFields) { 
+            field.setDisplayContent(this);
+        }
+        this.imageFields = imageFields;
+    }
+
+    public Display getDisplay() {
+        return display;
+    }
+
+    public void setDisplay(Display display) {
+        this.display = display;
+    }
+
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    public ScheduledContent getScheduledContent() {
+        return scheduledContent;
+    }
+
+    public void setScheduledContent(ScheduledContent scheduledContent) {
+        this.scheduledContent = scheduledContent;
     }
 }

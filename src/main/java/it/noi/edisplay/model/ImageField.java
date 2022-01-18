@@ -9,6 +9,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
@@ -34,6 +35,7 @@ public class ImageField {
     private String customText;
     
     @ManyToOne
+    @JoinColumn(name = "display_content_id", nullable = false)
     private DisplayContent displayContent;
     
     @Enumerated(EnumType.STRING)

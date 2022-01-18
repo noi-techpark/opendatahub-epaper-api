@@ -3,6 +3,7 @@ package it.noi.edisplay.dto;
 import java.sql.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import it.noi.edisplay.model.ImageFieldType;
 
 public class ImageFieldDto {
     @ApiModelProperty(hidden = true)
@@ -18,7 +19,7 @@ public class ImageFieldDto {
 
     private String customText;
 
-    private String fieldType;
+    private ImageFieldType fieldType;
 
     public String getUuid() {
         return uuid;
@@ -68,11 +69,11 @@ public class ImageFieldDto {
         this.customText = customText;
     }
 
-    public String getFieldType() {
+    public ImageFieldType getFieldType() {
         return fieldType;
     }
 
-    public void setFieldType(String fieldType) {
+    public void setFieldType(ImageFieldType fieldType) {
         this.fieldType = fieldType;
     }
 }

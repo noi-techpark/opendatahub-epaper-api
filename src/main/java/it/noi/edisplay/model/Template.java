@@ -27,13 +27,13 @@ public class Template {
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
 
-    private byte[] image;
+//    private byte[] image;
 
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
-    @OneToOne(mappedBy = "template")
+    @OneToOne(mappedBy = "template", cascade=CascadeType.ALL)
     private DisplayContent displayContent;
 
     public Template() {
@@ -56,12 +56,12 @@ public class Template {
     }
 
     public byte[] getImage() {
-        return image;
+        return null;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
+//    public void setImage(byte[] image) {
+//        this.image = image;
+//    }
 
     public String getUuid() {
         return uuid;
@@ -98,5 +98,14 @@ public class Template {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public DisplayContent getDisplayContent() {
+        return displayContent;
+    }
+
+    public void setDisplayContent(DisplayContent displayContent) {
+        displayContent.setTemplate(this);
+        this.displayContent = displayContent;
     }
 }

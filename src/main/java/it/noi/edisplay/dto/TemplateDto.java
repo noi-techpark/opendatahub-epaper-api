@@ -1,21 +1,22 @@
 package it.noi.edisplay.dto;
 
-
 import io.swagger.annotations.ApiModelProperty;
 
 import java.sql.Date;
 
-
 public class TemplateDto {
 
-	private String name;
-	private byte[] image;
+    private String name;
 
-	@ApiModelProperty(hidden=true)
+    private String description;
+    
+    private DisplayContentDto displayContent;
+
+    @ApiModelProperty(hidden = true)
     private String uuid;
-	@ApiModelProperty(hidden=true)
+    @ApiModelProperty(hidden = true)
     private Date created;
-	@ApiModelProperty(hidden=true)
+    @ApiModelProperty(hidden = true)
     private Date lastUpdate;
 
     public String getUuid() {
@@ -50,11 +51,19 @@ public class TemplateDto {
         this.lastUpdate = lastUpdate;
     }
 
-    public byte[] getImage() {
-        return image;
+    public String getDescription() {
+        return description;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public DisplayContentDto getDisplayContent() {
+        return displayContent;
+    }
+
+    public void setDisplayContent(DisplayContentDto displayContent) {
+        this.displayContent = displayContent;
     }
 }
