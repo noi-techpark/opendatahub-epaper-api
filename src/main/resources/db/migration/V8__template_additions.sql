@@ -3,12 +3,12 @@ ALTER TABLE IF EXISTS public.templates
     
 CREATE TABLE image_fields
 (
-    id integer NOT NULL,
-    uuid character varying(36) NOT NULL,
+    id SERIAL,
+    uuid VARCHAR(36) NOT NULL UNIQUE,
     x_pos integer,
     y_pos integer,
     custom_text character varying(200),
-    created timestamp without time zone NOT NULL,
-    last_update timestamp without time zone NOT NULL,
+    created TIMESTAMP NOT NULL,
+    last_update TIMESTAMP NOT NULL,
     PRIMARY KEY (id)
 );

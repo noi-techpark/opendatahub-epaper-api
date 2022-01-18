@@ -1,9 +1,9 @@
 CREATE TABLE display_content
 (
-    id integer NOT NULL,
-    uuid character varying(36) NOT NULL,
-    created timestamp without time zone NOT NULL,
-    last_update timestamp without time zone NOT NULL,
+    id SERIAL,
+    uuid VARCHAR(36) NOT NULL UNIQUE,
+    created TIMESTAMP NOT NULL,
+    last_update TIMESTAMP NOT NULL,
     image_url character varying(100),
     image_hash character varying(100),
     display_id integer,

@@ -1,6 +1,7 @@
 package it.noi.edisplay.dto;
 
 import java.sql.Date;
+import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -11,10 +12,8 @@ public class DisplayContentDto {
     private Date created;
     @ApiModelProperty(hidden = true)
     private Date lastUpdate;
-    
-    private String imageUrl;
-    
-    private String imageHash;
+
+    private List<ImageFieldDto> imageFields;
 
     public String getUuid() {
         return uuid;
@@ -40,19 +39,11 @@ public class DisplayContentDto {
         this.lastUpdate = lastUpdate;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public List<ImageFieldDto> getImageFields() {
+        return imageFields;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getImageHash() {
-        return imageHash;
-    }
-
-    public void setImageHash(String imageHash) {
-        this.imageHash = imageHash;
+    public void setImageFields(List<ImageFieldDto> imageFields) {
+        this.imageFields = imageFields;
     }
 }

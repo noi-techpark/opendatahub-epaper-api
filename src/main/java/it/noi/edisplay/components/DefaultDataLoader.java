@@ -72,10 +72,10 @@ public class DefaultDataLoader {
 			freeSoftwareLabTemplate.setName("Free Software Lab");
 			noiTemplate.setName(EVENT_TEMPLATE_NAME);
 
-			officeTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/max-mustermann.png").getInputStream())));
-			meetingRoomTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/meeting-room.png").getInputStream())));
-			freeSoftwareLabTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/free-software-lab.png").getInputStream())));
-			noiTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/noi.png").getInputStream())));
+//			officeTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/max-mustermann.png").getInputStream())));
+//			meetingRoomTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/meeting-room.png").getInputStream())));
+//			freeSoftwareLabTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/free-software-lab.png").getInputStream())));
+//			noiTemplate.setImage(imageUtil.convertToMonochrome(ImageIO.read(new ClassPathResource("/default-templates/noi.png").getInputStream())));
 
 
 			templateRepository.save(officeTemplate);
