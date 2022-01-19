@@ -2,18 +2,16 @@ package it.noi.edisplay.model;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -38,8 +36,6 @@ public class DisplayContent {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
-
-    private String imageUrl;
     
     private String imageHash;
     
@@ -55,11 +51,8 @@ public class DisplayContent {
     @JoinColumn(name = "scheduled_content_id", referencedColumnName = "id")
     private ScheduledContent scheduledContent;
 
-    @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval = true)
     private List<ImageField> imageFields;
-
-    public DisplayContent() {
-    }
 
     public Integer getId() {
         return id;
@@ -93,19 +86,6 @@ public class DisplayContent {
         this.lastUpdate = lastUpdate;
     }
 
-    @PrePersist
-    public void prePersist() {
-        this.setUuid(UUID.randomUUID().toString());
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
     public String getImageHash() {
         return imageHash;
     }
@@ -122,7 +102,15 @@ public class DisplayContent {
         for (ImageField field : imageFields) { 
             field.setDisplayContent(this);
         }
-        this.imageFields = imageFields;
+        
+        if (this.imageFields == null) {
+            this.imageFields = imageFields;
+        } else { //If the list already exists, we have to modify it otherwise Hibernate will not work properly
+            this.imageFields.clear();
+            if (imageFields != null) {
+                this.imageFields.addAll(imageFields);
+            }
+        }
     }
 
     public Display getDisplay() {

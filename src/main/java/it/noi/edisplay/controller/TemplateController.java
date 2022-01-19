@@ -3,6 +3,7 @@ package it.noi.edisplay.controller;
 import it.noi.edisplay.dto.TemplateDto;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.storage.FileImportStorageS3;
 import it.noi.edisplay.utils.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -13,12 +14,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import javax.imageio.ImageIO;
 
 /**
  * Controller class to create API for CRUD operations on Templates
@@ -36,6 +42,9 @@ public class TemplateController {
     @Autowired
     private ImageUtil imageUtil;
 
+    @Autowired
+    private FileImportStorageS3 fileImportStorageS3;
+
     Logger logger = LoggerFactory.getLogger(TemplateController.class);
 
     @RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
@@ -50,6 +59,29 @@ public class TemplateController {
         return new ResponseEntity<>(modelMapper.map(template, TemplateDto.class), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/getImage/{uuid}", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> getTemplateImage(@PathVariable("uuid") String uuid,
+            @RequestParam(value = "convertToBMP", required = false) Boolean convertToBMP) throws IOException {
+        if (convertToBMP == null) {
+            convertToBMP = false;
+        }
+
+        Template template = templateRepository.findByUuid(uuid);
+
+        if (template == null) {
+            logger.debug("Template with uuid: " + uuid + " not found.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        byte[] image = fileImportStorageS3.download(template.getDisplayContent().getUuid());
+
+        BufferedImage bImage = imageUtil.setImageFields(image, template.getDisplayContent().getImageFields(), null);
+        image = imageUtil.convertToByteArray(bImage, convertToBMP);
+
+        logger.debug("Get template image with uuid: " + uuid);
+        return new ResponseEntity<>(image, HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/all", method = RequestMethod.GET)
     public ResponseEntity getAllTemplates() {
         List<Template> list = templateRepository.findAll();
@@ -62,30 +94,39 @@ public class TemplateController {
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
     public ResponseEntity createOrUpdateTemplate(@RequestParam("template") String templateJson,
-            @RequestParam(value = "image", required = false) MultipartFile image)
-            throws JsonMappingException, JsonProcessingException {
+            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+
         TemplateDto templateDto = new ObjectMapper().readValue(templateJson, TemplateDto.class);
         Template template = modelMapper.map(templateDto, Template.class);
 
-        if (templateDto.getUuid() != null) {
-            Template existingTemplate = templateRepository.findByUuid(templateDto.getUuid());
+        if (template.getUuid() != null) {
+            Template existingTemplate = templateRepository.findByUuid(template.getUuid());
             if (existingTemplate == null) {
-                logger.debug("Update template with uuid:" + templateDto.getUuid() + " failed.");
+                logger.debug("Update template with uuid:" + template.getUuid() + " failed.");
                 return new ResponseEntity(HttpStatus.BAD_REQUEST);
             }
 
-            if (image == null && existingTemplate.getDisplayContent() != null) {
-                template.getDisplayContent().setImageHash(existingTemplate.getDisplayContent().getImageHash());
-                template.getDisplayContent().setImageUrl(existingTemplate.getDisplayContent().getImageUrl());
-            } else {
-                // upload image
-            }
+            existingTemplate.setName(template.getName());
+            existingTemplate.setDescription(template.getDescription());
+            existingTemplate.getDisplayContent().setImageFields(template.getDisplayContent().getImageFields());
+
+            template = existingTemplate;
+        } else {
+            template.getDisplayContent().setUuid(UUID.randomUUID().toString());
         }
 
         // Model mapper creates objects for these randomly so they have to be set to null
         template.getDisplayContent().setDisplay(null);
         template.getDisplayContent().setScheduledContent(null);
-
+        template.getDisplayContent().setTemplate(template);
+        
+        if (image != null) {
+            InputStream in = new ByteArrayInputStream(image.getBytes());
+            BufferedImage bImageFromConvert = ImageIO.read(in);
+            String fileKey = template.getDisplayContent().getUuid();
+            fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
+        }
+        
         Template savedTemplate = templateRepository.saveAndFlush(template);
 
         if (templateDto.getUuid() != null) {
