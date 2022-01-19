@@ -18,6 +18,8 @@ public class ImageFieldDto {
     private Integer yPos;
 
     private String customText;
+    
+    private Integer fontSize;
 
     private ImageFieldType fieldType;
 
@@ -75,5 +77,13 @@ public class ImageFieldDto {
 
     public void setFieldType(ImageFieldType fieldType) {
         this.fieldType = fieldType;
+    }
+
+    public Integer getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
     }
 }

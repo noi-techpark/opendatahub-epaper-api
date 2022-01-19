@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,7 +35,9 @@ public class ImageField {
 
     private String customText;
     
-    @ManyToOne
+    private Integer fontSize;
+    
+    @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "display_content_id", nullable = false)
     private DisplayContent displayContent;
     
@@ -124,5 +127,13 @@ public class ImageField {
 
     public void setDisplayContent(DisplayContent displayContent) {
         this.displayContent = displayContent;
+    }
+
+    public Integer getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
     }
 }

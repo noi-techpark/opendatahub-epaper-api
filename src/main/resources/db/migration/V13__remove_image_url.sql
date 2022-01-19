@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS public.display_content DROP COLUMN IF EXISTS image_url;
