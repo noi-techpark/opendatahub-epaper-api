@@ -1,26 +1,15 @@
 package it.noi.edisplay.components;
 
-import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
-import it.noi.edisplay.services.EDisplayRestService;
-import it.noi.edisplay.services.OpenDataRestService;
-import it.noi.edisplay.utils.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Random;
-
 
 @Component
 public class DefaultDataLoader {
