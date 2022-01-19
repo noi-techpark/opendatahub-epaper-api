@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS public.templates DROP COLUMN IF EXISTS image;

@@ -25,8 +25,6 @@ public class Template {
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
 
-//    private byte[] image;
-
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
@@ -49,14 +47,6 @@ public class Template {
     public void setName(String name) {
         this.name = name;
     }
-
-    public byte[] getImage() {
-        return null;
-    }
-
-//    public void setImage(byte[] image) {
-//        this.image = image;
-//    }
 
     public String getUuid() {
         return uuid;
