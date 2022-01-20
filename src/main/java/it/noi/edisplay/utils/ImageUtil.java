@@ -182,11 +182,8 @@ public class ImageUtil {
 		return convertToMonochrome(bufferedImage);
 	}
 	
-    public BufferedImage setImageFields(byte[] image, List<ImageField> fields,
+    public void setImageFields(BufferedImage bImage, List<ImageField> fields,
             Map<ImageFieldType, String> dynamicFieldValues) throws IOException {
-        InputStream is = new ByteArrayInputStream(image);
-        BufferedImage bImage = ImageIO.read(is);
-
         Graphics g = bImage.getGraphics();
 
         g.setColor(Color.BLACK);
@@ -210,7 +207,6 @@ public class ImageUtil {
         }
 
         g.dispose();
-        return bImage;
     }
 	
     public byte[] convertToByteArray(BufferedImage image, boolean to24bitBMP) throws IOException {

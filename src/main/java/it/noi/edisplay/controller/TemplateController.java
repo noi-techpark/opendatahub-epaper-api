@@ -61,11 +61,8 @@ public class TemplateController {
 
     @RequestMapping(value = "/getImage/{uuid}", method = RequestMethod.GET)
     public ResponseEntity<byte[]> getTemplateImage(@PathVariable("uuid") String uuid,
-            @RequestParam(value = "convertToBMP", required = false) Boolean convertToBMP) throws IOException {
-        if (convertToBMP == null) {
-            convertToBMP = false;
-        }
-
+            @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP, boolean withTextFields)
+            throws IOException {
         Template template = templateRepository.findByUuid(uuid);
 
         if (template == null) {
@@ -74,8 +71,12 @@ public class TemplateController {
         }
 
         byte[] image = fileImportStorageS3.download(template.getDisplayContent().getUuid());
+        InputStream is = new ByteArrayInputStream(image);
+        BufferedImage bImage = ImageIO.read(is);
 
-        BufferedImage bImage = imageUtil.setImageFields(image, template.getDisplayContent().getImageFields(), null);
+        if (withTextFields) {
+            imageUtil.setImageFields(bImage, template.getDisplayContent().getImageFields(), null);
+        }
         image = imageUtil.convertToByteArray(bImage, convertToBMP);
 
         logger.debug("Get template image with uuid: " + uuid);
