@@ -5,10 +5,13 @@ pipeline {
         DOCKER_IMAGE = '755952719952.dkr.ecr.eu-west-1.amazonaws.com/e-ink-displays-api'
         DOCKER_TAG = "test-$BUILD_NUMBER"
 		ANSIBLE_LIMIT = "test"
+
 		SERVER_PORT = "1012"
+
         DB_URL = "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
         DB_USERNAME = "epaper"
         DB_PASSWORD = credentials('epaper-api-test-db-password')
+
 		APP_DEBUG = true
 		PROXY_ENABLED = false
 		PROXY_URL = "http://localhost:19998"
@@ -17,6 +20,11 @@ pipeline {
 		NOI_CRON_EVENTS = "0 0 0/12 * * ?"
 		NOI_CRON_DISPLAYS = "0 0/10 6-22 * * ?"
 		CRON_HEARTBEAT = "0 0 0/1 * * ?"
+
+        S3_REGION = "eu-west-1"
+        S3_BUCKET_NAME = "it.bz.opendatahub.epaper.images-test"
+        S3_ACCESS_KEY = credentials('epaper-test-s3-access-key')
+        S3_SECRET_KEY = credentials('epaper-test-s3-secret-key')
     }
     stages {
         stage('Configure') {
@@ -38,6 +46,10 @@ pipeline {
 					echo 'NOI_CRON_EVENTS=${NOI_CRON_EVENTS}' >> .env
 					echo 'NOI_CRON_DISPLAYS=${NOI_CRON_DISPLAYS}' >> .env
 					echo 'CRON_HEARTBEAT=${CRON_HEARTBEAT}' >> .env
+                    echo 'S3_REGION=${S3_REGION}' >> .env
+                    echo 'S3_BUCKET_NAME=${S3_BUCKET_NAME}' >> .env
+                    echo 'S3_ACCESS_KEY=${S3_ACCESS_KEY}' >> .env
+                    echo 'S3_SECRET_KEY=${S3_SECRET_KEY}' >> .env
                 """
             }
         }
