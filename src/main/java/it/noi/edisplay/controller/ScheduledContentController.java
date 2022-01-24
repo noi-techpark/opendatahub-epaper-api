@@ -1,9 +1,6 @@
 package it.noi.edisplay.controller;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -18,16 +15,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.noi.edisplay.dto.EventDto;
-import it.noi.edisplay.dto.NOIPlaceData;
-import it.noi.edisplay.dto.NOIPlaceDto;
+import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.ScheduledContentDto;
 import it.noi.edisplay.model.Display;
-import it.noi.edisplay.model.Location;
 import it.noi.edisplay.model.ScheduledContent;
 import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.ScheduledContentRepository;
-import it.noi.edisplay.services.OpenDataRestService;
 
 @RestController
 @RequestMapping("/ScheduledContent")
@@ -39,10 +32,10 @@ public class ScheduledContentController {
     DisplayRepository displayRepository;
 
     @Autowired
-    private OpenDataRestService openDataRestService;
-
-    @Autowired
     ModelMapper modelMapper;
+    
+    @Autowired
+    private NOIDataLoader noiDataLoader;
 
     Logger logger = LoggerFactory.getLogger(ScheduledContentController.class);
 
@@ -67,49 +60,7 @@ public class ScheduledContentController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<ScheduledContent> list = scheduledContentRepository.findByDisplayId(display.getId());
-
-        ArrayList<ScheduledContentDto> dtoList = new ArrayList<>();
-
-        for (ScheduledContent scheduledContent : list)
-            dtoList.add(modelMapper.map(scheduledContent, ScheduledContentDto.class));
-
-        // Retrieve NOI events
-        List<EventDto> events = openDataRestService.getEvents();
-
-        // Retrieve NOI places for filtering out events
-        NOIPlaceDto places = openDataRestService.getNOIPlaces();
-
-        Location displayLocation = display.getLocation();
-
-        if (displayLocation != null && displayLocation.getRoomCode() != null) {
-            NOIPlaceData room = places.getData().stream()
-                    .filter(item -> item.getScode().equals(displayLocation.getRoomCode())).findFirst().orElse(null);
-            if (room != null) {
-                List<EventDto> noiEvents = events.stream()
-                        .filter(item -> item.getSpaceDesc().equals(room.getTodaynoibzit()))
-                        .collect(Collectors.toList());
-                for (EventDto noiEvent : noiEvents) {
-                    // Look for modified events in eInk database
-                    ScheduledContentDto scheduledContentDto = dtoList.stream().filter(
-                            item -> item.getEventId() != null && item.getEventId().equals(noiEvent.getEventId()))
-                            .findFirst().orElse(null);
-                    if (scheduledContentDto == null) {
-                        scheduledContentDto = new ScheduledContentDto();
-                        scheduledContentDto.setStartDate(new Timestamp(noiEvent.getRoomStartDateUTC()));
-                        scheduledContentDto.setEndDate(new Timestamp(noiEvent.getRoomEndDateUTC()));
-                        scheduledContentDto.setEventDescription(noiEvent.getEventDescriptionEN());
-                        scheduledContentDto.setEventId(noiEvent.getEventId());
-                        scheduledContentDto.setDisplayUuid(displayUuid);
-                        dtoList.add(scheduledContentDto);
-                    }
-
-                    scheduledContentDto.setOriginalStartDate(new Timestamp(noiEvent.getRoomStartDateUTC()));
-                    scheduledContentDto.setOriginalEndDate(new Timestamp(noiEvent.getRoomEndDateUTC()));
-                    scheduledContentDto.setOriginalEventDescription(noiEvent.getEventDescriptionEN());
-                }
-            }
-        }
+        List<ScheduledContentDto> dtoList = noiDataLoader.getDisplayEvents(display);
 
         logger.debug("All scheduled content requested");
         return new ResponseEntity<>(dtoList, HttpStatus.OK);

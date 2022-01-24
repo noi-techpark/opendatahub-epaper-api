@@ -1,6 +1,7 @@
 package it.noi.edisplay.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,30 +12,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.NOIPlaceData;
-import it.noi.edisplay.dto.NOIPlaceDto;
 import it.noi.edisplay.dto.RoomDto;
-import it.noi.edisplay.services.OpenDataRestService;
 
 
 /**
- * Controller class to create API for CRUD operations on Locations
+ * Controller class to create API for CRUD operations on NOI Rooms
  */
 @RestController
 @RequestMapping("/NOI-Place")
 public class RoomController {
 	
 	@Autowired
-	private OpenDataRestService openDataRestService;
+	private NOIDataLoader noiDataLoader;
 	
 	Logger logger = LoggerFactory.getLogger(RoomController.class);
 	
 	@RequestMapping(value = "/all", method = RequestMethod.GET)
-	public ResponseEntity getAllRooms() {
+	public ResponseEntity<ArrayList<RoomDto>> getAllRooms() {
 		ArrayList<RoomDto> roomList = new ArrayList<>();
 		
-		NOIPlaceDto places = openDataRestService.getNOIPlaces();
-		for (NOIPlaceData place : places.getData()) {
+		List<NOIPlaceData> places = noiDataLoader.getNOIPlaces();
+		for (NOIPlaceData place : places) {
 			RoomDto room = new RoomDto();
 			room.setCode(place.getScode());
 			room.setName(place.getName());
