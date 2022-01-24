@@ -5,6 +5,7 @@ on: push
 
 jobs:
   test_java_api:
+    name: "Test Java API"
     runs-on: ubuntu-20.04
 
     steps:
@@ -21,6 +22,7 @@ jobs:
   
   
   test_python_tunnel_proxy:
+    name: "Test Python tunnel proxy"
     runs-on: ubuntu-20.04
     env:
        API_URL: "https://api.epaper.opendatahub.testingmachine.eu"
@@ -38,6 +40,7 @@ jobs:
           timeout -s SIGKILL 5 python3 proxy.py || test "137" = "$?"
       
   test_python_websocket_proxy:
+    name: "Test Python websocket proxy"
     runs-on: ubuntu-20.04
     env:
       API_URL: "https://api.epaper.opendatahub.testingmachine.eu"
