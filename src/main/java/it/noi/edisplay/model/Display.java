@@ -56,13 +56,15 @@ public class Display {
     @ManyToOne
     private Location location;
 
-    @OneToOne(mappedBy = "display")
+    @OneToOne(mappedBy = "display", cascade=CascadeType.ALL)
     private DisplayContent displayContent;
     
     @OneToMany(mappedBy="display", fetch=FetchType.LAZY)
     private List<ScheduledContent> scheduledContent;
 
     private int batteryPercentage;
+    
+    private boolean ignoreScheduledContent;
 
     public Display() {
 
@@ -185,5 +187,13 @@ public class Display {
 
     public void setScheduledContent(List<ScheduledContent> scheduledContent) {
         this.scheduledContent = scheduledContent;
+    }
+
+    public boolean isIgnoreScheduledContent() {
+        return ignoreScheduledContent;
+    }
+
+    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+        this.ignoreScheduledContent = ignoreScheduledContent;
     }
 }

@@ -7,6 +7,7 @@ import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -32,5 +33,11 @@ public class FileImportStorageS3 {
         final ResponseBytes<GetObjectResponse> object = s3Client.getObject(getObjectRequest,
                 ResponseTransformer.toBytes());
         return object.asByteArray();
+    }
+
+    public void copy(String oldS3FileKey, String newS3FileKey) {
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().sourceBucket(bucket).sourceKey(oldS3FileKey)
+                .destinationBucket(bucket).destinationKey(newS3FileKey).build();
+        s3Client.copyObject(copyObjectRequest);
     }
 }

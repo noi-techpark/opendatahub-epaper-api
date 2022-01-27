@@ -59,7 +59,7 @@ public class TemplateController {
         return new ResponseEntity<>(modelMapper.map(template, TemplateDto.class), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/getImage/{uuid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/get-image/{uuid}", method = RequestMethod.GET)
     public ResponseEntity<byte[]> getTemplateImage(@PathVariable("uuid") String uuid,
             @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP, boolean withTextFields)
             throws IOException {
@@ -69,7 +69,11 @@ public class TemplateController {
             logger.debug("Template with uuid: " + uuid + " not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
+        if (template.getDisplayContent() == null) {
+            logger.debug("Template with uuid: " + uuid + " has no image.");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        
         byte[] image = fileImportStorageS3.download(template.getDisplayContent().getUuid());
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
