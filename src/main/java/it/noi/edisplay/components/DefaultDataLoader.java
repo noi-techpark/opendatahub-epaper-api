@@ -53,9 +53,15 @@ public class DefaultDataLoader {
 
 		if (resolutionRepository.findAll().size() == 0) {
 			Resolution resolution = new Resolution();
-			resolution.setWidth(640);
-			resolution.setHeight(384);
-			resolutionRepository.saveAndFlush(resolution);
+			resolution.setWidth(1440);
+			resolution.setHeight(2560);
+			resolution.setBitDepth(24);
+			resolutionRepository.save(resolution);
+	        Resolution resolutionSmall = new Resolution();
+	        resolutionSmall.setWidth(1872);
+	        resolutionSmall.setHeight(1404);
+	        resolutionSmall.setBitDepth(4);
+	        resolutionRepository.saveAndFlush(resolutionSmall);
 		}
 
 		if (locationRepository.findAll().size() == 0) {

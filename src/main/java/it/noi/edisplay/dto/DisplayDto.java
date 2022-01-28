@@ -16,9 +16,7 @@ public class DisplayDto {
 	private String locationUuid;
     private DisplayContentDto displayContent;
     private boolean ignoreScheduledContent;
-
-	@ApiModelProperty(hidden = true)
-	private ConnectionDto connection;
+    private String warningMessage;
 
 	@ApiModelProperty(hidden = true)
 	private String uuid;
@@ -107,14 +105,6 @@ public class DisplayDto {
 		this.batteryPercentage = batteryPercentage;
 	}
 
-	public ConnectionDto getConnection() {
-		return connection;
-	}
-
-	public void setConnection(ConnectionDto connection) {
-		this.connection = connection;
-	}
-
 	public ResolutionDto getResolution() {
 		return resolution;
 	}
@@ -161,5 +151,13 @@ public class DisplayDto {
 
     public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
+    }
+
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
     }
 }

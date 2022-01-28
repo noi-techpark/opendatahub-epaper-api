@@ -37,8 +37,6 @@ public class DisplayContent {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
     
-    private String imageHash;
-    
     @OneToOne
     @JoinColumn(name = "display_id", referencedColumnName = "id")
     private Display display;
@@ -84,14 +82,6 @@ public class DisplayContent {
 
     public void setLastUpdate(Date lastUpdate) {
         this.lastUpdate = lastUpdate;
-    }
-
-    public String getImageHash() {
-        return imageHash;
-    }
-
-    public void setImageHash(String imageHash) {
-        this.imageHash = imageHash;
     }
 
     public List<ImageField> getImageFields() {

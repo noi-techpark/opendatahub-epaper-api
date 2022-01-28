@@ -51,6 +51,8 @@ public class ImageField {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
+    
+    private String currentFieldValue;
 
     public Integer getId() {
         return id;
@@ -135,5 +137,13 @@ public class ImageField {
 
     public void setFontSize(Integer fontSize) {
         this.fontSize = fontSize;
+    }
+
+    public String getCurrentFieldValue() {
+        return currentFieldValue;
+    }
+
+    public void setCurrentFieldValue(String currentFieldValue) {
+        this.currentFieldValue = currentFieldValue;
     }
 }

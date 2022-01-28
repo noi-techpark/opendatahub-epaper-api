@@ -2,19 +2,20 @@ package it.noi.edisplay.controller;
 
 
 import it.noi.edisplay.dto.DisplayDto;
+import it.noi.edisplay.dto.DisplayStateDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Point;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -30,9 +31,6 @@ public class DisplayController {
 
 	@Autowired
 	private TemplateRepository templateRepository;
-
-	@Autowired
-	private ConnectionRepository connectionRepository;
 
 	@Autowired
 	private ResolutionRepository resolutionRepository;
@@ -93,9 +91,9 @@ public class DisplayController {
 
 		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
 		if (resolutionbyWidthAndHeight == null) {
-			Resolution resolution = new Resolution(width, height);
-			resolutionRepository.saveAndFlush(resolution);
-			display.setResolution(resolution);
+//			Resolution resolution = new Resolution(width, height);
+//			resolutionRepository.saveAndFlush(resolution);
+//			display.setResolution(resolution);
 		} else
 			display.setResolution(resolutionbyWidthAndHeight);
 
@@ -103,40 +101,6 @@ public class DisplayController {
 
 		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
 		return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
-	}
-
-	@RequestMapping(value = "/simple-create", method = RequestMethod.POST)
-	public ResponseEntity simpleCreateDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("networkAddress") String networkAddress, @RequestParam("locationUuid") String locationUuid) {
-		Display display = new Display();
-		display.setName(name);
-		display.setBatteryPercentage(new Random().nextInt(99));
-
-		Template template = templateRepository.findByUuid(templateUuid);
-
-		if (template != null)
-			display.setTemplate(template);
-		else {
-			logger.debug("Display creation failed. Template not found");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
-		if (resolutionbyWidthAndHeight == null) {
-			Resolution resolution = new Resolution(width, height);
-			resolutionRepository.saveAndFlush(resolution);
-			display.setResolution(resolution);
-		} else
-			display.setResolution(resolutionbyWidthAndHeight);
-
-		Display savedDisplay = displayRepository.saveAndFlush(display);
-
-		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
-
-		Location location = locationRepository.findByUuid(locationUuid);
-
-		Connection connection = connectionRepository.save(new Connection(savedDisplay, location, new Point(0, 0), networkAddress));
-		logger.debug("Connection with uuid:" + connection.getUuid() + " created.");
-		return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
@@ -175,9 +139,9 @@ public class DisplayController {
 		
 		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
 		if (resolutionbyWidthAndHeight == null) {
-			Resolution resolution = new Resolution(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
-			resolutionRepository.saveAndFlush(resolution);
-			display.setResolution(resolution);
+//			Resolution resolution = new Resolution(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
+//			resolutionRepository.saveAndFlush(resolution);
+//			display.setResolution(resolution);
 		} else
 			display.setResolution(resolutionbyWidthAndHeight);
 
@@ -188,4 +152,45 @@ public class DisplayController {
 		logger.debug("Updated display with uuid:" + display.getUuid());
 		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.ACCEPTED);
 	}
+	
+    @PostMapping(value = "/sync-status/{displayUuid}", consumes = "application/json")
+    public ResponseEntity<String> syncDisplayStatus(@PathVariable("displayUuid") String displayUuid,
+            @RequestBody DisplayStateDto stateDto) {
+        Display display = displayRepository.findByUuid(displayUuid);
+
+        if (display == null) {
+            logger.debug("Cannot find a Display with uuid:" + displayUuid);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        display.setBatteryPercentage(stateDto.getBatteryPercentage());
+        display.setErrorMessage(stateDto.getErrorMessage());
+        display.setWarningMessage(stateDto.getWarningMessage());
+
+        String imageHash = display.getImageHash();
+        if (imageHash != null) {
+
+            // We need to validate the hash by checking if image field values are not out-dated
+            Map<ImageFieldType, String> fieldValues = display.getTextFieldValues();
+
+            for (ImageField field : display.getDisplayContent().getImageFields()) {
+                if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT
+                        && !field.getCurrentFieldValue().equals(fieldValues.get(field.getFieldType()))) {
+                    // Field value does not match, delete hash
+                    imageHash = null;
+                    break;
+                }
+            }
+        }
+
+        if (imageHash == null) {
+            display.setImageHash(null);
+            imageHash = "no-hash";
+        }
+
+        displayRepository.saveAndFlush(display);
+
+        logger.debug("Status updated and image hash returned for display with uuid:" + displayUuid);
+        return new ResponseEntity<>(imageHash, HttpStatus.OK);
+    }
 }

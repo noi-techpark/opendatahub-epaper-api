@@ -4,8 +4,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+
+import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -45,6 +50,8 @@ public class Display {
     private Date lastState;
 
     private String errorMessage;
+    
+    private String warningMessage;
 
 //	@NotNull
     @ManyToOne
@@ -56,19 +63,17 @@ public class Display {
     @ManyToOne
     private Location location;
 
-    @OneToOne(mappedBy = "display", cascade=CascadeType.ALL)
+    @OneToOne(mappedBy = "display", cascade = CascadeType.ALL)
     private DisplayContent displayContent;
-    
-    @OneToMany(mappedBy="display", fetch=FetchType.LAZY)
+
+    @OneToMany(mappedBy = "display", fetch = FetchType.LAZY)
     private List<ScheduledContent> scheduledContent;
 
     private int batteryPercentage;
-    
+
     private boolean ignoreScheduledContent;
 
-    public Display() {
-
-    }
+    private String imageHash;
 
     public Integer getId() {
         return id;
@@ -195,5 +200,64 @@ public class Display {
 
     public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
+    }
+
+    public String getImageHash() {
+        return imageHash;
+    }
+
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
+    }
+
+    public Map<ImageFieldType, String> getTextFieldValues() {
+        EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
+
+        // Location
+        if (this.getLocation() != null) {
+            fieldValues.put(ImageFieldType.LOCATION_NAME, this.getLocation().getName());
+        } else {
+            fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
+        }
+
+        List<ScheduledContent> events = this.getScheduledContent();
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+        // Current Event
+        Date currentDate = new Date();
+        ScheduledContent currentEvent = events.stream()
+                .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
+                .findFirst().orElse(null);
+        if (currentEvent != null) {
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, currentEvent.getEventDescription());
+            fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(currentEvent.getStartDate()));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(currentEvent.getEndDate()));
+        } else {
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "No current event");
+            fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
+        }
+
+        // Upcoming event
+        Collections.sort(events); // Sort events by start date
+        if (!events.isEmpty()) {
+            ScheduledContent upcomingEvent = events.get(0);
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, upcomingEvent.getEventDescription());
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, f.format(upcomingEvent.getStartDate()));
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, f.format(upcomingEvent.getEndDate()));
+        } else {
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, "No upcoming events");
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, "");
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, "");
+        }
+        return fieldValues;
+    }
+
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
     }
 }
