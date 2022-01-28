@@ -2,6 +2,8 @@ package it.noi.edisplay.utils;
 
 import it.noi.edisplay.model.ImageField;
 import it.noi.edisplay.model.ImageFieldType;
+import it.noi.edisplay.model.Resolution;
+
 import org.imgscalr.Scalr;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +11,13 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
 import java.io.*;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +36,7 @@ public class ImageUtil {
         return baos.toByteArray();
     }
 
-    public static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
+    private static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
         return Scalr.resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, width, height);
     }
 
@@ -58,12 +66,32 @@ public class ImageUtil {
 
         g.dispose();
     }
-    public byte[] convertToByteArray(BufferedImage image, boolean to24bitBMP) throws IOException {
+
+    public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)
+            throws IOException {
         BufferedImage outputImage;
         String format;
-        if (to24bitBMP) {
+        if (toNativeFormat && resolution != null) {
             format = "BMP";
-            outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+            image = getScaledImage(image, resolution.getWidth(), resolution.getHeight());
+
+            switch (resolution.getBitDepth()) {
+            case 4:
+                byte[] v = new byte[1 << 4];
+                for (int i = 0; i < v.length; ++i)
+                    v[i] = (byte) (i * 17);
+                ColorModel cm = new IndexColorModel(4, v.length, v, v, v);
+                WritableRaster wr = cm.createCompatibleWritableRaster(image.getWidth(), image.getHeight());
+                outputImage = new BufferedImage(cm, wr, false, null);
+                break;
+            case 24:
+                outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                break;
+            default:
+                outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            }
+
             Graphics2D g2d = outputImage.createGraphics();
             g2d.drawImage(image, 0, 0, null);
             g2d.dispose();
@@ -75,5 +103,15 @@ public class ImageUtil {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(outputImage, format, baos);
         return baos.toByteArray();
+    }
+    
+    public String convertToMD5Hash(byte[] image) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] digest = md.digest(image);
+        BigInteger bigInt = new BigInteger(1, digest);
+        String hashtext = bigInt.toString(16);
+        // Now we need to zero pad the hash for the full 32 chars
+        hashtext = "0".repeat(32 - hashtext.length()) + hashtext;
+        return hashtext;
     }
 }

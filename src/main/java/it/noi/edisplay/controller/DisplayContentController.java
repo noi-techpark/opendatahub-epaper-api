@@ -4,12 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.List;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import java.util.UUID;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumMap;
 
 import javax.imageio.ImageIO;
 
@@ -32,8 +29,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.DisplayContent;
+import it.noi.edisplay.model.ImageField;
 import it.noi.edisplay.model.ImageFieldType;
-import it.noi.edisplay.model.ScheduledContent;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.TemplateRepository;
@@ -66,9 +63,9 @@ public class DisplayContentController {
     @GetMapping(value = "/get-image/{displayUuid}")
     public ResponseEntity<byte[]> getDisplayContent(@PathVariable("displayUuid") String displayUuid,
             @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP, boolean withTextFields)
-            throws IOException {
+            throws IOException, NoSuchAlgorithmException {
         Display display = displayRepository.findByUuid(displayUuid);
-        
+
         if (display == null) {
             logger.debug("Display with uuid " + displayUuid + " was not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -83,50 +80,27 @@ public class DisplayContentController {
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 
+        Map<ImageFieldType, String> fieldValues = null;
         if (withTextFields) {
-            EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
-            
-            // Location
-            if (display.getLocation() != null) {
-                fieldValues.put(ImageFieldType.LOCATION_NAME, display.getLocation().getName());
-            } else {
-                fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
-            }
-
-            List<ScheduledContent> events = display.getScheduledContent();
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm"); 
-
-            // Current Event
-            Date currentDate = new Date();
-            ScheduledContent currentEvent = events.stream()
-                    .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .findFirst().orElse(null);
-            if (currentEvent != null) {
-                fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, currentEvent.getEventDescription());
-                fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(currentEvent.getStartDate()));
-                fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(currentEvent.getEndDate()));
-            } else {
-                fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "No current event");
-                fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
-                fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
-            }
-
-            // Upcoming event
-            Collections.sort(events); // Sort events by start date
-            if (!events.isEmpty()) {
-                ScheduledContent upcomingEvent = events.get(0);
-                fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, upcomingEvent.getEventDescription());
-                fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, f.format(upcomingEvent.getStartDate()));
-                fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, f.format(upcomingEvent.getEndDate()));
-            } else {
-                fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, "No upcoming events");
-                fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, "");
-                fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, "");
-            }
-
+            fieldValues = display.getTextFieldValues();
             imageUtil.setImageFields(bImage, display.getDisplayContent().getImageFields(), fieldValues);
         }
-        image = imageUtil.convertToByteArray(bImage, convertToBMP);
+        image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
+
+        // Set MD5 hash for Display if the image is in native format
+        if (convertToBMP) {
+            if (fieldValues != null) {
+                // Set current field values for later MD5 validation
+                for (ImageField field : display.getDisplayContent().getImageFields()) {
+                    if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT) {
+                        field.setCurrentFieldValue(fieldValues.get(field.getFieldType()));
+                    }
+                }
+            }
+
+            display.setImageHash(imageUtil.convertToMD5Hash(image));
+            displayRepository.saveAndFlush(display);
+        }
 
         logger.debug("Get display image with uuid: " + displayUuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
@@ -173,6 +147,9 @@ public class DisplayContentController {
                 fileImportStorageS3.copy(template.getDisplayContent().getUuid(), display.getDisplayContent().getUuid());
             }
         }
+        
+        // Display content has changed, so the current image hash is no longer valid
+        display.setImageHash(null);
 
         Display savedDisplay = displayRepository.saveAndFlush(display);
 
@@ -188,7 +165,7 @@ public class DisplayContentController {
 
     @PostMapping(value = "/set-by-template/{displayUuid}")
     public ResponseEntity<DisplayContentDto> setDisplayContentByTemplate(
-            @PathVariable("displayUuid") String displayUuid, String templateUuid) throws IOException {
+            @PathVariable("displayUuid") String displayUuid, String templateUuid) {
         Display display = displayRepository.findByUuid(displayUuid);
 
         if (display == null) {
@@ -216,6 +193,9 @@ public class DisplayContentController {
             // Copy background image from template
             fileImportStorageS3.copy(template.getDisplayContent().getUuid(), display.getDisplayContent().getUuid());
         }
+        
+        // Display content has changed, so the current image hash is no longer valid
+        display.setImageHash(null);
 
         Display savedDisplay = displayRepository.saveAndFlush(display);
 

@@ -5,6 +5,8 @@ public class ResolutionDto {
 	private int width;
 
 	private int height;
+	
+	private int bitDepth;
 
 	public int getHeight() {
 		return height;
@@ -21,4 +23,12 @@ public class ResolutionDto {
 	public void setWidth(int width) {
 		this.width = width;
 	}
+
+    public int getBitDepth() {
+        return bitDepth;
+    }
+
+    public void setBitDepth(int bitDepth) {
+        this.bitDepth = bitDepth;
+    }
 }
