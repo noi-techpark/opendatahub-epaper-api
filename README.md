@@ -1,5 +1,7 @@
 # it.bz.opendatahub.epaper.api
 
+[![CI](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/ci.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/ci.yml)
+
 REST API for the E-Ink-Displays System Webapp.
 Communicates with Ardunios over WIFI HTTP to send images and make state requests.
 
@@ -24,24 +26,25 @@ predefined Images that can be modified and loaded on the Displays.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Installation guide](#installation-guide)
-  - [Source code](#source-code)
-- [Run Application](#run-application)
-  - [Execute without Docker](#execute-without-docker)
-    - [Database](#database)
-    - [Application](#application)
-  - [Execute with Docker](#execute-with-docker)
-  - [Execute with local proxy if you deploy on remote server](#execute-with-local-proxy-if-you-deploy-on-remote-server)
-    - [Use HTTP communication between API and Proxy](#use-http-communication-between-api-and-proxy)
-    - [Use Web Socket communication between API and Proxy](#use-web-socket-communication-between-api-and-proxy)
-  - [Show today.noi.bz.it events](#show-todaynoibzit-events)
-  - [Heartbeat](#heartbeat)
-- [Set up to send image to display](#set-up-to-send-image-to-display)
-- [Swagger](#swagger)
-- [Unit Tests](#unit-tests)
-- [Integration test](#integration-test)
-- [Licenses](#licenses)
-  - [Third party components](#third-party-components)
+- [it.bz.opendatahub.epaper.api](#itbzopendatahubepaperapi)
+  - [Installation guide](#installation-guide)
+    - [Source code](#source-code)
+  - [Run Application](#run-application)
+    - [Execute without Docker](#execute-without-docker)
+      - [Database](#database)
+      - [Application](#application)
+    - [Execute with Docker](#execute-with-docker)
+    - [Execute with local proxy if you deploy on remote server](#execute-with-local-proxy-if-you-deploy-on-remote-server)
+      - [Use HTTP communication between API and Proxy](#use-http-communication-between-api-and-proxy)
+      - [Use Web Socket communication between API and Proxy](#use-web-socket-communication-between-api-and-proxy)
+    - [Show today.noi.bz.it events](#show-todaynoibzit-events)
+    - [Heartbeat](#heartbeat)
+  - [Set up to send image to display](#set-up-to-send-image-to-display)
+  - [Swagger](#swagger)
+  - [Unit Tests](#unit-tests)
+  - [Integration test](#integration-test)
+  - [Licenses](#licenses)
+    - [Third party components](#third-party-components)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

@@ -58,14 +58,12 @@ public class ImageUtil {
 
         g.dispose();
     }
-
     public byte[] convertToByteArray(BufferedImage image, boolean to24bitBMP) throws IOException {
         BufferedImage outputImage;
         String format;
         if (to24bitBMP) {
             format = "BMP";
             outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-
             Graphics2D g2d = outputImage.createGraphics();
             g2d.drawImage(image, 0, 0, null);
             g2d.dispose();

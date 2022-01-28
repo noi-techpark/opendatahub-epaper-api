@@ -2,7 +2,6 @@ package it.noi.edisplay.controller;
 
 
 import it.noi.edisplay.dto.DisplayDto;
-import it.noi.edisplay.dto.StateDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import org.modelmapper.ModelMapper;
