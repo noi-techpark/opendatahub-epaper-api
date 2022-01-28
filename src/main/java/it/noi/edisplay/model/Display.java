@@ -4,8 +4,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-//import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -56,10 +56,15 @@ public class Display {
     @ManyToOne
     private Location location;
 
-    @OneToOne(mappedBy = "display")
+    @OneToOne(mappedBy = "display", cascade=CascadeType.ALL)
     private DisplayContent displayContent;
+    
+    @OneToMany(mappedBy="display", fetch=FetchType.LAZY)
+    private List<ScheduledContent> scheduledContent;
 
     private int batteryPercentage;
+    
+    private boolean ignoreScheduledContent;
 
     public Display() {
 
@@ -166,5 +171,29 @@ public class Display {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public DisplayContent getDisplayContent() {
+        return displayContent;
+    }
+
+    public void setDisplayContent(DisplayContent displayContent) {
+        this.displayContent = displayContent;
+    }
+
+    public List<ScheduledContent> getScheduledContent() {
+        return scheduledContent;
+    }
+
+    public void setScheduledContent(List<ScheduledContent> scheduledContent) {
+        this.scheduledContent = scheduledContent;
+    }
+
+    public boolean isIgnoreScheduledContent() {
+        return ignoreScheduledContent;
+    }
+
+    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+        this.ignoreScheduledContent = ignoreScheduledContent;
     }
 }

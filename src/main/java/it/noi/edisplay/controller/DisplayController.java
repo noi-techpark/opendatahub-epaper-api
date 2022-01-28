@@ -154,21 +154,14 @@ public class DisplayController {
 
 	}
 
-	@RequestMapping(value = "/update/{templateUuid}", method = RequestMethod.PUT)
-	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto, @PathVariable("templateUuid") String templateUuid) {
+	@RequestMapping(value = "/update/", method = RequestMethod.PUT)
+	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto) {
 		Display display = displayRepository.findByUuid(displayDto.getUuid());
 		if (display == null) {
 			logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Display not found.");
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 		display.setBatteryPercentage(displayDto.getBatteryPercentage());
-
-		Template template = templateRepository.findByUuid(templateUuid);
-		if (template == null) {
-			logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Template not found.");
-			return new ResponseEntity(HttpStatus.BAD_REQUEST);
-		}
-		display.setTemplate(template);
 
 		if (displayDto.getLocationUuid() != null) {
             Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
@@ -191,6 +184,7 @@ public class DisplayController {
 		display.setName(displayDto.getName());
 		display.setLastState(displayDto.getLastState());
 		display.setErrorMessage(displayDto.getErrorMessage());
+		display.setIgnoreScheduledContent(displayDto.isIgnoreScheduledContent());
 		logger.debug("Updated display with uuid:" + display.getUuid());
 		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.ACCEPTED);
 	}

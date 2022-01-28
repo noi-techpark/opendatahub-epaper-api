@@ -14,6 +14,8 @@ public class DisplayDto {
 	private String mac;
 	private String errorMessage;
 	private String locationUuid;
+    private DisplayContentDto displayContent;
+    private boolean ignoreScheduledContent;
 
 	@ApiModelProperty(hidden = true)
 	private ConnectionDto connection;
@@ -143,5 +145,21 @@ public class DisplayDto {
 
     public void setLocationUuid(String locationUuid) {
         this.locationUuid = locationUuid;
+    }
+
+    public DisplayContentDto getDisplayContent() {
+        return displayContent;
+    }
+
+    public void setDisplayContent(DisplayContentDto displayContent) {
+        this.displayContent = displayContent;
+    }
+
+    public boolean isIgnoreScheduledContent() {
+        return ignoreScheduledContent;
+    }
+
+    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+        this.ignoreScheduledContent = ignoreScheduledContent;
     }
 }
