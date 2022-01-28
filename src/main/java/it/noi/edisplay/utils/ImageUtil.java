@@ -15,7 +15,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.io.*;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -108,10 +107,10 @@ public class ImageUtil {
     public String convertToMD5Hash(byte[] image) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] digest = md.digest(image);
-        BigInteger bigInt = new BigInteger(1, digest);
-        String hashtext = bigInt.toString(16);
-        // Now we need to zero pad the hash for the full 32 chars
-        hashtext = "0".repeat(32 - hashtext.length()) + hashtext;
-        return hashtext;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < digest.length; ++i) {
+            sb.append(Integer.toHexString((digest[i] & 0xFF) | 0x100).substring(1, 3));
+        }
+        return sb.toString();
     }
 }
