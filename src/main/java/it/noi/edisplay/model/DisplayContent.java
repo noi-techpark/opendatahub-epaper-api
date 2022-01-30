@@ -2,6 +2,7 @@ package it.noi.edisplay.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -51,6 +52,12 @@ public class DisplayContent {
 
     @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval = true)
     private List<ImageField> imageFields;
+    
+    private String imageHash;
+    
+    public DisplayContent() {
+        uuid = UUID.randomUUID().toString();
+    }
 
     public Integer getId() {
         return id;
@@ -125,5 +132,13 @@ public class DisplayContent {
 
     public void setScheduledContent(ScheduledContent scheduledContent) {
         this.scheduledContent = scheduledContent;
+    }
+
+    public String getImageHash() {
+        return imageHash;
+    }
+
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
     }
 }
