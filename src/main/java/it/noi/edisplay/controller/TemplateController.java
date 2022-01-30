@@ -1,6 +1,8 @@
 package it.noi.edisplay.controller;
 
+import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.TemplateDto;
+import it.noi.edisplay.model.DisplayContent;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.TemplateRepository;
 import it.noi.edisplay.storage.FileImportStorageS3;
@@ -22,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
@@ -47,7 +48,7 @@ public class TemplateController {
 
     Logger logger = LoggerFactory.getLogger(TemplateController.class);
 
-    @RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
+    @GetMapping(value = "/get/{uuid}")
     public ResponseEntity<TemplateDto> getTemplate(@PathVariable("uuid") String uuid) {
         Template template = templateRepository.findByUuid(uuid);
 
@@ -59,7 +60,7 @@ public class TemplateController {
         return new ResponseEntity<>(modelMapper.map(template, TemplateDto.class), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/get-image/{uuid}", method = RequestMethod.GET)
+    @GetMapping(value = "/get-image/{uuid}")
     public ResponseEntity<byte[]> getTemplateImage(@PathVariable("uuid") String uuid, boolean withTextFields)
             throws IOException {
         Template template = templateRepository.findByUuid(uuid);
@@ -86,8 +87,8 @@ public class TemplateController {
         return new ResponseEntity<>(image, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public ResponseEntity getAllTemplates() {
+    @GetMapping(value = "/all")
+    public ResponseEntity<ArrayList<TemplateDto>> getAllTemplates() {
         List<Template> list = templateRepository.findAll();
         ArrayList<TemplateDto> dtoList = new ArrayList<>();
         for (Template template : list)
@@ -96,53 +97,73 @@ public class TemplateController {
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "multipart/form-data")
-    public ResponseEntity createOrUpdateTemplate(@RequestParam("template") String templateJson,
-            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+    @PostMapping(value = "/create")
+    public ResponseEntity<TemplateDto> createTemplate(@RequestBody TemplateDto templateDto) {
+        Template template = templateRepository.saveAndFlush(modelMapper.map(templateDto, Template.class));
 
-        TemplateDto templateDto = new ObjectMapper().readValue(templateJson, TemplateDto.class);
-        Template template = modelMapper.map(templateDto, Template.class);
+        logger.debug("Template with uuid:" + template.getUuid() + " created.");
+        return new ResponseEntity<>(modelMapper.map(template, TemplateDto.class), HttpStatus.CREATED);
+    }
+    
+    @PutMapping(value = "/update", consumes = "application/json")
+    public ResponseEntity<Object> updateTemplate(@RequestBody TemplateDto templateDto) {
+        Template template = templateRepository.findByUuid(templateDto.getUuid());
 
-        if (template.getUuid() != null) {
-            Template existingTemplate = templateRepository.findByUuid(template.getUuid());
-            if (existingTemplate == null) {
-                logger.debug("Update template with uuid:" + template.getUuid() + " failed.");
-                return new ResponseEntity(HttpStatus.BAD_REQUEST);
-            }
-
-            existingTemplate.setName(template.getName());
-            existingTemplate.setDescription(template.getDescription());
-            existingTemplate.getDisplayContent().setImageFields(template.getDisplayContent().getImageFields());
-
-            template = existingTemplate;
-        } else {
-            template.getDisplayContent().setUuid(UUID.randomUUID().toString());
+        if (template == null) {
+            logger.debug("Update template with uuid:" + templateDto.getUuid() + " failed.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        // Model mapper creates objects for these randomly so they have to be set to null
-        template.getDisplayContent().setDisplay(null);
-        template.getDisplayContent().setScheduledContent(null);
-        template.getDisplayContent().setTemplate(template);
+        template.setName(templateDto.getName());
+        template.setDescription(templateDto.getDescription());
         
+        templateRepository.saveAndFlush(template);
+        logger.debug("Updated template with uuid:" + template.getUuid());
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+    
+    @PostMapping(value = "/set-image/{templateUuid}", consumes = "multipart/form-data")
+    public ResponseEntity<DisplayContentDto> setTemplateContent(@PathVariable("templateUuid") String templateUuid,
+            @RequestParam("displayContentDtoJson") String displayContentDtoJson,
+            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+        Template template = templateRepository.findByUuid(templateUuid);
+
+        if (template == null) {
+            logger.debug("Template with uuid " + templateUuid + " was not found.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        DisplayContentDto displayContentDto = new ObjectMapper().readValue(displayContentDtoJson, DisplayContentDto.class);
+        DisplayContent displayContent = modelMapper.map(displayContentDto, DisplayContent.class);
+
+        boolean templateContentExists = template.getDisplayContent() != null;
+
+        if (!templateContentExists) {
+            template.setDisplayContent(new DisplayContent());
+            template.getDisplayContent().setTemplate(template);
+        }
+        template.getDisplayContent().setImageFields(displayContent.getImageFields());
+
         if (image != null) {
             InputStream in = new ByteArrayInputStream(image.getBytes());
             BufferedImage bImageFromConvert = ImageIO.read(in);
             String fileKey = template.getDisplayContent().getUuid();
             fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
         }
-        
+
         Template savedTemplate = templateRepository.saveAndFlush(template);
 
-        if (templateDto.getUuid() != null) {
-            logger.debug("Updated template with uuid:" + template.getUuid());
-            return new ResponseEntity(HttpStatus.ACCEPTED);
+        if (templateContentExists) {
+            logger.debug("Updated image for Template uuid:" + templateUuid);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
 
-        logger.debug("Template with uuid:" + savedTemplate.getUuid() + " created.");
-        return new ResponseEntity<>(modelMapper.map(savedTemplate, TemplateDto.class), HttpStatus.CREATED);
+        logger.debug("Created image for Template uuid:" + templateUuid);
+        return new ResponseEntity<>(modelMapper.map(savedTemplate.getDisplayContent(), DisplayContentDto.class),
+                HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/delete/{uuid}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/delete/{uuid}")
     public ResponseEntity deleteTemplate(@PathVariable("uuid") String uuid) {
         Template template = templateRepository.findByUuid(uuid);
 

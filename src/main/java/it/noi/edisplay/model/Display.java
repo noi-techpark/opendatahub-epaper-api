@@ -50,7 +50,7 @@ public class Display {
     private Date lastState;
 
     private String errorMessage;
-    
+
     private String warningMessage;
 
 //	@NotNull
@@ -72,8 +72,6 @@ public class Display {
     private int batteryPercentage;
 
     private boolean ignoreScheduledContent;
-
-    private String imageHash;
 
     public Integer getId() {
         return id;
@@ -200,14 +198,6 @@ public class Display {
 
     public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
-    }
-
-    public String getImageHash() {
-        return imageHash;
-    }
-
-    public void setImageHash(String imageHash) {
-        this.imageHash = imageHash;
     }
 
     public Map<ImageFieldType, String> getTextFieldValues() {

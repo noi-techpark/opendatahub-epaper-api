@@ -30,7 +30,7 @@ public class ScheduledContent implements Comparable<ScheduledContent> {
     @ManyToOne
     private Display display;
 
-    @OneToOne(mappedBy = "scheduledContent")
+    @OneToOne(mappedBy = "scheduledContent", cascade = CascadeType.ALL)
     private DisplayContent displayContent;
 
     @CreationTimestamp
