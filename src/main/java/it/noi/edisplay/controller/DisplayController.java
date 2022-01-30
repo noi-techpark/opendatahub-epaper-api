@@ -1,6 +1,5 @@
 package it.noi.edisplay.controller;
 
-
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.DisplayStateDto;
@@ -40,116 +39,119 @@ import javax.imageio.ImageIO;
 @RequestMapping("/display")
 public class DisplayController {
 
-	@Autowired
-	private DisplayRepository displayRepository;
+    @Autowired
+    private DisplayRepository displayRepository;
 
-	@Autowired
-	private TemplateRepository templateRepository;
+    @Autowired
+    private TemplateRepository templateRepository;
 
-	@Autowired
-	private ResolutionRepository resolutionRepository;
+    @Autowired
+    private ResolutionRepository resolutionRepository;
 
-	@Autowired
-	private LocationRepository locationRepository;
+    @Autowired
+    private LocationRepository locationRepository;
 
-	@Autowired
-	private ModelMapper modelMapper;
-	
+    @Autowired
+    private DisplayContentRepository displayContentRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Autowired
     private FileImportStorageS3 fileImportStorageS3;
 
     @Autowired
     private ImageUtil imageUtil;
 
-	private Logger logger = LoggerFactory.getLogger(DisplayController.class);
+    private Logger logger = LoggerFactory.getLogger(DisplayController.class);
 
-	@RequestMapping(value = "/get/{displayUuid}", method = RequestMethod.GET)
-	public ResponseEntity<DisplayDto> getDisplay(@PathVariable("displayUuid") String uuid) {
-		Display display = displayRepository.findByUuid(uuid);
+    @RequestMapping(value = "/get/{displayUuid}", method = RequestMethod.GET)
+    public ResponseEntity<DisplayDto> getDisplay(@PathVariable("displayUuid") String uuid) {
+        Display display = displayRepository.findByUuid(uuid);
 
-		if (display == null) {
-			logger.debug("Display with uuid: " + uuid + " not found.");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		logger.debug("Get display with uuid: " + uuid);
-		return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
-	}
-	
+        if (display == null) {
+            logger.debug("Display with uuid: " + uuid + " not found.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        logger.debug("Get display with uuid: " + uuid);
+        return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.OK);
+    }
 
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
+    public ResponseEntity getAllDisplays() {
+        List<Display> list = displayRepository.findAll();
+        ArrayList<DisplayDto> dtoList = new ArrayList<>();
+        for (Display display : list)
+            dtoList.add(modelMapper.map(display, DisplayDto.class));
+        logger.debug("All displays requested");
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
+    }
 
-	@RequestMapping(value = "/all", method = RequestMethod.GET)
-	public ResponseEntity getAllDisplays() {
-		List<Display> list = displayRepository.findAll();
-		ArrayList<DisplayDto> dtoList = new ArrayList<>();
-		for (Display display : list)
-			dtoList.add(modelMapper.map(display, DisplayDto.class));
-		logger.debug("All displays requested");
-		return new ResponseEntity<>(dtoList, HttpStatus.OK);
-	}
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    public ResponseEntity createDisplay(@RequestParam("name") String name,
+            @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width,
+            @RequestParam("height") int height, @RequestParam("locationUuid") String locationUuid) {
+        Display display = new Display();
+        display.setName(name);
+        display.setBatteryPercentage(new Random().nextInt(99));
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST)
-	public ResponseEntity createDisplay(@RequestParam("name") String name, @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width, @RequestParam("height") int height, @RequestParam("locationUuid") String locationUuid) {
-		Display display = new Display();
-		display.setName(name);
-		display.setBatteryPercentage(new Random().nextInt(99));
+        Template template = templateRepository.findByUuid(templateUuid);
+        if (template != null)
+            display.setTemplate(template);
+        else {
+            logger.debug("Display creation failed. Template not found");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
-		Template template = templateRepository.findByUuid(templateUuid);
-		if (template != null)
-			display.setTemplate(template);
-		else {
-			logger.debug("Display creation failed. Template not found");
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		
-		if (locationUuid != null) {
-    		Location location = locationRepository.findByUuid(locationUuid);
+        if (locationUuid != null) {
+            Location location = locationRepository.findByUuid(locationUuid);
             if (location != null)
                 display.setLocation(location);
             else {
                 logger.debug("Display creation failed. Location not found");
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-		}
+        }
 
-		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
-		if (resolutionbyWidthAndHeight == null) {
+        Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
+        if (resolutionbyWidthAndHeight == null) {
 //			Resolution resolution = new Resolution(width, height);
 //			resolutionRepository.saveAndFlush(resolution);
 //			display.setResolution(resolution);
-		} else
-			display.setResolution(resolutionbyWidthAndHeight);
+        } else
+            display.setResolution(resolutionbyWidthAndHeight);
 
-		Display savedDisplay = displayRepository.saveAndFlush(display);
+        Display savedDisplay = displayRepository.saveAndFlush(display);
 
-		logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
-		return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
-	}
+        logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
+        return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
+    }
 
-	@RequestMapping(value = "/delete/{displayUuid}", method = RequestMethod.DELETE)
-	public ResponseEntity deleteDisplay(@PathVariable("uuid") String uuid) {
-		Display display = displayRepository.findByUuid(uuid);
+    @RequestMapping(value = "/delete/{displayUuid}", method = RequestMethod.DELETE)
+    public ResponseEntity deleteDisplay(@PathVariable("uuid") String uuid) {
+        Display display = displayRepository.findByUuid(uuid);
 
-		if (display == null) {
-			logger.debug("Deletion of display with uuid:" + uuid + " failed.");
-			return new ResponseEntity(HttpStatus.BAD_REQUEST);
-		}
+        if (display == null) {
+            logger.debug("Deletion of display with uuid:" + uuid + " failed.");
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
 
-		displayRepository.delete(display);
-		logger.debug("Deleted display with uuid:" + uuid);
-		return new ResponseEntity(HttpStatus.OK);
+        displayRepository.delete(display);
+        logger.debug("Deleted display with uuid:" + uuid);
+        return new ResponseEntity(HttpStatus.OK);
 
-	}
+    }
 
-	@RequestMapping(value = "/update/", method = RequestMethod.PUT)
-	public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto) {
-		Display display = displayRepository.findByUuid(displayDto.getUuid());
-		if (display == null) {
-			logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Display not found.");
-			return new ResponseEntity(HttpStatus.BAD_REQUEST);
-		}
-		display.setBatteryPercentage(displayDto.getBatteryPercentage());
+    @RequestMapping(value = "/update/", method = RequestMethod.PUT)
+    public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto) {
+        Display display = displayRepository.findByUuid(displayDto.getUuid());
+        if (display == null) {
+            logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Display not found.");
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+        display.setBatteryPercentage(displayDto.getBatteryPercentage());
 
-		if (displayDto.getLocationUuid() != null) {
+        if (displayDto.getLocationUuid() != null) {
             Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
             if (location != null)
                 display.setLocation(location);
@@ -157,24 +159,26 @@ public class DisplayController {
                 logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Location not found");
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-		}
-		
-		Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
-		if (resolutionbyWidthAndHeight == null) {
+        }
+
+        Resolution resolutionbyWidthAndHeight = resolutionRepository
+                .findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
+        if (resolutionbyWidthAndHeight == null) {
 //			Resolution resolution = new Resolution(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
 //			resolutionRepository.saveAndFlush(resolution);
 //			display.setResolution(resolution);
-		} else
-			display.setResolution(resolutionbyWidthAndHeight);
+        } else
+            display.setResolution(resolutionbyWidthAndHeight);
 
-		display.setName(displayDto.getName());
-		display.setLastState(displayDto.getLastState());
-		display.setErrorMessage(displayDto.getErrorMessage());
-		display.setIgnoreScheduledContent(displayDto.isIgnoreScheduledContent());
-		logger.debug("Updated display with uuid:" + display.getUuid());
-		return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class), HttpStatus.ACCEPTED);
-	}
-	
+        display.setName(displayDto.getName());
+        display.setLastState(displayDto.getLastState());
+        display.setErrorMessage(displayDto.getErrorMessage());
+        display.setIgnoreScheduledContent(displayDto.isIgnoreScheduledContent());
+        logger.debug("Updated display with uuid:" + display.getUuid());
+        return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class),
+                HttpStatus.ACCEPTED);
+    }
+
     @PostMapping(value = "/sync-status/{displayUuid}", consumes = "application/json")
     public ResponseEntity<String> syncDisplayStatus(@PathVariable("displayUuid") String displayUuid,
             @RequestBody DisplayStateDto stateDto) {
@@ -189,33 +193,40 @@ public class DisplayController {
         display.setErrorMessage(stateDto.getErrorMessage());
         display.setWarningMessage(stateDto.getWarningMessage());
 
-        String imageHash = display.getDisplayContent().getImageHash();
-        if (imageHash != null) {
+        displayRepository.saveAndFlush(display);
 
-            // We need to validate the hash by checking if image field values are not out-dated
-            Map<ImageFieldType, String> fieldValues = display.getTextFieldValues();
+        String imageHash = null;
 
-            for (ImageField field : display.getDisplayContent().getImageFields()) {
-                if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT
-                        && !field.getCurrentFieldValue().equals(fieldValues.get(field.getFieldType()))) {
-                    // Field value does not match, delete hash
-                    imageHash = null;
-                    break;
+        // MD5 validation
+        DisplayContent displayContent = display.getCurrentDisplayContent();
+        if (displayContent != null) {
+            imageHash = displayContent.getImageHash();
+            if (imageHash != null) {
+
+                // We need to validate the hash by checking if image field values are not
+                // out-dated
+                Map<ImageFieldType, String> fieldValues = display.getTextFieldValues();
+
+                for (ImageField field : displayContent.getImageFields()) {
+                    if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT && (field.getCurrentFieldValue() == null
+                            || !field.getCurrentFieldValue().equals(fieldValues.get(field.getFieldType())))) {
+                        // Field value does not match, delete hash
+                        imageHash = null;
+                        displayContent.setImageHash(null);
+                        displayContentRepository.saveAndFlush(displayContent);
+                        break;
+                    }
                 }
             }
         }
-
         if (imageHash == null) {
-            display.getDisplayContent().setImageHash(null);
             imageHash = "no-hash";
         }
-
-        displayRepository.saveAndFlush(display);
 
         logger.debug("Status updated and image hash returned for display with uuid:" + displayUuid);
         return new ResponseEntity<>(imageHash, HttpStatus.OK);
     }
-    
+
     @GetMapping(value = "/get-image/{displayUuid}")
     public ResponseEntity<byte[]> getDisplayImage(@PathVariable("displayUuid") String displayUuid,
             @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP, boolean withTextFields)
@@ -227,19 +238,21 @@ public class DisplayController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (display.getDisplayContent() == null) {
+        DisplayContent displayContent = display.getCurrentDisplayContent();
+
+        if (displayContent == null) {
             logger.debug("Display with uuid " + displayUuid + " has no image.");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        byte[] image = fileImportStorageS3.download(display.getDisplayContent().getUuid());
+        byte[] image = fileImportStorageS3.download(displayContent.getUuid());
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 
         Map<ImageFieldType, String> fieldValues = null;
         if (withTextFields) {
             fieldValues = display.getTextFieldValues();
-            imageUtil.setImageFields(bImage, display.getDisplayContent().getImageFields(), fieldValues);
+            imageUtil.setImageFields(bImage, displayContent.getImageFields(), fieldValues);
         }
         image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
 
@@ -247,21 +260,21 @@ public class DisplayController {
         if (convertToBMP) {
             if (fieldValues != null) {
                 // Set current field values for later MD5 validation
-                for (ImageField field : display.getDisplayContent().getImageFields()) {
+                for (ImageField field : displayContent.getImageFields()) {
                     if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT) {
                         field.setCurrentFieldValue(fieldValues.get(field.getFieldType()));
                     }
                 }
             }
 
-            display.getDisplayContent().setImageHash(imageUtil.convertToMD5Hash(image));
-            displayRepository.saveAndFlush(display);
+            displayContent.setImageHash(imageUtil.convertToMD5Hash(image));
+            displayContentRepository.saveAndFlush(displayContent);
         }
 
         logger.debug("Get display image with uuid: " + displayUuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
     }
-    
+
     @PostMapping(value = "/set-new-image/{displayUuid}", consumes = "multipart/form-data")
     public ResponseEntity<DisplayContentDto> setDisplayContent(@PathVariable("displayUuid") String displayUuid,
             @RequestParam("displayContentDtoJson") String displayContentDtoJson,
@@ -273,7 +286,8 @@ public class DisplayController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        DisplayContentDto displayContentDto = new ObjectMapper().readValue(displayContentDtoJson, DisplayContentDto.class);
+        DisplayContentDto displayContentDto = new ObjectMapper().readValue(displayContentDtoJson,
+                DisplayContentDto.class);
         DisplayContent displayContent = modelMapper.map(displayContentDto, DisplayContent.class);
 
         boolean displayContentExists = display.getDisplayContent() != null;

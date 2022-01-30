@@ -192,7 +192,7 @@ public class Display {
         this.scheduledContent = scheduledContent;
     }
 
-    public boolean isIgnoreScheduledContent() {
+    public boolean isIgnoringScheduledContent() {
         return ignoreScheduledContent;
     }
 
@@ -241,6 +241,26 @@ public class Display {
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, "");
         }
         return fieldValues;
+    }
+
+    public DisplayContent getCurrentDisplayContent() {
+        DisplayContent currentDisplayContent = null;
+        Display display = this;
+        if (!display.isIgnoringScheduledContent()) {
+            // Current Event
+            Date currentDate = new Date();
+            ScheduledContent currentEvent = display.getScheduledContent().stream()
+                    .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
+                    .findFirst().orElse(null);
+            if (currentEvent != null && !Boolean.TRUE.equals(currentEvent.getDisabled())
+                    && currentEvent.getDisplayContent() != null) {
+                currentDisplayContent = currentEvent.getDisplayContent();
+            }
+        }
+        if (currentDisplayContent == null) {
+            currentDisplayContent = display.getDisplayContent();
+        }
+        return currentDisplayContent;
     }
 
     public String getWarningMessage() {
