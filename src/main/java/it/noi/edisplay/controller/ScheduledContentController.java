@@ -123,7 +123,7 @@ public class ScheduledContentController {
     public ResponseEntity createScheduledContent(@RequestBody ScheduledContentDto scheduledContentDto) {
         ScheduledContent scheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
         scheduledContent.setDisplay(displayRepository.findByUuid(scheduledContentDto.getDisplayUuid()));
-        scheduledContentRepository.saveAndFlush(scheduledContent);
+        scheduledContent = scheduledContentRepository.saveAndFlush(scheduledContent);
 
         logger.debug("Scheduled content with uuid:" + scheduledContent.getUuid() + " created.");
         return new ResponseEntity<>(modelMapper.map(scheduledContent, ScheduledContentDto.class), HttpStatus.CREATED);
@@ -166,7 +166,7 @@ public class ScheduledContentController {
 
         scheduledContent.setDisplay(display);
 
-        scheduledContentRepository.saveAndFlush(scheduledContent);
+        scheduledContent = scheduledContentRepository.saveAndFlush(scheduledContent);
         logger.debug("Updated scheduled content with uuid:" + scheduledContent.getUuid());
 
         if (existingScheduledContent == null) {
