@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "scheduled_content")
-public class ScheduledContent implements Comparable<ScheduledContent> {
+public class ScheduledContent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class ScheduledContent implements Comparable<ScheduledContent> {
     @ManyToOne
     private Display display;
 
-    @OneToOne(mappedBy = "scheduledContent", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "scheduledContent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
 
     @CreationTimestamp
@@ -41,11 +41,6 @@ public class ScheduledContent implements Comparable<ScheduledContent> {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
     
-    @Override
-    public int compareTo(ScheduledContent o) {
-      return getStartDate().compareTo(o.getStartDate());
-    }
-
     public Integer getId() {
         return id;
     }

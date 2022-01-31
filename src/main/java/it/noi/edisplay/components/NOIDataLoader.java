@@ -26,33 +26,33 @@ import java.util.stream.Collectors;
 @Component
 public class NOIDataLoader {
 
-	private static final Logger logger = LoggerFactory.getLogger(NOIDataLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(NOIDataLoader.class);
 
-	@Value("${cron.enabled}")
-	private boolean enabled;
+    @Value("${cron.enabled}")
+    private boolean enabled;
 
-	@Autowired
-	private OpenDataRestService openDataRestService;
+    @Autowired
+    private OpenDataRestService openDataRestService;
 
-	private List<EventDto> events;
-	
-	private List<NOIPlaceData> places;
+    private List<EventDto> events;
+
+    private List<NOIPlaceData> places;
 
     @Autowired
     ModelMapper modelMapper;
 
-	@Scheduled(cron = "${cron.opendata.events}")
-	public void loadNoiTodayEvents() {
-		if (enabled) {
-			logger.debug("Loading Events from OpenDataHub START");
+    @Scheduled(cron = "${cron.opendata.events}")
+    public void loadNoiTodayEvents() {
+        if (enabled) {
+            logger.debug("Loading Events from OpenDataHub START");
 
-			events = openDataRestService.getEvents();
+            events = openDataRestService.getEvents();
 
-			logger.debug("Loaded " + openDataRestService.getEvents().size() + " events");
-			logger.debug("Loading Events from OpenDataHub DONE");
-		}
-	}
-	
+            logger.debug("Loaded " + openDataRestService.getEvents().size() + " events");
+            logger.debug("Loading Events from OpenDataHub DONE");
+        }
+    }
+
     @Scheduled(cron = "${cron.opendata.locations}")
     public void loadNoiPlaces() {
         if (enabled) {
@@ -64,8 +64,25 @@ public class NOIDataLoader {
             logger.debug("Loading Places from OpenDataHub DONE");
         }
     }
-    
-    public List<ScheduledContentDto> getDisplayEvents(Display display) {
+
+    public List<EventDto> getNOIDisplayEvents(Display display) {
+        List<EventDto> noiEvents = new ArrayList<>();
+        Location displayLocation = display.getLocation();
+
+        if (displayLocation != null && displayLocation.getRoomCode() != null) {
+            // Get correct NOI room by Room Code
+            NOIPlaceData room = places.stream().filter(item -> item.getScode().equals(displayLocation.getRoomCode()))
+                    .findFirst().orElse(null);
+            if (room != null) {
+                // Filter events based on NOI room that the display is in
+                noiEvents = events.stream().filter(item -> item.getSpaceDesc().equals(room.getTodaynoibzit()))
+                        .collect(Collectors.toList());
+            }
+        }
+        return noiEvents;
+    }
+
+    public List<ScheduledContentDto> getAllDisplayEvents(Display display) {
         List<ScheduledContent> scheduledContentList = display.getScheduledContent();
 
         ArrayList<ScheduledContentDto> dtoList = new ArrayList<>();
@@ -78,8 +95,8 @@ public class NOIDataLoader {
 
         if (displayLocation != null && displayLocation.getRoomCode() != null) {
             // Get correct NOI room by Room Code
-            NOIPlaceData room = places.stream()
-                    .filter(item -> item.getScode().equals(displayLocation.getRoomCode())).findFirst().orElse(null);
+            NOIPlaceData room = places.stream().filter(item -> item.getScode().equals(displayLocation.getRoomCode()))
+                    .findFirst().orElse(null);
             if (room != null) {
                 // Filter events based on NOI room that the display is in
                 List<EventDto> noiEvents = events.stream()
@@ -109,15 +126,15 @@ public class NOIDataLoader {
         }
         return dtoList;
     }
-    
+
     public List<NOIPlaceData> getNOIPlaces() {
         return places;
     }
 
-	@PostConstruct
-	private void postConstruct() {
-		loadNoiTodayEvents();
-		loadNoiPlaces();
-	}
+    @PostConstruct
+    private void postConstruct() {
+        loadNoiTodayEvents();
+        loadNoiPlaces();
+    }
 
 }

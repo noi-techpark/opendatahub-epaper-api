@@ -113,7 +113,7 @@ public class ScheduledContentController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<ScheduledContentDto> dtoList = noiDataLoader.getDisplayEvents(display);
+        List<ScheduledContentDto> dtoList = noiDataLoader.getAllDisplayEvents(display);
 
         logger.debug("All scheduled content requested");
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
