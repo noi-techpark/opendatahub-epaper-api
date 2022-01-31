@@ -4,6 +4,7 @@ import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.DisplayStateDto;
+import it.noi.edisplay.dto.ResolutionDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
 import it.noi.edisplay.storage.FileImportStorageS3;
@@ -27,9 +28,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.imageio.ImageIO;
 
@@ -68,7 +69,7 @@ public class DisplayController {
     private ImageUtil imageUtil;
 
     private Logger logger = LoggerFactory.getLogger(DisplayController.class);
-
+  
     @RequestMapping(value = "/get/{displayUuid}", method = RequestMethod.GET)
     public ResponseEntity<DisplayDto> getDisplay(@PathVariable("displayUuid") String uuid) {
         Display display = displayRepository.findByUuid(uuid);
@@ -91,59 +92,57 @@ public class DisplayController {
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity createDisplay(@RequestParam("name") String name,
-            @RequestParam("templateUuid") String templateUuid, @RequestParam("width") int width,
-            @RequestParam("height") int height, @RequestParam("locationUuid") String locationUuid) {
-        Display display = new Display();
-        display.setName(name);
-        display.setBatteryPercentage(new Random().nextInt(99));
-
-        Template template = templateRepository.findByUuid(templateUuid);
-        if (template != null)
-            display.setTemplate(template);
-        else {
-            logger.debug("Display creation failed. Template not found");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity<DisplayDto> createDisplay(@RequestBody DisplayDto displayDto) {
+        Display display = modelMapper.map(displayDto, Display.class);
+        if (displayDto.getDisplayContent() == null) {
+            display.setDisplayContent(null);
         }
 
-        if (locationUuid != null) {
-            Location location = locationRepository.findByUuid(locationUuid);
+        if (displayDto.getLocationUuid() != null) {
+            Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
             if (location != null)
                 display.setLocation(location);
             else {
-                logger.debug("Display creation failed. Location not found");
+                logger.debug("Create display with uuid:" + displayDto.getUuid() + " failed. Location not found");
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
 
-        Resolution resolutionbyWidthAndHeight = resolutionRepository.findByWidthAndHeight(width, height);
-        if (resolutionbyWidthAndHeight == null) {
-//			Resolution resolution = new Resolution(width, height);
-//			resolutionRepository.saveAndFlush(resolution);
-//			display.setResolution(resolution);
-        } else
-            display.setResolution(resolutionbyWidthAndHeight);
+        ResolutionDto resolutionDto = displayDto.getResolution();
+        if (resolutionDto != null) {
+            Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
+                    resolutionDto.getHeight(), resolutionDto.getBitDepth());
+            if (resolution != null)
+                display.setResolution(resolution);
+            else {
+                Resolution newResolution = new Resolution();
+                newResolution.setWidth(resolutionDto.getWidth());
+                newResolution.setHeight(resolutionDto.getHeight());
+                newResolution.setBitDepth(resolutionDto.getBitDepth());
+                display.setResolution(newResolution);
+            }
+        }
 
-        Display savedDisplay = displayRepository.saveAndFlush(display);
+        display = displayRepository.saveAndFlush(display);
 
-        logger.debug("Display with uuid:" + savedDisplay.getUuid() + " created.");
-        return new ResponseEntity<>(modelMapper.map(savedDisplay, DisplayDto.class), HttpStatus.CREATED);
+        logger.debug("Display with uuid:" + display.getUuid() + " created.");
+        return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/delete/{displayUuid}", method = RequestMethod.DELETE)
-    public ResponseEntity deleteDisplay(@PathVariable("uuid") String uuid) {
-        Display display = displayRepository.findByUuid(uuid);
+    public ResponseEntity deleteDisplay(@PathVariable("displayUuid") String displayUuid) {
+        Display display = displayRepository.findByUuid(displayUuid);
 
         if (display == null) {
-            logger.debug("Deletion of display with uuid:" + uuid + " failed.");
+            logger.debug("Deletion of display with uuid:" + displayUuid + " failed.");
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
 
         displayRepository.delete(display);
-        logger.debug("Deleted display with uuid:" + uuid);
-        return new ResponseEntity(HttpStatus.OK);
+        logger.debug("Deleted display with uuid:" + displayUuid);
 
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/update/", method = RequestMethod.PUT)
@@ -153,7 +152,6 @@ public class DisplayController {
             logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Display not found.");
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-        display.setBatteryPercentage(displayDto.getBatteryPercentage());
 
         if (displayDto.getLocationUuid() != null) {
             Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
@@ -165,19 +163,26 @@ public class DisplayController {
             }
         }
 
-        Resolution resolutionbyWidthAndHeight = resolutionRepository
-                .findByWidthAndHeight(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
-        if (resolutionbyWidthAndHeight == null) {
-//			Resolution resolution = new Resolution(displayDto.getResolution().getWidth(), displayDto.getResolution().getHeight());
-//			resolutionRepository.saveAndFlush(resolution);
-//			display.setResolution(resolution);
-        } else
-            display.setResolution(resolutionbyWidthAndHeight);
+        ResolutionDto resolutionDto = displayDto.getResolution();
+        if (resolutionDto != null) {
+            Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
+                    resolutionDto.getHeight(), resolutionDto.getBitDepth());
+            if (resolution != null)
+                display.setResolution(resolution);
+            else {
+                Resolution newResolution = new Resolution();
+                newResolution.setWidth(resolutionDto.getWidth());
+                newResolution.setHeight(resolutionDto.getHeight());
+                newResolution.setBitDepth(resolutionDto.getBitDepth());
+                display.setResolution(newResolution);
+            }
+        }
 
+        display.setBatteryPercentage(displayDto.getBatteryPercentage());
         display.setName(displayDto.getName());
         display.setLastState(displayDto.getLastState());
         display.setErrorMessage(displayDto.getErrorMessage());
-        display.setIgnoringScheduledContent(displayDto.isIgnoringScheduledContent());
+        display.setIgnoreScheduledContent(displayDto.isIgnoreScheduledContent());
         display.setWarningMessage(displayDto.getWarningMessage());
 
         logger.debug("Updated display with uuid:" + display.getUuid());
@@ -198,6 +203,7 @@ public class DisplayController {
         display.setBatteryPercentage(stateDto.getBatteryPercentage());
         display.setErrorMessage(stateDto.getErrorMessage());
         display.setWarningMessage(stateDto.getWarningMessage());
+        display.setLastState(new Date());
 
         displayRepository.saveAndFlush(display);
 

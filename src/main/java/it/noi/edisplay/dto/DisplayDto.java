@@ -10,7 +10,6 @@ public class DisplayDto {
 	private byte[] image;
 	private int batteryPercentage;
 	private ResolutionDto resolution;
-	private TemplateDto template;
 	private String mac;
 	private String errorMessage;
 	private String locationUuid;
@@ -35,14 +34,6 @@ public class DisplayDto {
 
 	public Date getLastRealDisplayState() {
 		return lastRealDisplayState;
-	}
-
-	public TemplateDto getTemplate() {
-		return template;
-	}
-
-	public void setTemplate(TemplateDto template) {
-		this.template = template;
 	}
 
 	public void setLastRealDisplayState(Date lastRealDisplayState) {

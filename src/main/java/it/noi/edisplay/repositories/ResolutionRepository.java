@@ -9,7 +9,7 @@ public interface ResolutionRepository extends JpaRepository<Resolution, Integer>
 
 
 	Resolution findByUuid(String uuid);
-	Resolution findByWidthAndHeight(int width, int height);
+	Resolution findByWidthAndHeightAndBitDepth(int width, int height, int bitDepth);
 
 	List<Resolution> findAll();
 }

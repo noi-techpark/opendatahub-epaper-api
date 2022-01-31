@@ -1,6 +1,10 @@
 package it.noi.edisplay.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class ResolutionDto {
+    @ApiModelProperty(hidden = true)
+    private String uuid;
 
 	private int width;
 
@@ -30,5 +34,13 @@ public class ResolutionDto {
 
     public void setBitDepth(int bitDepth) {
         this.bitDepth = bitDepth;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }
