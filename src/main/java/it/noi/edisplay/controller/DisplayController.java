@@ -69,7 +69,7 @@ public class DisplayController {
     private ImageUtil imageUtil;
 
     private Logger logger = LoggerFactory.getLogger(DisplayController.class);
-
+  
     @RequestMapping(value = "/get/{displayUuid}", method = RequestMethod.GET)
     public ResponseEntity<DisplayDto> getDisplay(@PathVariable("displayUuid") String uuid) {
         Display display = displayRepository.findByUuid(uuid);
@@ -141,8 +141,8 @@ public class DisplayController {
 
         displayRepository.delete(display);
         logger.debug("Deleted display with uuid:" + displayUuid);
-        return new ResponseEntity(HttpStatus.OK);
 
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/update/", method = RequestMethod.PUT)
@@ -162,7 +162,7 @@ public class DisplayController {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
-        
+
         ResolutionDto resolutionDto = displayDto.getResolution();
         if (resolutionDto != null) {
             Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),

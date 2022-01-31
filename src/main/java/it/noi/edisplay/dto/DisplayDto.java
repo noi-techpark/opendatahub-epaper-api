@@ -136,11 +136,11 @@ public class DisplayDto {
         this.displayContent = displayContent;
     }
 
-    public boolean isIgnoreScheduledContent() {
+    public boolean isIgnoringScheduledContent() {
         return ignoreScheduledContent;
     }
 
-    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+    public void setIgnoringScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
     }
 
