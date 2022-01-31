@@ -177,7 +177,9 @@ public class DisplayController {
         display.setName(displayDto.getName());
         display.setLastState(displayDto.getLastState());
         display.setErrorMessage(displayDto.getErrorMessage());
-        display.setIgnoreScheduledContent(displayDto.isIgnoreScheduledContent());
+        display.setIgnoringScheduledContent(displayDto.isIgnoringScheduledContent());
+        display.setWarningMessage(displayDto.getWarningMessage());
+
         logger.debug("Updated display with uuid:" + display.getUuid());
         return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class),
                 HttpStatus.ACCEPTED);

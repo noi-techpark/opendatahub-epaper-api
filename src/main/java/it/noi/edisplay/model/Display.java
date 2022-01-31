@@ -200,7 +200,7 @@ public class Display {
         return ignoreScheduledContent;
     }
 
-    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+    public void setIgnoringScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
     }
 
