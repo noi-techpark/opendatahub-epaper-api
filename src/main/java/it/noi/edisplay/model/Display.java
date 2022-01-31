@@ -196,14 +196,6 @@ public class Display {
         this.scheduledContent = scheduledContent;
     }
 
-    public boolean isIgnoringScheduledContent() {
-        return ignoreScheduledContent;
-    }
-
-    public void setIgnoringScheduledContent(boolean ignoreScheduledContent) {
-        this.ignoreScheduledContent = ignoreScheduledContent;
-    }
-
     public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events) {
         EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
 
@@ -255,7 +247,7 @@ public class Display {
     public DisplayContent getCurrentDisplayContent() {
         DisplayContent currentDisplayContent = null;
         Display display = this;
-        if (!display.isIgnoringScheduledContent()) {
+        if (!display.getIgnoreScheduledContent()) {
             // Current Event
             Date currentDate = new Date();
             ScheduledContent currentEvent = display.getScheduledContent().stream()
@@ -278,5 +270,13 @@ public class Display {
 
     public void setWarningMessage(String warningMessage) {
         this.warningMessage = warningMessage;
+    }
+
+    public boolean getIgnoreScheduledContent() {
+        return ignoreScheduledContent;
+    }
+
+    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+        this.ignoreScheduledContent = ignoreScheduledContent;
     }
 }
