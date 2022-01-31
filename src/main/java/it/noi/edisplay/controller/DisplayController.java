@@ -1,5 +1,6 @@
 package it.noi.edisplay.controller;
 
+import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.DisplayStateDto;
@@ -53,6 +54,9 @@ public class DisplayController {
 
     @Autowired
     private DisplayContentRepository displayContentRepository;
+
+    @Autowired
+    private NOIDataLoader noiDataLoader;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -203,9 +207,9 @@ public class DisplayController {
             imageHash = displayContent.getImageHash();
             if (imageHash != null) {
 
-                // We need to validate the hash by checking if image field values are not
-                // out-dated
-                Map<ImageFieldType, String> fieldValues = display.getTextFieldValues();
+                // We need to validate the hash by checking if image field values are not out-dated
+                Map<ImageFieldType, String> fieldValues = display
+                        .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display));
 
                 for (ImageField field : displayContent.getImageFields()) {
                     if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT && (field.getCurrentFieldValue() == null
@@ -251,7 +255,7 @@ public class DisplayController {
 
         Map<ImageFieldType, String> fieldValues = null;
         if (withTextFields) {
-            fieldValues = display.getTextFieldValues();
+            fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display));
             imageUtil.setImageFields(bImage, displayContent.getImageFields(), fieldValues);
         }
         image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());

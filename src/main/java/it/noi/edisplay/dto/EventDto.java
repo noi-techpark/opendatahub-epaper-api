@@ -2,10 +2,12 @@ package it.noi.edisplay.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import it.noi.edisplay.model.ScheduledContent;
+
 /**
  * DTO to read Events from OpenDataHub opendatahub.bz.it
  */
-public class EventDto {
+public class EventDto implements Comparable<EventDto> {
 
 	@JsonProperty("SpaceDesc")
 	private String spaceDesc;
@@ -94,4 +96,10 @@ public class EventDto {
     public void setEventId(Integer eventId) {
         this.eventId = eventId;
     }
+    
+    @Override
+    public int compareTo(EventDto o) {
+      return getRoomStartDateUTC().compareTo(o.getRoomStartDateUTC());
+    }
+
 }

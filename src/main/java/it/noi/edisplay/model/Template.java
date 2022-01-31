@@ -29,7 +29,7 @@ public class Template {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
-    @OneToOne(mappedBy = "template", cascade=CascadeType.ALL)
+    @OneToOne(mappedBy = "template", cascade=CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
 
     public Integer getId() {

@@ -3,8 +3,11 @@ package it.noi.edisplay.model;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import it.noi.edisplay.dto.EventDto;
+
 import javax.persistence.*;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -12,6 +15,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Entity class for Displays that contains all needed information for an
@@ -63,7 +67,7 @@ public class Display {
     @ManyToOne
     private Location location;
 
-    @OneToOne(mappedBy = "display", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "display", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
 
     @OneToMany(mappedBy = "display", fetch = FetchType.LAZY)
@@ -200,7 +204,7 @@ public class Display {
         this.ignoreScheduledContent = ignoreScheduledContent;
     }
 
-    public Map<ImageFieldType, String> getTextFieldValues() {
+    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events) {
         EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
 
         // Location
@@ -210,18 +214,19 @@ public class Display {
             fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
         }
 
-        List<ScheduledContent> events = this.getScheduledContent();
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         // Current Event
-        Date currentDate = new Date();
-        ScheduledContent currentEvent = events.stream()
-                .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
+        Long currentDate = System.currentTimeMillis();
+
+        EventDto currentEvent = events.stream()
+                .filter(item -> item.getRoomStartDateUTC() < currentDate && item.getRoomEndDateUTC() > currentDate)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, currentEvent.getEventDescription());
-            fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(currentEvent.getStartDate()));
-            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(currentEvent.getEndDate()));
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, currentEvent.getEventDescriptionEN());
+            fieldValues.put(ImageFieldType.EVENT_START_DATE,
+                    f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
         } else {
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "No current event");
             fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
@@ -229,12 +234,16 @@ public class Display {
         }
 
         // Upcoming event
+        List<EventDto> upcomingEvents = events.stream().filter(item -> item.getRoomStartDateUTC() > currentDate)
+                .collect(Collectors.toList());
         Collections.sort(events); // Sort events by start date
         if (!events.isEmpty()) {
-            ScheduledContent upcomingEvent = events.get(0);
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, upcomingEvent.getEventDescription());
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, f.format(upcomingEvent.getStartDate()));
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, f.format(upcomingEvent.getEndDate()));
+            EventDto upcomingEvent = upcomingEvents.get(0);
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, upcomingEvent.getEventDescriptionEN());
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
+                    f.format(new Timestamp((upcomingEvent.getRoomStartDateUTC()))));
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE,
+                    f.format(new Timestamp((upcomingEvent.getRoomEndDateUTC()))));
         } else {
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, "No upcoming events");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, "");
