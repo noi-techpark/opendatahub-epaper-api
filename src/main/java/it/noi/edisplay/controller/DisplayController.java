@@ -182,7 +182,7 @@ public class DisplayController {
         display.setName(displayDto.getName());
         display.setLastState(displayDto.getLastState());
         display.setErrorMessage(displayDto.getErrorMessage());
-        display.setIgnoreScheduledContent(displayDto.isIgnoreScheduledContent());
+        display.setIgnoreScheduledContent(displayDto.getIgnoreScheduledContent());
         display.setWarningMessage(displayDto.getWarningMessage());
 
         logger.debug("Updated display with uuid:" + display.getUuid());

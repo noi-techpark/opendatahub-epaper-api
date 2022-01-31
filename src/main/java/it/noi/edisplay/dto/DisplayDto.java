@@ -136,19 +136,19 @@ public class DisplayDto {
         this.displayContent = displayContent;
     }
 
-    public boolean isIgnoringScheduledContent() {
-        return ignoreScheduledContent;
-    }
-
-    public void setIgnoringScheduledContent(boolean ignoreScheduledContent) {
-        this.ignoreScheduledContent = ignoreScheduledContent;
-    }
-
     public String getWarningMessage() {
         return warningMessage;
     }
 
     public void setWarningMessage(String warningMessage) {
         this.warningMessage = warningMessage;
+    }
+
+    public boolean getIgnoreScheduledContent() {
+        return ignoreScheduledContent;
+    }
+
+    public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
+        this.ignoreScheduledContent = ignoreScheduledContent;
     }
 }
