@@ -247,8 +247,9 @@ public class Display {
     public DisplayContent getCurrentDisplayContent() {
         DisplayContent currentDisplayContent = null;
         Display display = this;
-        if (!display.getIgnoreScheduledContent()) {
+        if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
             // Current Event
+
             Date currentDate = new Date();
             ScheduledContent currentEvent = display.getScheduledContent().stream()
                     .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
