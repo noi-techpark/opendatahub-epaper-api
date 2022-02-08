@@ -25,6 +25,12 @@ pipeline {
         S3_BUCKET_NAME = "it.bz.opendatahub.epaper.images-test"
         S3_ACCESS_KEY = credentials('epaper-test-s3-access-key')
         S3_SECRET_KEY = credentials('epaper-test-s3-secret-key')
+
+        KEYCLOAK_URL = "https://auth.opendatahub.testingmachine.eu/auth"
+        KEYCLOAK_SSL_REQUIRED = "none"
+        KEYCLOAK_REALM = "noi"
+        KEYCLOAK_CLIENT_ID = "it.bz.opendatahub.epaper.api"
+        KEYCLOAK_CLIENT_SECRET = credentials('epaper-api-test-keycloak-client-secret')
     }
     stages {
         stage('Configure') {
@@ -50,6 +56,11 @@ pipeline {
                     echo 'S3_BUCKET_NAME=${S3_BUCKET_NAME}' >> .env
                     echo 'S3_ACCESS_KEY=${S3_ACCESS_KEY}' >> .env
                     echo 'S3_SECRET_KEY=${S3_SECRET_KEY}' >> .env
+                    echo 'KEYCLOAK_URL=${KEYCLOAK_URL}' >> .env
+                    echo 'KEYCLOAK_SSL_REQUIRED=${KEYCLOAK_SSL_REQUIRED}' >> .env
+                    echo 'KEYCLOAK_REALM=${KEYCLOAK_REALM}' >> .env
+                    echo 'KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}' >> .env
+                    echo 'KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}' >> .env
                 """
             }
         }
