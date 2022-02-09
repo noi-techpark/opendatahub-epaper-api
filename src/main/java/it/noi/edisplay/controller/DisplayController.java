@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +70,7 @@ public class DisplayController {
     private ImageUtil imageUtil;
 
     private Logger logger = LoggerFactory.getLogger(DisplayController.class);
-  
+
     @RequestMapping(value = "/get/{displayUuid}", method = RequestMethod.GET)
     public ResponseEntity<DisplayDto> getDisplay(@PathVariable("displayUuid") String uuid) {
         Display display = displayRepository.findByUuid(uuid);
@@ -97,7 +98,7 @@ public class DisplayController {
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity<DisplayDto> createDisplay(@RequestBody DisplayDto displayDto) {
+    public ResponseEntity<Object> createDisplay(@RequestBody DisplayDto displayDto) {
         Display display = modelMapper.map(displayDto, Display.class);
         if (displayDto.getDisplayContent() == null) {
             display.setDisplayContent(null);
@@ -128,7 +129,15 @@ public class DisplayController {
             }
         }
 
-        display = displayRepository.saveAndFlush(display);
+        try {
+            display = displayRepository.saveAndFlush(display);
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            if (rootCause != null)
+                return new ResponseEntity<>(rootCause.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+            else
+                throw (e);
+        }
 
         logger.debug("Display with uuid:" + display.getUuid() + " created.");
         return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.CREATED);
@@ -150,7 +159,7 @@ public class DisplayController {
     }
 
     @RequestMapping(value = "/update/", method = RequestMethod.PUT)
-    public ResponseEntity updateDisplay(@RequestBody DisplayDto displayDto) {
+    public ResponseEntity<Object> updateDisplay(@RequestBody DisplayDto displayDto) {
         Display display = displayRepository.findByUuid(displayDto.getUuid());
         if (display == null) {
             logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Display not found.");
@@ -189,9 +198,18 @@ public class DisplayController {
         display.setIgnoreScheduledContent(displayDto.getIgnoreScheduledContent());
         display.setWarningMessage(displayDto.getWarningMessage());
 
+        try {
+            display = displayRepository.saveAndFlush(display);
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            if (rootCause != null)
+                return new ResponseEntity<>(rootCause.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+            else
+                throw (e);
+        }
+
         logger.debug("Updated display with uuid:" + display.getUuid());
-        return new ResponseEntity(modelMapper.map(displayRepository.saveAndFlush(display), DisplayDto.class),
-                HttpStatus.ACCEPTED);
+        return new ResponseEntity(modelMapper.map(display, DisplayDto.class), HttpStatus.ACCEPTED);
     }
 
     @PostMapping(value = "/sync-status/{displayUuid}", consumes = "application/json")
@@ -219,7 +237,8 @@ public class DisplayController {
             imageHash = displayContent.getImageHash();
             if (imageHash != null) {
 
-                // We need to validate the hash by checking if image field values are not out-dated
+                // We need to validate the hash by checking if image field values are not
+                // out-dated
                 Map<ImageFieldType, String> fieldValues = display
                         .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display));
 

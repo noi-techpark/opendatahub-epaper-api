@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -98,13 +99,21 @@ public class TemplateController {
     }
 
     @PostMapping(value = "/create")
-    public ResponseEntity<TemplateDto> createTemplate(@RequestBody TemplateDto templateDto) {
-        Template template = templateRepository.saveAndFlush(modelMapper.map(templateDto, Template.class));
-
+    public ResponseEntity<Object> createTemplate(@RequestBody TemplateDto templateDto) {
+        Template template = modelMapper.map(templateDto, Template.class);
+        try {
+            template = templateRepository.saveAndFlush(template);
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            if (rootCause != null)
+                return new ResponseEntity<>(rootCause.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+            else
+                throw (e);
+        }
         logger.debug("Template with uuid:" + template.getUuid() + " created.");
         return new ResponseEntity<>(modelMapper.map(template, TemplateDto.class), HttpStatus.CREATED);
     }
-    
+
     @PutMapping(value = "/update", consumes = "application/json")
     public ResponseEntity<Object> updateTemplate(@RequestBody TemplateDto templateDto) {
         Template template = templateRepository.findByUuid(templateDto.getUuid());
@@ -116,12 +125,20 @@ public class TemplateController {
 
         template.setName(templateDto.getName());
         template.setDescription(templateDto.getDescription());
-        
-        templateRepository.saveAndFlush(template);
+        try {
+            templateRepository.saveAndFlush(template);
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            if (rootCause != null)
+                return new ResponseEntity<>(rootCause.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+            else
+                throw (e);
+        }
+
         logger.debug("Updated template with uuid:" + template.getUuid());
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
-    
+
     @PostMapping(value = "/set-image/{templateUuid}", consumes = "multipart/form-data")
     public ResponseEntity<DisplayContentDto> setTemplateContent(@PathVariable("templateUuid") String templateUuid,
             @RequestParam("displayContentDtoJson") String displayContentDtoJson,
@@ -133,7 +150,8 @@ public class TemplateController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        DisplayContentDto displayContentDto = new ObjectMapper().readValue(displayContentDtoJson, DisplayContentDto.class);
+        DisplayContentDto displayContentDto = new ObjectMapper().readValue(displayContentDtoJson,
+                DisplayContentDto.class);
         DisplayContent displayContent = modelMapper.map(displayContentDto, DisplayContent.class);
 
         boolean templateContentExists = template.getDisplayContent() != null;
