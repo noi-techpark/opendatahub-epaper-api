@@ -86,8 +86,12 @@ public class DisplayController {
     public ResponseEntity getAllDisplays() {
         List<Display> list = displayRepository.findAll();
         ArrayList<DisplayDto> dtoList = new ArrayList<>();
-        for (Display display : list)
+        for (Display display : list) {
+            // Workaround - this forces Hibernate to get the display content object
+            // FetchType.EAGER does not work in this case for some reason
+            display.getDisplayContent();
             dtoList.add(modelMapper.map(display, DisplayDto.class));
+        }
         logger.debug("All displays requested");
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
@@ -210,7 +214,7 @@ public class DisplayController {
         String imageHash = null;
 
         // MD5 validation
-        DisplayContent displayContent = display.getCurrentDisplayContent();
+        DisplayContent displayContent = display.getCurrentContent();
         if (displayContent != null) {
             imageHash = displayContent.getImageHash();
             if (imageHash != null) {
@@ -250,7 +254,7 @@ public class DisplayController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        DisplayContent displayContent = display.getCurrentDisplayContent();
+        DisplayContent displayContent = display.getCurrentContent();
 
         if (displayContent == null) {
             logger.debug("Display with uuid " + displayUuid + " has no image.");

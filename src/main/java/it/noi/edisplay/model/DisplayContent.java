@@ -39,7 +39,7 @@ public class DisplayContent {
     private Date lastUpdate;
     
     @OneToOne
-    @JoinColumn(name = "display_id", referencedColumnName = "id")
+    @JoinColumn(name = "display_id")
     private Display display;
     
     @OneToOne
@@ -47,7 +47,7 @@ public class DisplayContent {
     private Template template;
     
     @OneToOne
-    @JoinColumn(name = "scheduled_content_id", referencedColumnName = "id")
+    @JoinColumn(name = "scheduled_content_id")
     private ScheduledContent scheduledContent;
 
     @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval = true)
