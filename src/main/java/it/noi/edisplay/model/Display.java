@@ -151,7 +151,6 @@ public class Display {
 
     @PrePersist
     public void prePersist() {
-        this.setUuid(UUID.randomUUID().toString());
         if (lastState == null)
             lastState = new Date();
     }
