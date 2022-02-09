@@ -16,8 +16,6 @@ public class DisplayDto {
     private DisplayContentDto displayContent;
     private boolean ignoreScheduledContent;
     private String warningMessage;
-
-	@ApiModelProperty(hidden = true)
 	private String uuid;
 
 	@ApiModelProperty(hidden = true)
