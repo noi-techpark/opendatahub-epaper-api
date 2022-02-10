@@ -92,7 +92,12 @@ public class DisplayController {
             
             // Modelmapper or Hibernate bug?
             // Sometimes displayDto.displayContent is null, mapping it separately seems to help
-            displayDto.setDisplayContent(modelMapper.map(display.getDisplayContent(), DisplayContentDto.class));
+            if (display.getDisplayContent() != null)
+                displayDto.setDisplayContent(modelMapper.map(display.getDisplayContent(), DisplayContentDto.class));
+            
+            DisplayContent currentContent = display.getCurrentContent();
+            if (currentContent != null)
+                displayDto.setCurrentImageHash(currentContent.getImageHash());
             
             dtoList.add(displayDto);
         }
