@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -147,12 +146,6 @@ public class Display {
 
     public void setLastRealDisplayUpdate(Date lastRealDisplayUpdate) {
         this.lastRealDisplayUpdate = lastRealDisplayUpdate;
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (lastState == null)
-            lastState = new Date();
     }
 
     public Resolution getResolution() {

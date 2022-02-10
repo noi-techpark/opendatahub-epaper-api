@@ -38,16 +38,13 @@ public class DisplayContent {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
     
-    @OneToOne
-    @JoinColumn(name = "display_id")
+    @OneToOne(fetch=FetchType.LAZY)
     private Display display;
     
-    @OneToOne
-    @JoinColumn(name = "template_id")
+    @OneToOne(fetch=FetchType.LAZY)
     private Template template;
     
-    @OneToOne
-    @JoinColumn(name = "scheduled_content_id")
+    @OneToOne(fetch=FetchType.LAZY)
     private ScheduledContent scheduledContent;
 
     @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval = true)
