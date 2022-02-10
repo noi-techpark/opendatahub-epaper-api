@@ -88,10 +88,13 @@ public class DisplayController {
         List<Display> list = displayRepository.findAll();
         ArrayList<DisplayDto> dtoList = new ArrayList<>();
         for (Display display : list) {
-            // Workaround - this forces Hibernate to get the display content object
-            // FetchType.EAGER does not work in this case for some reason
-            display.getDisplayContent();
-            dtoList.add(modelMapper.map(display, DisplayDto.class));
+            DisplayDto displayDto = modelMapper.map(display, DisplayDto.class);
+            
+            // Modelmapper or Hibernate bug?
+            // Sometimes displayDto.displayContent is null, mapping it separately seems to help
+            displayDto.setDisplayContent(modelMapper.map(display.getDisplayContent(), DisplayContentDto.class));
+            
+            dtoList.add(displayDto);
         }
         logger.debug("All displays requested");
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
