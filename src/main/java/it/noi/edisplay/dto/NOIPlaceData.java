@@ -6,7 +6,7 @@ public class NOIPlaceData {
 
     private String scode;
 
-    @JsonProperty("smetadata.name.it")
+    @JsonProperty("smetadata.name.en")
     private String name;
     
     @JsonProperty("smetadata.room_label")

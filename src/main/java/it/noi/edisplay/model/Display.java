@@ -243,7 +243,7 @@ public class Display {
         return fieldValues;
     }
 
-    public DisplayContent getCurrentDisplayContent() {
+    public DisplayContent getCurrentContent() {
         DisplayContent currentDisplayContent = null;
         Display display = this;
         if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
