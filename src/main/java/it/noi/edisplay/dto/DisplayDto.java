@@ -17,6 +17,7 @@ public class DisplayDto {
     private boolean ignoreScheduledContent;
     private String warningMessage;
 	private String uuid;
+	private String currentImageHash;
 
 	@ApiModelProperty(hidden = true)
 	private Date created;
@@ -148,5 +149,13 @@ public class DisplayDto {
 
     public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
+    }
+
+    public String getCurrentImageHash() {
+        return currentImageHash;
+    }
+
+    public void setCurrentImageHash(String currentImageHash) {
+        this.currentImageHash = currentImageHash;
     }
 }
