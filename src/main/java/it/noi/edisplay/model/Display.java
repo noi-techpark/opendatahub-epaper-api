@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 /**
@@ -199,6 +200,7 @@ public class Display {
         }
 
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
 
         // Current Event
         Long currentDate = System.currentTimeMillis();
