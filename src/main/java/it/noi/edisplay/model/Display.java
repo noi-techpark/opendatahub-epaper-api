@@ -210,11 +210,13 @@ public class Display {
                 .findFirst().orElse(null);
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, currentEvent.getEventDescriptionEN());
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getCompanyName());
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
         } else {
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "No current event");
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
             fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
             fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
         }
@@ -226,12 +228,14 @@ public class Display {
         if (!events.isEmpty()) {
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, upcomingEvent.getEventDescriptionEN());
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getCompanyName());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
                     f.format(new Timestamp((upcomingEvent.getRoomStartDateUTC()))));
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE,
                     f.format(new Timestamp((upcomingEvent.getRoomEndDateUTC()))));
         } else {
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, "No upcoming events");
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, "");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, "");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, "");
         }
