@@ -199,7 +199,7 @@ public class Display {
             fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
         }
 
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat f = new SimpleDateFormat("dd.MM.yyyy| HH:mm");
         f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
 
         // Current Event
