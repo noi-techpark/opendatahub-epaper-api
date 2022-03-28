@@ -295,7 +295,7 @@ public class DisplayController {
         Map<ImageFieldType, String> fieldValues = null;
         if (withTextFields) {
             fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display));
-            imageUtil.setImageFields(bImage, displayContent.getImageFields(), fieldValues);
+            imageUtil.drawImageTextFields(bImage, displayContent.getImageFields(), fieldValues);
         }
         image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
 
