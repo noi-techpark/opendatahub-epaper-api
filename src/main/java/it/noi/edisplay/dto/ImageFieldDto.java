@@ -22,6 +22,8 @@ public class ImageFieldDto {
     private Integer fontSize;
 
     private ImageFieldType fieldType;
+    
+    private Integer height;
 
     public String getUuid() {
         return uuid;
@@ -85,5 +87,13 @@ public class ImageFieldDto {
 
     public void setFontSize(Integer fontSize) {
         this.fontSize = fontSize;
+    }
+
+    public Integer getHeight() {
+        return height;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
     }
 }

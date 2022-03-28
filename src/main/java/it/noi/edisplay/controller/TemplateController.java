@@ -80,7 +80,7 @@ public class TemplateController {
         BufferedImage bImage = ImageIO.read(is);
 
         if (withTextFields) {
-            imageUtil.setImageFields(bImage, template.getDisplayContent().getImageFields(), null);
+            imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null);
         }
         image = imageUtil.convertToByteArray(bImage, false, null);
 

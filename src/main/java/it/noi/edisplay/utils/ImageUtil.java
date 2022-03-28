@@ -35,11 +35,7 @@ public class ImageUtil {
         return baos.toByteArray();
     }
 
-    private static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
-        return Scalr.resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, width, height);
-    }
-
-    public void setImageFields(BufferedImage bImage, List<ImageField> fields,
+    public void drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
             Map<ImageFieldType, String> dynamicFieldValues) {
         Graphics g = bImage.getGraphics();
 
@@ -60,7 +56,8 @@ public class ImageUtil {
                 stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), stringToDraw);
             }
 
-            g.drawString(stringToDraw, field.getxPos(), field.getyPos());
+            drawStringMultiLine(g, stringToDraw, bImage.getWidth() - field.getxPos(), field.getHeight(),
+                    field.getxPos(), field.getyPos());
         }
 
         g.dispose();
@@ -103,7 +100,7 @@ public class ImageUtil {
         ImageIO.write(outputImage, format, baos);
         return baos.toByteArray();
     }
-    
+
     public String convertToMD5Hash(byte[] image) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] digest = md.digest(image);
@@ -113,4 +110,53 @@ public class ImageUtil {
         }
         return sb.toString();
     }
+
+    private void drawStringMultiLine(Graphics g, String text, int maxLineWidth, int maxHeight, int x, int y) {
+        maxLineWidth = maxLineWidth - 12;
+        FontMetrics m = g.getFontMetrics();
+        if (m.stringWidth(text) < maxLineWidth) {
+            g.drawString(text, x, y);
+        } else {
+            String[] words = text.split(" ");
+            String currentLine = words[0];
+            int lineCount = 1;
+            for (int i = 1; i < words.length; i++) {
+                if (m.stringWidth(currentLine + words[i]) < maxLineWidth) {
+                    // There is enough space in line, append text
+                    currentLine += " " + words[i];
+                } else {
+                    // Not enough space in line, check if there's enough height for new line
+                    if ((lineCount + 1) * m.getHeight() > maxHeight) {
+                        // Not enough height, append three dots to the current line and finish the operation
+                        currentLine = appendThreeDots(m, currentLine, maxLineWidth);
+                        g.drawString(currentLine, x, y);
+                        return;
+                    }
+
+                    g.drawString(currentLine, x, y);
+                    y += m.getHeight();
+                    lineCount++;
+                    currentLine = words[i];
+                }
+            }
+            if (currentLine.trim().length() > 0) {
+                g.drawString(currentLine, x, y);
+            }
+        }
+    }
+
+    private String appendThreeDots(FontMetrics m, String text, int maxWidth) {
+        int textLenght = text.length();
+        if (m.stringWidth(text + "...") < maxWidth) {
+            text = text + "...";
+        } else if (textLenght >= 3) {
+            text = text.substring(0, textLenght - 3) + "...";
+        }
+        return text;
+    }
+
+    private static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
+        return Scalr.resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, width, height);
+    }
+
 }

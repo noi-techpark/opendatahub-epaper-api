@@ -96,7 +96,7 @@ public class ScheduledContentController {
         BufferedImage bImage = ImageIO.read(is);
 
         if (withTextFields) {
-            imageUtil.setImageFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null);
+            imageUtil.drawImageTextFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null);
         }
         image = imageUtil.convertToByteArray(bImage, false, null);
 
