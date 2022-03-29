@@ -48,7 +48,7 @@ public class EventDto implements Comparable<EventDto> {
 	}
 
 	public String getEventDescriptionEN() {
-		return eventDescriptionEN + "EN";
+		return eventDescriptionEN;
 	}
 
 	public void setEventDescriptionEN(String eventDescriptionEN) {
@@ -109,7 +109,7 @@ public class EventDto implements Comparable<EventDto> {
     }
 
     public String getEventDescriptionDE() {
-        return eventDescriptionDE + "";
+        return eventDescriptionDE;
     }
 
     public void setEventDescriptionDE(String eventDescriptionDE) {
@@ -117,7 +117,7 @@ public class EventDto implements Comparable<EventDto> {
     }
 
     public String getEventDescriptionIT() {
-        return eventDescriptionIT + "";
+        return eventDescriptionIT;
     }
 
     public void setEventDescriptionIT(String eventDescriptionIT) {
