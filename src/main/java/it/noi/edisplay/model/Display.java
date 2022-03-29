@@ -209,7 +209,7 @@ public class Display {
                 .filter(item -> item.getRoomStartDateUTC() < currentDate && item.getRoomEndDateUTC() > currentDate)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, currentEvent.getEventDescriptionEN());
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getCompanyName());
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
@@ -227,7 +227,7 @@ public class Display {
         Collections.sort(events); // Sort events by start date
         if (!events.isEmpty()) {
             EventDto upcomingEvent = upcomingEvents.get(0);
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, upcomingEvent.getEventDescriptionEN());
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getCompanyName());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
                     f.format(new Timestamp((upcomingEvent.getRoomStartDateUTC()))));
@@ -277,5 +277,29 @@ public class Display {
 
     public void setIgnoreScheduledContent(boolean ignoreScheduledContent) {
         this.ignoreScheduledContent = ignoreScheduledContent;
+    }
+
+    private String formEventDescription(EventDto eventDto) {
+        String descriptionEN = eventDto.getEventDescriptionEN().trim().toLowerCase();
+        String descriptionDE = eventDto.getEventDescriptionDE().trim().toLowerCase();
+        String descriptionIT = eventDto.getEventDescriptionIT().trim().toLowerCase();
+
+        if (descriptionEN.equals(descriptionDE) && descriptionDE.equals(descriptionIT)) {
+            // All descriptions duplicate, return one
+            return eventDto.getEventDescriptionEN();
+        } else if (descriptionEN.equals(descriptionDE)) {
+            // EN and DE are duplicates, return EN/DE + IT
+            return eventDto.getEventDescriptionEN() + "\n" + eventDto.getEventDescriptionIT();
+        } else if (descriptionEN.equals(descriptionIT)) {
+            // EN and IT are duplicates, return DE + EN/IT
+            return eventDto.getEventDescriptionEN() + "\n" + eventDto.getEventDescriptionDE();
+        } else if (descriptionIT.equals(descriptionDE)) {
+            // IT and DE are duplicates, return IT/DE + EN
+            return eventDto.getEventDescriptionIT() + "\n" + eventDto.getEventDescriptionEN();
+        } else {
+            // Descriptions in all languages are unique, return all
+            return eventDto.getEventDescriptionDE() + "\n" + eventDto.getEventDescriptionEN() + "\n"
+                    + eventDto.getEventDescriptionIT();
+        }
     }
 }

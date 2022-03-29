@@ -17,6 +17,8 @@ import java.awt.image.WritableRaster;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,35 +116,54 @@ public class ImageUtil {
     private void drawStringMultiLine(Graphics g, String text, int maxLineWidth, int maxHeight, int x, int y) {
         maxLineWidth = maxLineWidth - 12;
         FontMetrics m = g.getFontMetrics();
-        if (m.stringWidth(text) < maxLineWidth) {
-            g.drawString(text, x, y);
-        } else {
-            String[] words = text.split(" ");
-            String currentLine = words[0];
-            int lineCount = 1;
-            for (int i = 1; i < words.length; i++) {
-                if (m.stringWidth(currentLine + words[i]) < maxLineWidth) {
-                    // There is enough space in line, append text
-                    currentLine += " " + words[i];
-                } else {
-                    // Not enough space in line, check if there's enough height for new line
-                    if ((lineCount + 1) * m.getHeight() > maxHeight) {
-                        // Not enough height, append three dots to the current line and finish the operation
-                        currentLine = appendThreeDots(m, currentLine, maxLineWidth);
-                        g.drawString(currentLine, x, y);
-                        return;
-                    }
 
-                    g.drawString(currentLine, x, y);
-                    y += m.getHeight();
-                    lineCount++;
-                    currentLine = words[i];
+        int availableLines = maxHeight / m.getHeight();
+        if (availableLines == 0) {
+            availableLines = 1;
+        }
+
+        String[] linesToDraw = splitTextIntoLines(m, text, maxLineWidth, availableLines);
+
+        for (String lineToDraw : linesToDraw) {
+            if (lineToDraw != null && lineToDraw.trim().length() > 0) {
+                g.drawString(lineToDraw, x, y);
+            }
+            y += m.getHeight();
+        }
+    }
+
+    private String[] splitTextIntoLines(FontMetrics m, String text, int maxWidth, int availableLines) {
+        String[] lines = new String[availableLines];
+        int currentLineIndex = 0;
+
+        String[] enforcedLines = text.split("\\n");
+        for (int i = 0; i < enforcedLines.length; i++) {
+            String[] words = enforcedLines[i].split(" ");
+
+            if (currentLineIndex < availableLines) {
+                lines[currentLineIndex] = words[0];
+            }
+
+            for (int j = 1; j < words.length; j++) {
+                if (currentLineIndex < availableLines && m.stringWidth(lines[currentLineIndex] + words[j]) < maxWidth) {
+                    // There is enough space in line, append text
+                    lines[currentLineIndex] += " " + words[j];
+                } else {
+                    // Not enough space, go to new line
+                    currentLineIndex++;
+                    if (currentLineIndex < availableLines) {
+                        lines[currentLineIndex] = words[j];
+                    } else {
+                        // All lines are completed but there's still text to write, append three dots to
+                        // the last line
+                        lines[availableLines - 1] = appendThreeDots(m, lines[availableLines - 1], maxWidth);
+                        return lines;
+                    }
                 }
             }
-            if (currentLine.trim().length() > 0) {
-                g.drawString(currentLine, x, y);
-            }
+            currentLineIndex++;
         }
+        return lines;
     }
 
     private String appendThreeDots(FontMetrics m, String text, int maxWidth) {
