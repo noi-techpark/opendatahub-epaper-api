@@ -14,6 +14,12 @@ public class EventDto implements Comparable<EventDto> {
 
 	@JsonProperty("EventDescriptionEN")
 	private String eventDescriptionEN;
+	
+    @JsonProperty("EventDescriptionDE")
+    private String eventDescriptionDE;
+   
+    @JsonProperty("EventDescriptionIT")
+    private String eventDescriptionIT;
 
 	@JsonProperty("CompanyName")
 	private String companyName;
@@ -42,7 +48,7 @@ public class EventDto implements Comparable<EventDto> {
 	}
 
 	public String getEventDescriptionEN() {
-		return eventDescriptionEN;
+		return eventDescriptionEN + "EN";
 	}
 
 	public void setEventDescriptionEN(String eventDescriptionEN) {
@@ -100,6 +106,22 @@ public class EventDto implements Comparable<EventDto> {
     @Override
     public int compareTo(EventDto o) {
       return getRoomStartDateUTC().compareTo(o.getRoomStartDateUTC());
+    }
+
+    public String getEventDescriptionDE() {
+        return eventDescriptionDE + "";
+    }
+
+    public void setEventDescriptionDE(String eventDescriptionDE) {
+        this.eventDescriptionDE = eventDescriptionDE;
+    }
+
+    public String getEventDescriptionIT() {
+        return eventDescriptionIT + "";
+    }
+
+    public void setEventDescriptionIT(String eventDescriptionIT) {
+        this.eventDescriptionIT = eventDescriptionIT;
     }
 
 }
