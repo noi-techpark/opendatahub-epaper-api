@@ -1,6 +1,6 @@
 # it.bz.opendatahub.epaper.api
 
-[![CI](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/ci.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml)
 
 REST API for the E-Ink-Displays System Webapp.
 Communicates with Ardunios over WIFI HTTP to send images and make state requests.
