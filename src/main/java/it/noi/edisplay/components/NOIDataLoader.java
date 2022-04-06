@@ -48,7 +48,7 @@ public class NOIDataLoader {
 
             events = openDataRestService.getEvents();
 
-            logger.debug("Loaded " + openDataRestService.getEvents().size() + " events");
+            logger.debug("Loaded " + events.size() + " events");
             logger.debug("Loading Events from OpenDataHub DONE");
         }
     }
@@ -60,7 +60,7 @@ public class NOIDataLoader {
 
             places = openDataRestService.getNOIPlaces();
 
-            logger.debug("Loaded " + openDataRestService.getEvents().size() + " places");
+            logger.debug("Loaded " + places.size() + " places");
             logger.debug("Loading Places from OpenDataHub DONE");
         }
     }
