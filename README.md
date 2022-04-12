@@ -22,32 +22,26 @@ DB Version control system. The API can do CRUD operations on Displays,
 Locations, Templates and Connection between Display and Location. Templates are
 predefined Images that can be modified and loaded on the Displays.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
-
 - [it.bz.opendatahub.epaper.api](#itbzopendatahubepaperapi)
-  - [Installation guide](#installation-guide)
-    - [Source code](#source-code)
-  - [Run Application](#run-application)
-    - [Execute without Docker](#execute-without-docker)
-      - [Database](#database)
-      - [Application](#application)
-    - [Execute with Docker](#execute-with-docker)
-    - [Execute with local proxy if you deploy on remote server](#execute-with-local-proxy-if-you-deploy-on-remote-server)
-      - [Use HTTP communication between API and Proxy](#use-http-communication-between-api-and-proxy)
-      - [Use Web Socket communication between API and Proxy](#use-web-socket-communication-between-api-and-proxy)
-    - [Show today.noi.bz.it events](#show-todaynoibzit-events)
-    - [Heartbeat](#heartbeat)
-  - [Set up to send image to display](#set-up-to-send-image-to-display)
-  - [Swagger](#swagger)
-  - [Unit Tests](#unit-tests)
-  - [Integration test](#integration-test)
-  - [Licenses](#licenses)
-    - [Third party components](#third-party-components)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
+	- [Installation guide](#installation-guide)
+		- [Source code](#source-code)
+	- [Run Application](#run-application)
+		- [Execute without Docker](#execute-without-docker)
+			- [Database](#database)
+			- [Application](#application)
+		- [Execute with Docker](#execute-with-docker)
+		- [Execute with local proxy if you deploy on remote server](#execute-with-local-proxy-if-you-deploy-on-remote-server)
+			- [Use HTTP communication between API and Proxy](#use-http-communication-between-api-and-proxy)
+			- [Use Web Socket communication between API and Proxy](#use-web-socket-communication-between-api-and-proxy)
+		- [Show today.noi.bz.it events](#show-todaynoibzit-events)
+		- [Heartbeat](#heartbeat)
+	- [Set up to send image to display](#set-up-to-send-image-to-display)
+	- [Swagger](#swagger)
+	- [Unit Tests](#unit-tests)
+	- [Integration test](#integration-test)
+	- [Licenses](#licenses)
+		- [Third party components](#third-party-components)
 
 
 ## Installation guide
@@ -212,7 +206,26 @@ NOI_EVENTS_ENABLED=false
 NOI_CRON_EVENTS=0 0 0/12 * * ?
 NOI_CRON_DISPLAYS=0 0/10 6-24 * * ?
 ```
-NOTE: The cron jobs annotations don't need to be modified. Just if you prefer other update times
+NOTE: The cron jobs annotations don't need to be modified. Just if you prefer other update times.
+
+The scheduler cron annotation works as follows:
+```
+ ┌───────────── second (0 - 59)
+ │ ┌───────────── minute (0 - 59)
+ │ │ ┌───────────── hour (0 - 23)
+ │ │ │ ┌───────────── day of the month (1 - 31)
+ │ │ │ │ ┌───────────── month (1 - 12) (or JAN-DEC)
+ │ │ │ │ │ ┌───────────── day of the week (0 - 7)
+ │ │ │ │ │ │              (or MON-SUN -- 0 or 7 is Sunday)
+ │ │ │ │ │ │
+ * * * * * *
+```
+
+Where `*/10` means every 10 seconds/minutes/, whereas `0/10` means every 10
+seconds/minutes/... but starting from 0. For example, for minutes that would be
+`8:00`, `8:10` etc. See [this spring.io
+blogpost](https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions)
+for details.
 
 ### Heartbeat
 

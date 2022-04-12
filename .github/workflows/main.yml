@@ -1,6 +1,6 @@
 name: CI/CD
 
-on: 
+on:
   push:
   pull_request:
 
@@ -23,7 +23,7 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           test-command: 'mvn -B -U clean test'
-        
+
   deploy-test:
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main'
@@ -50,7 +50,7 @@ jobs:
           X_PROXY_URL: "http://localhost:19998"
           X_WEBSOCKET_ENABLED: true
           X_NOI_EVENTS_ENABLED: true
-          X_NOI_CRON_EVENTS: "0 0 0/12 * * ?"
+          X_NOI_CRON_EVENTS: "0 */3 * * * *"
           X_NOI_CRON_DISPLAYS: "0 0/10 6-22 * * ?"
           X_CRON_HEARTBEAT: "0 0 0/1 * * ?"
 
@@ -68,7 +68,7 @@ jobs:
 
           X_JAVA_OPTIONS: "-Xms128m -Xmx512m"
 
-      - name: Build and push 
+      - name: Build and push
         uses: noi-techpark/github-actions/docker-build-and-push@v2
         with:
           docker-host: ${{ env.DOCKER_REGISTRY_HOST }}
