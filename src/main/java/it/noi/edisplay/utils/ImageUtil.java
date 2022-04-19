@@ -58,7 +58,7 @@ public class ImageUtil {
                 stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), stringToDraw);
             }
 
-            drawStringMultiLine(g, stringToDraw, bImage.getWidth() - field.getxPos(), field.getHeight(),
+            drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
                     field.getxPos(), field.getyPos());
         }
 
@@ -114,7 +114,6 @@ public class ImageUtil {
     }
 
     private void drawStringMultiLine(Graphics g, String text, int maxLineWidth, int maxHeight, int x, int y) {
-        maxLineWidth = maxLineWidth - 12;
         FontMetrics m = g.getFontMetrics();
 
         int availableLines = maxHeight / m.getHeight();
@@ -172,6 +171,8 @@ public class ImageUtil {
             text = text + "...";
         } else if (textLenght >= 3) {
             text = text.substring(0, textLenght - 3) + "...";
+        } else {
+            text = "...";
         }
         return text;
     }
