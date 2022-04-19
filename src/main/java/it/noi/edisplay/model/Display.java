@@ -199,14 +199,15 @@ public class Display {
             fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
         }
 
-        SimpleDateFormat f = new SimpleDateFormat("dd.MM.yyyy| HH:mm");
+        SimpleDateFormat f = new SimpleDateFormat("dd.MM.yyyy | HH:mm");
         f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
 
         // Current Event
-        Long currentDate = System.currentTimeMillis();
+        Long currentTime = System.currentTimeMillis();
+        Long currentTimePlusHalfHour = currentTime + 1800000;
 
-        EventDto currentEvent = events.stream()
-                .filter(item -> item.getRoomStartDateUTC() < currentDate && item.getRoomEndDateUTC() > currentDate)
+        EventDto currentEvent = events.stream().filter(
+                item -> item.getRoomStartDateUTC() < currentTimePlusHalfHour && item.getRoomEndDateUTC() > currentTime)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
@@ -215,17 +216,17 @@ public class Display {
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
         } else {
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "No current event");
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome at NOI Techpark");
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
             fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
             fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
         }
 
         // Upcoming event
-        List<EventDto> upcomingEvents = events.stream().filter(item -> item.getRoomStartDateUTC() > currentDate)
-                .collect(Collectors.toList());
-        Collections.sort(events); // Sort events by start date
-        if (!events.isEmpty()) {
+        List<EventDto> upcomingEvents = events.stream()
+                .filter(item -> item.getRoomStartDateUTC() > currentTimePlusHalfHour).collect(Collectors.toList());
+        if (!upcomingEvents.isEmpty()) {
+            Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getCompanyName());
