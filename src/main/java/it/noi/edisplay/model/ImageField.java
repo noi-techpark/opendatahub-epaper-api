@@ -39,6 +39,8 @@ public class ImageField {
     
     private Integer height;
     
+    private Integer width;
+    
     @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "display_content_id", nullable = false)
     private DisplayContent displayContent;
@@ -155,5 +157,13 @@ public class ImageField {
 
     public void setHeight(Integer height) {
         this.height = height;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
     }
 }
