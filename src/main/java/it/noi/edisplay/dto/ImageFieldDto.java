@@ -24,6 +24,8 @@ public class ImageFieldDto {
     private ImageFieldType fieldType;
     
     private Integer height;
+    
+    private Integer width;
 
     public String getUuid() {
         return uuid;
@@ -95,5 +97,13 @@ public class ImageFieldDto {
 
     public void setHeight(Integer height) {
         this.height = height;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
     }
 }
