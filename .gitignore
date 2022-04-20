@@ -7,6 +7,3 @@ target/
 .classpath
 .vscode
 src/main/resources/application-local*.properties
-proxy/local-tunnel.log
-proxy/proxy.log
-proxy/.env

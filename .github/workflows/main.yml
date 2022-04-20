@@ -46,14 +46,10 @@ jobs:
           X_DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST }}
 
           X_APP_DEBUG: true
-          X_PROXY_ENABLED: false
-          X_PROXY_URL: "http://localhost:19998"
-          X_WEBSOCKET_ENABLED: true
           X_NOI_EVENTS_ENABLED: true
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
           X_NOI_CRON_DISPLAYS: "0 0/10 6-22 * * ?"
-          X_CRON_HEARTBEAT: "0 0 0/1 * * ?"
-
+          
           X_S3_REGION: ${{ env.AWS_REGION }}
           X_S3_BUCKET_NAME: ${{ env.AWS_S3_BUCKET_NAME }}
           X_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
