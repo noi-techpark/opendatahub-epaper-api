@@ -216,7 +216,7 @@ public class Display {
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
         } else {
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome at NOI Techpark");
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome to NOI Techpark");
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
             fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
             fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
