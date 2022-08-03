@@ -120,7 +120,6 @@ jobs:
       - name: Build and push
         uses: noi-techpark/github-actions/docker-build-and-push@v2
         with:
-          docker-host: ${{ env.DOCKER_REGISTRY_HOST }}
           docker-username: ${{ github.actor }}
           docker-password: ${{ secrets.GITHUB_TOKEN }}
 
