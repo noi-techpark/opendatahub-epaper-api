@@ -129,7 +129,6 @@ jobs:
         with:
           hosts: 'prod'
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          docker-host: ${{ env.DOCKER_REGISTRY_HOST }}
           docker-username: 'noi-techpark-bot'
           docker-password: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           project-name: ${{ env.PROJECT_NAME }}
