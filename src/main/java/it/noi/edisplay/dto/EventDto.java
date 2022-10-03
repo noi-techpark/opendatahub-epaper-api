@@ -1,8 +1,9 @@
 package it.noi.edisplay.dto;
 
+import java.util.ArrayList;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import it.noi.edisplay.model.ScheduledContent;
 
 /**
  * DTO to read Events from OpenDataHub opendatahub.bz.it
@@ -12,7 +13,10 @@ public class EventDto implements Comparable<EventDto> {
 	@JsonProperty("SpaceDesc")
 	private String spaceDesc;
 
-	@JsonProperty("EventDescriptionEN")
+    @JsonProperty("SpaceDescList")
+	private ArrayList<String> spaceDescList;
+
+    @JsonProperty("EventDescriptionEN")
 	private String eventDescriptionEN;
 	
     @JsonProperty("EventDescriptionDE")
@@ -46,6 +50,14 @@ public class EventDto implements Comparable<EventDto> {
 	public void setSpaceDesc(String spaceDesc) {
 		this.spaceDesc = spaceDesc;
 	}
+
+    public ArrayList<String> getSpaceDescList() {
+        return spaceDescList;
+    }
+
+    public void setSpaceDescList(ArrayList<String> spaceDescList) {
+        this.spaceDescList = spaceDescList;
+    }
 
 	public String getEventDescriptionEN() {
 		return eventDescriptionEN;
