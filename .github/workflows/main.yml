@@ -46,7 +46,7 @@ jobs:
           X_APP_DEBUG: true
           X_NOI_EVENTS_ENABLED: true
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
-          X_NOI_CRON_LOCATIONS: "0 0/10 6-22 * * ?"
+          X_NOI_CRON_LOCATIONS: "0 */10 6-22 * * *"
 
           X_S3_REGION: ${{ env.AWS_REGION }}
           X_S3_BUCKET_NAME: "it.bz.opendatahub.epaper.images-test"
@@ -101,7 +101,7 @@ jobs:
           X_APP_DEBUG: false
           X_NOI_EVENTS_ENABLED: true
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
-          X_NOI_CRON_LOCATIONS: "0 0/10 6-22 * * ?"
+          X_NOI_CRON_LOCATIONS: "0 */10 6-22 * * *"
 
           X_S3_REGION: ${{ env.AWS_REGION }}
           X_S3_BUCKET_NAME: "it.bz.opendatahub.epaper.images-prod"
