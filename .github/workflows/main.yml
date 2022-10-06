@@ -5,6 +5,8 @@ on:
   pull_request:
 
 env:
+  # how many minutes the event shows on the display before it starts
+  EVENTS_ADVANCE: 60
   PROJECT_NAME: e-ink-displays-api
   DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}
   DOCKER_TAG: ${{ github.sha }}
@@ -45,8 +47,9 @@ jobs:
 
           X_APP_DEBUG: true
           X_NOI_EVENTS_ENABLED: true
+          X_NOI_EVENTS_ADVANCE: ${{ env.EVENTS_ADVANCE }}
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
-          X_NOI_CRON_LOCATIONS: "0 0/10 6-22 * * ?"
+          X_NOI_CRON_LOCATIONS: "0 */10 6-22 * * *"
 
           X_S3_REGION: ${{ env.AWS_REGION }}
           X_S3_BUCKET_NAME: "it.bz.opendatahub.epaper.images-test"
@@ -100,8 +103,10 @@ jobs:
 
           X_APP_DEBUG: false
           X_NOI_EVENTS_ENABLED: true
+          # how many minutes the event shows on the display before it starts
+          X_NOI_EVENTS_ADVANCE: ${{ env.EVENTS_ADVANCE }}
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
-          X_NOI_CRON_LOCATIONS: "0 0/10 6-22 * * ?"
+          X_NOI_CRON_LOCATIONS: "0 */10 6-22 * * *"
 
           X_S3_REGION: ${{ env.AWS_REGION }}
           X_S3_BUCKET_NAME: "it.bz.opendatahub.epaper.images-prod"

@@ -75,7 +75,7 @@ public class NOIDataLoader {
                     .findFirst().orElse(null);
             if (room != null) {
                 // Filter events based on NOI room that the display is in
-                noiEvents = events.stream().filter(item -> item.getSpaceDescList().contains(room.getTodaynoibzit()))
+                noiEvents = events.stream().filter(item -> item.getSpaceDescList().contains(room.getTodaynoibzit().replace("NOI ", "")))
                         .collect(Collectors.toList());
             }
         }
@@ -100,7 +100,7 @@ public class NOIDataLoader {
             if (room != null) {
                 // Filter events based on NOI room that the display is in
                 List<EventDto> noiEvents = events.stream()
-                        .filter(item -> item.getSpaceDescList().contains(room.getTodaynoibzit()))
+                        .filter(item -> item.getSpaceDescList().contains(room.getTodaynoibzit().replace("NOI ", "")))
                         .collect(Collectors.toList());
                 for (EventDto noiEvent : noiEvents) {
                     // Look for modified NOI events that are saved in the eInk database

@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,9 @@ import javax.imageio.ImageIO;
 @RestController
 @RequestMapping("/display")
 public class DisplayController {
+
+    @Value("${event.advance}")
+    private int eventAdvance;
 
     @Autowired
     private DisplayRepository displayRepository;
@@ -89,16 +93,17 @@ public class DisplayController {
         ArrayList<DisplayDto> dtoList = new ArrayList<>();
         for (Display display : list) {
             DisplayDto displayDto = modelMapper.map(display, DisplayDto.class);
-            
+
             // Modelmapper or Hibernate bug?
-            // Sometimes displayDto.displayContent is null, mapping it separately seems to help
+            // Sometimes displayDto.displayContent is null, mapping it separately seems to
+            // help
             if (display.getDisplayContent() != null)
                 displayDto.setDisplayContent(modelMapper.map(display.getDisplayContent(), DisplayContentDto.class));
-            
+
             DisplayContent currentContent = display.getCurrentContent();
             if (currentContent != null)
                 displayDto.setCurrentImageHash(currentContent.getImageHash());
-            
+
             dtoList.add(displayDto);
         }
         logger.debug("All displays requested");
@@ -248,7 +253,7 @@ public class DisplayController {
                 // We need to validate the hash by checking if image field values are not
                 // out-dated
                 Map<ImageFieldType, String> fieldValues = display
-                        .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display));
+                        .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display),eventAdvance);
 
                 for (ImageField field : displayContent.getImageFields()) {
                     if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT && (field.getCurrentFieldValue() == null
@@ -294,7 +299,7 @@ public class DisplayController {
 
         Map<ImageFieldType, String> fieldValues = null;
         if (withTextFields) {
-            fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display));
+            fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display), eventAdvance);
             imageUtil.drawImageTextFields(bImage, displayContent.getImageFields(), fieldValues);
         }
         image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
