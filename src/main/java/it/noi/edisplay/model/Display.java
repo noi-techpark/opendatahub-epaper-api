@@ -189,8 +189,11 @@ public class Display {
         this.scheduledContent = scheduledContent;
     }
 
-    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events) {
+    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events, int eventAdvance) {
         EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
+
+        // transform minutes in milliseconds
+        eventAdvance *= 60000;
 
         // Location
         if (this.getLocation() != null) {
@@ -204,10 +207,10 @@ public class Display {
 
         // Current Event
         Long currentTime = System.currentTimeMillis();
-        Long currentTimePlusHalfHour = currentTime + 1800000;
+        Long currentTimePlusAdvance = currentTime + eventAdvance;
 
         EventDto currentEvent = events.stream().filter(
-                item -> item.getRoomStartDateUTC() < currentTimePlusHalfHour && item.getRoomEndDateUTC() > currentTime)
+                item -> item.getRoomStartDateUTC() < currentTimePlusAdvance && item.getRoomEndDateUTC() > currentTime)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
@@ -224,7 +227,7 @@ public class Display {
 
         // Upcoming event
         List<EventDto> upcomingEvents = events.stream()
-                .filter(item -> item.getRoomStartDateUTC() > currentTimePlusHalfHour).collect(Collectors.toList());
+                .filter(item -> item.getRoomStartDateUTC() > currentTimePlusAdvance).collect(Collectors.toList());
         if (!upcomingEvents.isEmpty()) {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);

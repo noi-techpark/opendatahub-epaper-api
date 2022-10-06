@@ -45,6 +45,8 @@ jobs:
 
           X_APP_DEBUG: true
           X_NOI_EVENTS_ENABLED: true
+          # how many minutes the event shows on the display before it starts
+          X_NOI_EVENTS_ADVANCE: 30
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
           X_NOI_CRON_LOCATIONS: "0 */10 6-22 * * *"
 
@@ -100,6 +102,8 @@ jobs:
 
           X_APP_DEBUG: false
           X_NOI_EVENTS_ENABLED: true
+          # how many minutes the event shows on the display before it starts
+          X_NOI_EVENTS_ADVANCE: 30
           X_NOI_CRON_EVENTS: "0 */3 * * * *"
           X_NOI_CRON_LOCATIONS: "0 */10 6-22 * * *"
 
