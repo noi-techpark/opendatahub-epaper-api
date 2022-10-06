@@ -6,7 +6,7 @@ on:
 
 env:
   # how many minutes the event shows on the display before it starts
-  EVENTS_ADVANCE: 30
+  EVENTS_ADVANCE: 60
   PROJECT_NAME: e-ink-displays-api
   DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}
   DOCKER_TAG: ${{ github.sha }}
