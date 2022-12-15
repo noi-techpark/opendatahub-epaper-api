@@ -116,7 +116,7 @@ jobs:
           X_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
 
           # Security for CRUD operations
-          X_KEYCLOAK_URL: "https://auth.opendatahub.bz.com/auth/"
+          X_KEYCLOAK_URL: "https://auth.opendatahub.com/auth/"
           X_KEYCLOAK_SSL_REQUIRED: "none"
           X_KEYCLOAK_REALM: "noi"
           X_KEYCLOAK_CLIENT_ID: "it.bz.opendatahub.epaper.api"
