@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 /**
- * DTO to read Events from OpenDataHub opendatahub.bz.it
+ * DTO to read Events from OpenDataHub opendatahub.com
  */
 public class EventDto implements Comparable<EventDto> {
 
