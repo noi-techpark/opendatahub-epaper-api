@@ -6,6 +6,7 @@ SPDX-License-Identifier: CC0-1.0
 
 # it.bz.opendatahub.epaper.api
 
+![REUSE Compliance](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/reuse.yml/badge.svg)
 [![CI/CD](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml)
 
 REST API for the E-Ink-Displays System Webapp.
