@@ -19,18 +19,18 @@ services:
       - .env
     environment:
       DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      APP_DEBUG: ${APP_DEBUG}
+      DB_USERNAME: epaper
+      DB_PASSWORD: epaper
+      APP_DEBUG: epaper
     tty: true
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
   postgres:
     image: "postgres:11-alpine"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: epaper
+      POSTGRES_USER: epaper
+      POSTGRES_PASSWORD: epaper
     hostname: postgres
     volumes:
       - /tmp/epaper_pgdata:/var/lib/postgresql/data
