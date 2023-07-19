@@ -5,12 +5,14 @@
 package it.noi.edisplay.model;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
+
 import javax.persistence.*;
-//import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,21 +23,24 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "locations")
+@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Location {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-//    @NotNull
+    // @NotNull
     private String uuid;
 
-//    @NotNull
+    // @NotNull
     private String name;
 
     private String description;
 
-    private List<String> roomCodes;
+    @Type(type = "string-array")
+    @Column(name = "room_codes", columnDefinition = "text[]")
+    private String[] roomCodes;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -102,11 +107,11 @@ public class Location {
         this.setUuid(UUID.randomUUID().toString());
     }
 
-    public List<String> getRoomCodes() {
+    public String[] getRoomCodes() {
         return roomCodes;
     }
 
-    public void setRoomCodes(List<String> roomCodes) {
+    public void setRoomCodes(String[] roomCodes) {
         this.roomCodes = roomCodes;
     }
 

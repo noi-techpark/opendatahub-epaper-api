@@ -15,7 +15,7 @@ public class LocationDto {
 
 	private String description;
 
-	private List<String> roomCodes;
+	private String[] roomCodes;
 
 	@ApiModelProperty(hidden = true)
 	private String uuid;
@@ -64,11 +64,12 @@ public class LocationDto {
 		this.description = description;
 	}
 
-	public List<String> getRoomCodes() {
+	public String[] getRoomCodes() {
 		return roomCodes;
 	}
 
-	public void setRoomCodes(List<String> roomCodes) {
+	public void setRoomCodes(String[] roomCodes) {
 		this.roomCodes = roomCodes;
 	}
+
 }
