@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 //import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,7 +35,7 @@ public class Location {
 
     private String description;
 
-    private String roomCode;
+    private List<String> roomCodes;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -72,14 +73,6 @@ public class Location {
         this.description = description;
     }
 
-    public String getRoomCode() {
-        return roomCode;
-    }
-
-    public void setRoomCode(String setRoomCode) {
-        this.roomCode = setRoomCode;
-    }
-
     public Date getCreated() {
         return created;
     }
@@ -107,6 +100,14 @@ public class Location {
     @PrePersist
     public void prePersist() {
         this.setUuid(UUID.randomUUID().toString());
+    }
+
+    public List<String> getRoomCodes() {
+        return roomCodes;
+    }
+
+    public void setRoomCodes(List<String> roomCodes) {
+        this.roomCodes = roomCodes;
     }
 
 }

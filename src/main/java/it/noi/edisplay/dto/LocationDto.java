@@ -4,19 +4,18 @@
 
 package it.noi.edisplay.dto;
 
-
 import io.swagger.annotations.ApiModelProperty;
 
 import java.sql.Date;
-
+import java.util.List;
 
 public class LocationDto {
 
 	private String name;
-	
-    private String description;
-    
-    private String roomCode;
+
+	private String description;
+
+	private List<String> roomCodes;
 
 	@ApiModelProperty(hidden = true)
 	private String uuid;
@@ -65,12 +64,11 @@ public class LocationDto {
 		this.description = description;
 	}
 
-	public String getRoomCode() {
-		return roomCode;
+	public List<String> getRoomCodes() {
+		return roomCodes;
 	}
 
-	public void setRoomCode(String roomCode) {
-		this.roomCode = roomCode;
+	public void setRoomCodes(List<String> roomCodes) {
+		this.roomCodes = roomCodes;
 	}
-
 }

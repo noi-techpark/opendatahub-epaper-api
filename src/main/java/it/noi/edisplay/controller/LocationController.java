@@ -97,7 +97,7 @@ public class LocationController {
 
         location.setName(locationDto.getName());
         location.setDescription(locationDto.getDescription());
-        location.setRoomCode(locationDto.getRoomCode());
+        location.setRoomCodes(locationDto.getRoomCodes());
 
         try {
             locationRepository.saveAndFlush(location);
