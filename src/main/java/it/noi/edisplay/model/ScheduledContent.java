@@ -31,6 +31,8 @@ public class ScheduledContent {
 
     private String eventDescription;
 
+    private String spaceDesc;
+
     @ManyToOne
     private Display display;
 
@@ -44,7 +46,7 @@ public class ScheduledContent {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
-    
+
     public Integer getId() {
         return id;
     }
@@ -137,4 +139,13 @@ public class ScheduledContent {
     public void setDisplayContent(DisplayContent displayContent) {
         this.displayContent = displayContent;
     }
+
+    public String getSpaceDesc() {
+        return spaceDesc;
+    }
+
+    public void setSpaceDesc(String spaceDesc) {
+        this.spaceDesc = spaceDesc;
+    }
+
 }

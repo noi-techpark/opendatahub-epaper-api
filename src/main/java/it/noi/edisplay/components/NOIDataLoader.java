@@ -127,6 +127,7 @@ public class NOIDataLoader {
                             scheduledContentDto.setEventDescription(noiEvent.getEventDescriptionEN());
                             scheduledContentDto.setEventId(noiEvent.getEventId());
                             scheduledContentDto.setDisplayUuid(display.getUuid());
+                            scheduledContentDto.setSpaceDesc(noiEvent.getSpaceDesc());
                             dtoList.add(scheduledContentDto);
                         }
 

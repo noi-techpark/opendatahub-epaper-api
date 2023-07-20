@@ -165,6 +165,7 @@ public class ScheduledContentController {
             existingScheduledContent.setStartDate(scheduledContentDto.getStartDate());
             existingScheduledContent.setEndDate(scheduledContentDto.getEndDate());
             existingScheduledContent.setEventDescription(scheduledContentDto.getEventDescription());
+            existingScheduledContent.setSpaceDesc(scheduledContentDto.getSpaceDesc());
             scheduledContent = existingScheduledContent;
         }
 
