@@ -5,6 +5,7 @@
 package it.noi.edisplay.model;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import it.noi.edisplay.dto.EventDto;
@@ -35,10 +36,10 @@ public class Display {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-//	@NotNull
+    // @NotNull
     private String name;
 
-//	@NotNull
+    // @NotNull
     private String uuid;
 
     @CreationTimestamp
@@ -61,15 +62,16 @@ public class Display {
 
     private String warningMessage;
 
-//	@NotNull
+    // @NotNull
     @ManyToOne
     private Resolution resolution;
 
     @ManyToOne
     private Template template;
 
-    @ManyToOne
-    private Location location;
+    @Type(type = "string-array")
+    @Column(name = "room_codes", columnDefinition = "text[]")
+    private String[] roomCodes;
 
     @OneToOne(mappedBy = "display", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
@@ -167,14 +169,6 @@ public class Display {
 
     public void setTemplate(Template template) {
         this.template = template;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
     }
 
     public DisplayContent getDisplayContent() {
@@ -309,5 +303,13 @@ public class Display {
             return eventDto.getEventDescriptionDE() + "\n" + eventDto.getEventDescriptionEN() + "\n"
                     + eventDto.getEventDescriptionIT();
         }
+    }
+
+    public String[] getRoomCodes() {
+        return roomCodes;
+    }
+
+    public void setRoomCodes(String[] roomCodes) {
+        this.roomCodes = roomCodes;
     }
 }

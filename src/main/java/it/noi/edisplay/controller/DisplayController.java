@@ -116,20 +116,24 @@ public class DisplayController {
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<Object> createDisplay(@RequestBody DisplayDto displayDto) {
+
         Display display = modelMapper.map(displayDto, Display.class);
         if (displayDto.getDisplayContent() == null) {
             display.setDisplayContent(null);
         }
 
-        if (displayDto.getLocationUuid() != null) {
-            Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
-            if (location != null)
-                display.setLocation(location);
-            else {
-                logger.debug("Create display with uuid:" + displayDto.getUuid() + " failed. Location not found");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+        Location location = modelMapper.map(displayDto.getLocation(), Location.class);
+        try {
+            location = locationRepository.saveAndFlush(location);
+            logger.debug("Location with uuid:" + location.getUuid() + " created.");
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            if (rootCause != null)
+                return new ResponseEntity<>(rootCause.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+            else
+                throw (e);
         }
+        display.setLocation(location);
 
         ResolutionDto resolutionDto = displayDto.getResolution();
         if (resolutionDto != null) {
@@ -257,7 +261,7 @@ public class DisplayController {
                 // We need to validate the hash by checking if image field values are not
                 // out-dated
                 Map<ImageFieldType, String> fieldValues = display
-                        .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display),eventAdvance);
+                        .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display), eventAdvance);
 
                 for (ImageField field : displayContent.getImageFields()) {
                     if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT && (field.getCurrentFieldValue() == null

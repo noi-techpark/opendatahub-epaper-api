@@ -7,7 +7,6 @@ package it.noi.edisplay.dto;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.sql.Date;
-import java.util.List;
 
 public class LocationDto {
 
