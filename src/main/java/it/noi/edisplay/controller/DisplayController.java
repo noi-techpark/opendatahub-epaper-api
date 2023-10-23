@@ -60,9 +60,6 @@ public class DisplayController {
     private ResolutionRepository resolutionRepository;
 
     @Autowired
-    private LocationRepository locationRepository;
-
-    @Autowired
     private DisplayContentRepository displayContentRepository;
 
     @Autowired

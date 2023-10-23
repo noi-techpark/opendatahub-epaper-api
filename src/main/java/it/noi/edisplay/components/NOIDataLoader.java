@@ -8,7 +8,6 @@ import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.dto.NOIPlaceData;
 import it.noi.edisplay.dto.ScheduledContentDto;
 import it.noi.edisplay.model.Display;
-import it.noi.edisplay.model.Location;
 import it.noi.edisplay.model.ScheduledContent;
 import it.noi.edisplay.services.OpenDataRestService;
 
@@ -71,11 +70,10 @@ public class NOIDataLoader {
 
     public List<EventDto> getNOIDisplayEvents(Display display) {
         List<EventDto> noiEvents = new ArrayList<>();
-        Location displayLocation = display.getLocation();
 
-        if (displayLocation != null && displayLocation.getRoomCodes() != null) {
+        if (display.getRoomCodes() != null) {
             // Get correct NOI room by Room Code
-            for (String roomCode : displayLocation.getRoomCodes()) {
+            for (String roomCode : display.getRoomCodes()) {
 
                 NOIPlaceData room = places.stream().filter(item -> item.getScode().equals(roomCode))
                         .findFirst().orElse(null);
@@ -100,10 +98,8 @@ public class NOIDataLoader {
         for (ScheduledContent scheduledContent : scheduledContentList)
             dtoList.add(modelMapper.map(scheduledContent, ScheduledContentDto.class));
 
-        Location displayLocation = display.getLocation();
-
-        if (displayLocation != null && displayLocation.getRoomCodes() != null) {
-            for (String roomCode : displayLocation.getRoomCodes()) {
+        if (display.getRoomCodes() != null) {
+            for (String roomCode : display.getRoomCodes()) {
 
                 // Get correct NOI room by Room Code
                 NOIPlaceData room = places.stream().filter(item -> item.getScode().equals(roomCode))
