@@ -122,19 +122,6 @@ public class DisplayController {
             display.setDisplayContent(null);
         }
 
-        Location location = modelMapper.map(displayDto.getLocation(), Location.class);
-        try {
-            location = locationRepository.saveAndFlush(location);
-            logger.debug("Location with uuid:" + location.getUuid() + " created.");
-        } catch (DataIntegrityViolationException e) {
-            Throwable rootCause = e.getRootCause();
-            if (rootCause != null)
-                return new ResponseEntity<>(rootCause.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
-            else
-                throw (e);
-        }
-        display.setLocation(location);
-
         ResolutionDto resolutionDto = displayDto.getResolution();
         if (resolutionDto != null) {
             Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
@@ -187,16 +174,6 @@ public class DisplayController {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
 
-        if (displayDto.getLocationUuid() != null) {
-            Location location = locationRepository.findByUuid(displayDto.getLocationUuid());
-            if (location != null)
-                display.setLocation(location);
-            else {
-                logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Location not found");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-        }
-
         ResolutionDto resolutionDto = displayDto.getResolution();
         if (resolutionDto != null) {
             Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
@@ -218,6 +195,7 @@ public class DisplayController {
         display.setErrorMessage(displayDto.getErrorMessage());
         display.setIgnoreScheduledContent(displayDto.getIgnoreScheduledContent());
         display.setWarningMessage(displayDto.getWarningMessage());
+        display.setRoomCodes(displayDto.getRoomCodes());
 
         try {
             display = displayRepository.saveAndFlush(display);

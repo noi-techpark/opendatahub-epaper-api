@@ -193,12 +193,13 @@ public class Display {
         // transform minutes in milliseconds
         eventAdvance *= 60000;
 
+        // TODO replace with room name
         // Location
-        if (this.getLocation() != null) {
-            fieldValues.put(ImageFieldType.LOCATION_NAME, this.getLocation().getName());
-        } else {
-            fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
-        }
+        // if (this.getLocation() != null) {
+        //     fieldValues.put(ImageFieldType.LOCATION_NAME, this.getLocation().getName());
+        // } else {
+        //     fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
+        // }
 
         SimpleDateFormat f = new SimpleDateFormat("dd.MM.yyyy | HH:mm");
         f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));

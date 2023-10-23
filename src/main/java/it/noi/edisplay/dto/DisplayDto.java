@@ -22,15 +22,7 @@ public class DisplayDto {
 	private String warningMessage;
 	private String uuid;
 	private String currentImageHash;
-	private LocationDto location;
-
-	public LocationDto getLocation() {
-		return location;
-	}
-
-	public void setLocation(LocationDto location) {
-		this.location = location;
-	}
+	private String[] roomCodes;
 
 	@ApiModelProperty(hidden = true)
 	private Date created;
@@ -171,4 +163,13 @@ public class DisplayDto {
 	public void setCurrentImageHash(String currentImageHash) {
 		this.currentImageHash = currentImageHash;
 	}
+
+	public String[] getRoomCodes() {
+		return roomCodes;
+	}
+
+	public void setRoomCodes(String[] roomCodes) {
+		this.roomCodes = roomCodes;
+	}
+
 }
