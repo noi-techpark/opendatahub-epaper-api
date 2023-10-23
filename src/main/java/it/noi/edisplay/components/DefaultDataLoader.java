@@ -29,10 +29,6 @@ public class DefaultDataLoader {
 	@Autowired
 	private ResolutionRepository resolutionRepository;
 
-	@Autowired
-	private LocationRepository locationRepository;
-
-
 	@PostConstruct
 	public void onStartUp() throws IOException {
 
@@ -61,28 +57,11 @@ public class DefaultDataLoader {
 			resolution.setHeight(2560);
 			resolution.setBitDepth(24);
 			resolutionRepository.save(resolution);
-	        Resolution resolutionSmall = new Resolution();
-	        resolutionSmall.setWidth(1872);
-	        resolutionSmall.setHeight(1404);
-	        resolutionSmall.setBitDepth(4);
-	        resolutionRepository.saveAndFlush(resolutionSmall);
-		}
-
-		if (locationRepository.findAll().size() == 0) {
-			Location officeLocation = new Location();
-			Location meetingRoomLocation = new Location();
-			Location freeSoftwareLabLocation = new Location();
-
-			officeLocation.setName("Office");
-			meetingRoomLocation.setName("Meeting Room");
-			freeSoftwareLabLocation.setName("Free Software Lab Default");
-
-			locationRepository.save(officeLocation);
-			locationRepository.save(meetingRoomLocation);
-			locationRepository.saveAndFlush(freeSoftwareLabLocation);
+			Resolution resolutionSmall = new Resolution();
+			resolutionSmall.setWidth(1872);
+			resolutionSmall.setHeight(1404);
+			resolutionSmall.setBitDepth(4);
+			resolutionRepository.saveAndFlush(resolutionSmall);
 		}
 	}
 }
-
-
-
