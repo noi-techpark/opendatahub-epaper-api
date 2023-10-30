@@ -9,6 +9,5 @@ UPDATE public.displays
 ALTER TABLE public.displays DROP CONSTRAINT fk_displays_locations_id;
 ALTER TABLE  public.displays DROP COLUMN IF EXISTS location_id;
 
-
-DROP TABLE IF EXISTS public.displays_locations;
+DROP TABLE IF EXISTS public.display_locations;
 DROP TABLE IF EXISTS public.locations;
