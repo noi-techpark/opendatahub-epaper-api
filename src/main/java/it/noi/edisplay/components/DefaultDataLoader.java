@@ -32,36 +32,37 @@ public class DefaultDataLoader {
 	@PostConstruct
 	public void onStartUp() throws IOException {
 
-		if (templateRepository.findAll().size() == 0) {
+		// add default templates
+		addTemplate("Office");
+		addTemplate("Meeting Room");
+		addTemplate("Free Software Lab");
+		addTemplate(EVENT_TEMPLATE_NAME);
 
-			Template officeTemplate = new Template();
-			Template meetingRoomTemplate = new Template();
-			Template freeSoftwareLabTemplate = new Template();
-			Template noiTemplate = new Template();
+		// add default resolutions
+		addResolution(1440, 2560, 24);
+		addResolution(1872, 1404, 4);
+		addResolution(1440, 5120, 24);
+	}
 
-			officeTemplate.setName("Office");
-			meetingRoomTemplate.setName("Meeting Room");
-			freeSoftwareLabTemplate.setName("Free Software Lab");
-			noiTemplate.setName(EVENT_TEMPLATE_NAME);
-
-			templateRepository.save(officeTemplate);
-			templateRepository.save(meetingRoomTemplate);
-			templateRepository.save(noiTemplate);
-			templateRepository.saveAndFlush(freeSoftwareLabTemplate);
-
-		}
-
-		if (resolutionRepository.findAll().size() == 0) {
+	private void addResolution(int width, int height, int bitDepth) {
+		if (resolutionRepository.findByWidthAndHeightAndBitDepth(width, height, bitDepth) == null) {
 			Resolution resolution = new Resolution();
-			resolution.setWidth(1440);
-			resolution.setHeight(2560);
-			resolution.setBitDepth(24);
-			resolutionRepository.save(resolution);
-			Resolution resolutionSmall = new Resolution();
-			resolutionSmall.setWidth(1872);
-			resolutionSmall.setHeight(1404);
-			resolutionSmall.setBitDepth(4);
-			resolutionRepository.saveAndFlush(resolutionSmall);
+			resolution.setWidth(width);
+			resolution.setHeight(height);
+			resolution.setBitDepth(bitDepth);
+			resolutionRepository.saveAndFlush(resolution);
+
+			logger.info("New resolution with width: {} height: {} bidDepth: {} added.", width, height, bitDepth);
+		}
+	}
+
+	private void addTemplate(String name) {
+		if (templateRepository.findByName(name) == null) {
+			Template template = new Template();
+			template.setName(name);
+			templateRepository.saveAndFlush(template);
+
+			logger.info("New template with name: {} added.", name);
 		}
 	}
 }
