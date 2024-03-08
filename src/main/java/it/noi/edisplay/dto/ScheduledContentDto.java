@@ -4,10 +4,10 @@
 
 package it.noi.edisplay.dto;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.sql.Date;
 import java.sql.Timestamp;
+
+import io.swagger.annotations.ApiModelProperty;
 
 public class ScheduledContentDto {
 
@@ -30,6 +30,10 @@ public class ScheduledContentDto {
     private String originalEventDescription;
 
     private String spaceDesc;
+
+    private boolean override;
+
+    private String room;
 
     private DisplayContentDto displayContent;
 
@@ -150,6 +154,22 @@ public class ScheduledContentDto {
 
     public void setSpaceDesc(String spaceDesc) {
         this.spaceDesc = spaceDesc;
+    }
+
+    public boolean getOverride() {
+        return override;
+    }
+
+    public void setOverride(boolean override) {
+        this.override = override;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
     }
 
 }
