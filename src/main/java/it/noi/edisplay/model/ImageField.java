@@ -7,6 +7,7 @@ package it.noi.edisplay.model;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -38,17 +39,29 @@ public class ImageField {
     private Integer yPos;
 
     private String customText;
-    
+
     private Integer fontSize;
-    
+
     private Integer height;
-    
+
     private Integer width;
-    
-    @ManyToOne(fetch=FetchType.EAGER)
+
+    private boolean repeat;
+    @Column(name = "is_repeated")
+    private boolean isRepeated;
+
+    private boolean italic;
+
+    private boolean bold;
+
+    private String image;
+
+    private boolean border;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "display_content_id", nullable = false)
     private DisplayContent displayContent;
-    
+
     @Enumerated(EnumType.STRING)
     private ImageFieldType fieldType;
 
@@ -59,7 +72,7 @@ public class ImageField {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
-    
+
     private String currentFieldValue;
 
     public Integer getId() {
@@ -169,5 +182,53 @@ public class ImageField {
 
     public void setWidth(Integer width) {
         this.width = width;
+    }
+
+    public boolean isRepeat() {
+        return repeat;
+    }
+
+    public void setRepeat(boolean repeat) {
+        this.repeat = repeat;
+    }
+
+    public boolean isRepeated() {
+        return isRepeated;
+    }
+
+    public void setRepeated(boolean isRepeated) {
+        this.isRepeated = isRepeated;
+    }
+
+    public boolean isItalic() {
+        return italic;
+    }
+
+    public void setItalic(boolean italic) {
+        this.italic = italic;
+    }
+
+    public boolean isBold() {
+        return bold;
+    }
+
+    public void setBold(boolean bold) {
+        this.bold = bold;
+    }
+
+    public boolean isBorder() {
+        return border;
+    }
+
+    public void setBorder(boolean border) {
+        this.border = border;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

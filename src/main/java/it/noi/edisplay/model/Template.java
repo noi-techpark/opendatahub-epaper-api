@@ -4,12 +4,25 @@
 
 package it.noi.edisplay.model;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "templates")
@@ -25,6 +38,18 @@ public class Template {
 
     private String description;
 
+    @ManyToOne
+    private Resolution resolution;
+
+    @Column(name = "room_data", columnDefinition = "INTEGER[]")
+    private int[] roomData;
+
+    private boolean multipleRoom;
+
+    private boolean header;
+
+    private boolean footer;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
@@ -33,7 +58,7 @@ public class Template {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
-    @OneToOne(mappedBy = "template", cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "template", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
 
     public Integer getId() {
@@ -96,5 +121,45 @@ public class Template {
     public void setDisplayContent(DisplayContent displayContent) {
         displayContent.setTemplate(this);
         this.displayContent = displayContent;
+    }
+
+    public Resolution getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(Resolution resolution) {
+        this.resolution = resolution;
+    }
+
+    public boolean isMultipleRoom() {
+        return multipleRoom;
+    }
+
+    public void setMultipleRoom(boolean multipleRoom) {
+        this.multipleRoom = multipleRoom;
+    }
+
+    public boolean isHeader() {
+        return header;
+    }
+
+    public void setHeader(boolean header) {
+        this.header = header;
+    }
+
+    public boolean isFooter() {
+        return footer;
+    }
+
+    public void setFooter(boolean footer) {
+        this.footer = footer;
+    }
+
+    public int[] getRoomData() {
+        return roomData;
+    }
+
+    public void setRoomData(int[] roomData) {
+        this.roomData = roomData;
     }
 }

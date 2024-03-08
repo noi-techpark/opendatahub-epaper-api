@@ -4,12 +4,24 @@
 
 package it.noi.edisplay.model;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "scheduled_content")
@@ -33,8 +45,17 @@ public class ScheduledContent {
 
     private String spaceDesc;
 
+    private String room;
+
+    private boolean override;
+
+    private String imageBase64;
+
     @ManyToOne
     private Display display;
+
+    @ManyToOne
+    private Template template;
 
     @OneToOne(mappedBy = "scheduledContent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
@@ -137,6 +158,9 @@ public class ScheduledContent {
     }
 
     public void setDisplayContent(DisplayContent displayContent) {
+        if (displayContent != null) {
+            displayContent.setScheduledContent(this);
+        }
         this.displayContent = displayContent;
     }
 
@@ -146,6 +170,38 @@ public class ScheduledContent {
 
     public void setSpaceDesc(String spaceDesc) {
         this.spaceDesc = spaceDesc;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    public boolean getOverride() {
+        return override;
+    }
+
+    public void setOverride(boolean override) {
+        this.override = override;
+    }
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
     }
 
 }
