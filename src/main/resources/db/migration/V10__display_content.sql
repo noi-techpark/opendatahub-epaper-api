@@ -6,7 +6,6 @@ CREATE TABLE display_content
     last_update TIMESTAMP NOT NULL,
     image_url character varying(100),
     image_hash character varying(100),
-    image_base64 text,
     display_id integer,
     template_id integer,
     scheduled_content_id integer,
