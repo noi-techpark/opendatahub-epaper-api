@@ -19,6 +19,10 @@ public class DisplayContentDto {
 
     private List<ImageFieldDto> imageFields;
 
+    private String imageHash;
+
+    private String imageBase64;
+
     public String getUuid() {
         return uuid;
     }
@@ -43,6 +47,14 @@ public class DisplayContentDto {
         this.lastUpdate = lastUpdate;
     }
 
+    public String getImageHash() {
+        return imageHash;
+    }
+
+    public void setImageHash(String imageHash) {
+        this.imageHash = imageHash;
+    }
+
     public List<ImageFieldDto> getImageFields() {
         return imageFields;
     }
@@ -50,4 +62,13 @@ public class DisplayContentDto {
     public void setImageFields(List<ImageFieldDto> imageFields) {
         this.imageFields = imageFields;
     }
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
 }

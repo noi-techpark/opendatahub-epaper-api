@@ -6,6 +6,8 @@ package it.noi.edisplay.dto;
 
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiModelProperty;
 import it.noi.edisplay.model.ImageFieldType;
 
@@ -22,14 +24,27 @@ public class ImageFieldDto {
     private Integer yPos;
 
     private String customText;
-    
+
     private Integer fontSize;
 
     private ImageFieldType fieldType;
-    
+
     private Integer height;
-    
+
     private Integer width;
+
+    private boolean repeat;
+
+    @JsonProperty("isRepeated")
+    private boolean isRepeated;
+
+    private boolean italic;
+
+    private boolean bold;
+
+    private String image;
+
+    private boolean border;
 
     public String getUuid() {
         return uuid;
@@ -109,5 +124,53 @@ public class ImageFieldDto {
 
     public void setWidth(Integer width) {
         this.width = width;
+    }
+
+    public boolean isRepeat() {
+        return repeat;
+    }
+
+    public void setRepeat(boolean repeat) {
+        this.repeat = repeat;
+    }
+
+    public boolean isRepeated() {
+        return isRepeated;
+    }
+
+    public void setRepeated(boolean isRepeated) {
+        this.isRepeated = isRepeated;
+    }
+
+    public boolean isItalic() {
+        return italic;
+    }
+
+    public void setItalic(boolean italic) {
+        this.italic = italic;
+    }
+
+    public boolean isBold() {
+        return bold;
+    }
+
+    public void setBold(boolean bold) {
+        this.bold = bold;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public boolean isBorder() {
+        return border;
+    }
+
+    public void setBorder(boolean border) {
+        this.border = border;
     }
 }

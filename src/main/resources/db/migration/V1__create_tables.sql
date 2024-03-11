@@ -7,6 +7,23 @@ create TABLE resolutions (
 	PRIMARY KEY (id)
 );
 
+create TABLE templates (
+    id SERIAL,
+    uuid VARCHAR(36) NOT NULL UNIQUE,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(50),
+    resolution_id SERIAL NOT NULL,
+    multiple_room boolean,
+    footer boolean,
+    header boolean,
+    room_data INTEGER[],
+    created  TIMESTAMP NOT NULL,
+    last_update  TIMESTAMP NOT NULL,
+    image BYTEA NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (resolution_id) REFERENCES resolutions (id) ON DELETE CASCADE
+);
+
 create TABLE displays (
     id SERIAL,
     uuid VARCHAR(36) NOT NULL UNIQUE,
@@ -19,6 +36,8 @@ create TABLE displays (
     resolution_id SERIAL NOT NULL,
     image BYTEA,
     battery_percentage INT,
+    image_base64 text,
+    image_hash VARCHAR(100), 
     PRIMARY KEY (id),
     FOREIGN KEY (resolution_id) REFERENCES resolutions (id) ON DELETE CASCADE
 );
@@ -52,12 +71,3 @@ create TABLE connections (
     FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE
 );
 
-create TABLE templates (
-    id SERIAL,
-    uuid VARCHAR(36) NOT NULL UNIQUE,
-    name VARCHAR(50) NOT NULL,
-    created  TIMESTAMP NOT NULL,
-    last_update  TIMESTAMP NOT NULL,
-    image BYTEA NOT NULL,
-    PRIMARY KEY (id)
-);

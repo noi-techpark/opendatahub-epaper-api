@@ -4,13 +4,16 @@
 
 package it.noi.edisplay.controller;
 
-import it.noi.edisplay.dto.DisplayContentDto;
-import it.noi.edisplay.dto.TemplateDto;
-import it.noi.edisplay.model.DisplayContent;
-import it.noi.edisplay.model.Template;
-import it.noi.edisplay.repositories.TemplateRepository;
-import it.noi.edisplay.storage.FileImportStorageS3;
-import it.noi.edisplay.utils.ImageUtil;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,19 +21,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.imageio.ImageIO;
+import it.noi.edisplay.dto.DisplayContentDto;
+import it.noi.edisplay.dto.ResolutionDto;
+import it.noi.edisplay.dto.TemplateDto;
+import it.noi.edisplay.model.DisplayContent;
+import it.noi.edisplay.model.Resolution;
+import it.noi.edisplay.model.Template;
+import it.noi.edisplay.repositories.ResolutionRepository;
+import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.storage.FileImportStorageS3;
+import it.noi.edisplay.utils.ImageUtil;
 
 /**
  * Controller class to create API for CRUD operations on Templates
@@ -49,6 +62,9 @@ public class TemplateController {
     private ImageUtil imageUtil;
 
     @Autowired
+    private ResolutionRepository resolutionRepository;
+
+    @Autowired
     private FileImportStorageS3 fileImportStorageS3;
 
     Logger logger = LoggerFactory.getLogger(TemplateController.class);
@@ -56,7 +72,6 @@ public class TemplateController {
     @GetMapping(value = "/get/{uuid}")
     public ResponseEntity<TemplateDto> getTemplate(@PathVariable("uuid") String uuid) {
         Template template = templateRepository.findByUuid(uuid);
-
         if (template == null) {
             logger.debug("Template with uuid: " + uuid + " not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -78,15 +93,18 @@ public class TemplateController {
             logger.debug("Template with uuid: " + uuid + " has no image.");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
+        // download as image the display content
         byte[] image = fileImportStorageS3.download(template.getDisplayContent().getUuid());
-        InputStream is = new ByteArrayInputStream(image);
-        BufferedImage bImage = ImageIO.read(is);
+        // InputStream is = new ByteArrayInputStream(image);
+        // BufferedImage bImage = ImageIO.read(is);
 
-        if (withTextFields) {
-            imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null);
-        }
-        image = imageUtil.convertToByteArray(bImage, false, null);
+        /*
+         * if (withTextFields) { imageUtil.drawImageTextFields(bImage,
+         * template.getDisplayContent().getImageFields(), null); }
+         */
+        // image = imageUtil.convertToByteArray(bImage, false, null); by neda
+        // image = imageUtil.convertToByteArray(bImage, false,
+        // template.getResolution());
 
         logger.debug("Get template image with uuid: " + uuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
@@ -105,6 +123,25 @@ public class TemplateController {
     @PostMapping(value = "/create")
     public ResponseEntity<Object> createTemplate(@RequestBody TemplateDto templateDto) {
         Template template = modelMapper.map(templateDto, Template.class);
+        ResolutionDto resolutionDto = templateDto.getResolution();
+        if (resolutionDto != null) {
+            Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
+                    resolutionDto.getHeight(), resolutionDto.getBitDepth());
+            if (resolution != null)
+                template.setResolution(resolution);
+            else {
+                Resolution newResolution = new Resolution();
+                newResolution.setWidth(resolutionDto.getWidth());
+                newResolution.setHeight(resolutionDto.getHeight());
+                newResolution.setBitDepth(resolutionDto.getBitDepth());
+                template.setResolution(newResolution);
+            }
+        }
+        template.setFooter(templateDto.getFooter());
+        template.setHeader(templateDto.getHeader());
+        template.setMultipleRoom(templateDto.getMultipleRoom());
+        template.setRoomData(templateDto.getRoomData());
+
         try {
             template = templateRepository.saveAndFlush(template);
         } catch (DataIntegrityViolationException e) {
@@ -121,14 +158,32 @@ public class TemplateController {
     @PutMapping(value = "/update", consumes = "application/json")
     public ResponseEntity<Object> updateTemplate(@RequestBody TemplateDto templateDto) {
         Template template = templateRepository.findByUuid(templateDto.getUuid());
-
         if (template == null) {
             logger.debug("Update template with uuid:" + templateDto.getUuid() + " failed.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        ResolutionDto resolutionDto = templateDto.getResolution();
+        if (resolutionDto != null) {
+            Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
+                    resolutionDto.getHeight(), resolutionDto.getBitDepth());
+            if (resolution != null)
+                template.setResolution(resolution);
+            else {
+                Resolution newResolution = new Resolution();
+                newResolution.setWidth(resolutionDto.getWidth());
+                newResolution.setHeight(resolutionDto.getHeight());
+                newResolution.setBitDepth(resolutionDto.getBitDepth());
+                template.setResolution(newResolution);
+            }
+        }
 
         template.setName(templateDto.getName());
         template.setDescription(templateDto.getDescription());
+        template.setFooter(templateDto.getFooter());
+        template.setHeader(templateDto.getHeader());
+        template.setMultipleRoom(templateDto.getMultipleRoom());
+        template.setRoomData(templateDto.getRoomData());
+
         try {
             templateRepository.saveAndFlush(template);
         } catch (DataIntegrityViolationException e) {
@@ -164,15 +219,27 @@ public class TemplateController {
             template.setDisplayContent(new DisplayContent());
             template.getDisplayContent().setTemplate(template);
         }
-        template.getDisplayContent().setImageFields(displayContent.getImageFields());
+        template.getDisplayContent().setImageFields(displayContent.getImageFields());// set upload
+        template.getDisplayContent().setImageBase64(displayContent.getImageBase64());
 
         if (image != null) {
             InputStream in = new ByteArrayInputStream(image.getBytes());
             BufferedImage bImageFromConvert = ImageIO.read(in);
             String fileKey = template.getDisplayContent().getUuid();
             fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-        }
 
+        }
+        if (template.getDisplayContent().getImageBase64() != null) {
+            // InputStream in = new ByteArrayInputStream(image.getBytes());
+            // BufferedImage bImageFromConvert = ImageIO.read(in);
+            BufferedImage bImageFromConvert = null;
+            byte[] imageBytes = Base64.getDecoder().decode(template.getDisplayContent().getImageBase64().split(",")[1]);
+            ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
+            bImageFromConvert = ImageIO.read(bis);
+
+            String fileKey = template.getDisplayContent().getUuid();
+            fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
+        }
         Template savedTemplate = templateRepository.saveAndFlush(template);
 
         if (templateContentExists) {
@@ -197,5 +264,13 @@ public class TemplateController {
         logger.debug("Deleted template with uuid:" + uuid);
         return new ResponseEntity(HttpStatus.OK);
 
+    }
+
+    public ResolutionRepository getResolutionRepository() {
+        return resolutionRepository;
+    }
+
+    public void setResolutionRepository(ResolutionRepository resolutionRepository) {
+        this.resolutionRepository = resolutionRepository;
     }
 }
