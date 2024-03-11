@@ -102,7 +102,7 @@ public class Display {
 
     private int batteryPercentage;
 
-    private Boolean ignoreScheduledContent;
+    private boolean ignoreScheduledContent;
 
     public Integer getId() {
         return id;

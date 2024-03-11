@@ -43,12 +43,12 @@ public class Template {
 
     @Column(name = "room_data", columnDefinition = "INTEGER[]")
     private int[] roomData;
-    
-    private Boolean multipleRoom;
 
-    private Boolean header;
+    private boolean multipleRoom;
 
-    private Boolean footer;
+    private boolean header;
+
+    private boolean footer;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
