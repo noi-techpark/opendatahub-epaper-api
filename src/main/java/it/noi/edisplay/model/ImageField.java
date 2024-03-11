@@ -46,17 +46,17 @@ public class ImageField {
 
     private Integer width;
 
-    private boolean repeat;
+    private Boolean repeat;
     @Column(name = "is_repeated")
-    private boolean isRepeated;
+    private Boolean isRepeated;
 
-    private boolean italic;
+    private Boolean italic;
 
-    private boolean bold;
+    private Boolean bold;
 
     private String image;
 
-    private boolean border;
+    private Boolean border;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "display_content_id", nullable = false)

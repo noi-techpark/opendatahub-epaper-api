@@ -47,7 +47,7 @@ public class ScheduledContent {
 
     private String room;
 
-    private boolean override;
+    private Boolean override;
 
     private String imageBase64;
 
