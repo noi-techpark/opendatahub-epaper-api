@@ -6,11 +6,13 @@ package it.noi.edisplay.dto;
 
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import it.noi.edisplay.model.ImageFieldType;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ImageFieldDto {
     @ApiModelProperty(hidden = true)
     private String uuid;
