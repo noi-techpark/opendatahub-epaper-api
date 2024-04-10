@@ -278,8 +278,6 @@ public class Display {
                     && currentEvent.getDisplayContent() != null) {
                 currentDisplayContent = currentEvent.getDisplayContent();
             }
-
-            // Check for override
             ScheduledContent overrideEvent = display
                     .getScheduledContent().stream().filter(item -> item.getOverride()
                             && item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))

@@ -86,12 +86,10 @@ public class ImageUtil {
         g2d.fillRect(0, 0, canvasWidth, canvasHeight);
         // Draw boxes on the canvas
         for (ImageField box : boxes) {
-
-            if ("img" == box.getCustomText()) {
-                String base64Image = box.getImage();
+            if ("img" == box.getCustomText() || "img".equals(box.getCustomText())) {
+                String base64Image = box.getImage().split(",")[1];
                 // Decode the Base64 string into a byte array
                 byte[] imageData = Base64.getDecoder().decode(base64Image);
-
                 try {
                     // Create an image from the decoded byte array
                     Image image = ImageIO.read(new ByteArrayInputStream(imageData));
@@ -255,7 +253,6 @@ public class ImageUtil {
 
             for (int j = 1; j < words.length; j++) {
                 if (currentLineIndex < availableLines && m.stringWidth(lines[currentLineIndex] + words[j]) < maxWidth) {
-                    // There is enough space in line, append text
                     lines[currentLineIndex] += " " + words[j];
                 } else {
                     // Not enough space, go to new line
