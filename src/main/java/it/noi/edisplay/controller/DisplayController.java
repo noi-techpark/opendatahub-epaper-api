@@ -96,7 +96,6 @@ public class DisplayController {
     @RequestMapping(value = "/get/{displayUuid}", method = RequestMethod.GET)
     public ResponseEntity<DisplayDto> getDisplay(@PathVariable("displayUuid") String uuid) {
         Display display = displayRepository.findByUuid(uuid);
-
         if (display == null) {
             logger.debug("Display with uuid: " + uuid + " not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -115,10 +114,12 @@ public class DisplayController {
             // Modelmapper or Hibernate bug?
             // Sometimes displayDto.displayContent is null, mapping it separately seems to
             // help
+
             if (display.getDisplayContent() != null)
                 displayDto.setDisplayContent(modelMapper.map(display.getDisplayContent(), DisplayContentDto.class));
 
             DisplayContent currentContent = display.getCurrentContent();
+
             if (currentContent != null)
                 displayDto.setCurrentImageHash(currentContent.getImageHash());
 
@@ -273,7 +274,6 @@ public class DisplayController {
                 imageHash = display.getImageHash();
             }
         } else {
-
             DisplayContent displayContent = null;
             displayContent = display.getCurrentContent();
             if (displayContent != null) {
@@ -282,6 +282,7 @@ public class DisplayController {
 
                     // We need to validate the hash by checking if image field values are not
                     // out-dated
+
                     /*
                      * Map<ImageFieldType, String> fieldValues = display
                      * .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display),
@@ -291,10 +292,10 @@ public class DisplayController {
                      * (field.getFieldType() != ImageFieldType.CUSTOM_TEXT &&
                      * (field.getCurrentFieldValue() == null ||
                      * !field.getCurrentFieldValue().equals(fieldValues.get(field.getFieldType()))))
-                     * { // Field value does not match, delete hash imageHash = null;
-                     * displayContent.setImageHash(null);
+                     * { displayContent.setImageHash(null);
                      * displayContentRepository.saveAndFlush(displayContent); break; } }
                      */
+
                 }
             }
         }
@@ -507,7 +508,6 @@ public class DisplayController {
         Display savedDisplay = displayRepository.saveAndFlush(display);
 
         // multiii
-        System.out.print("set template display");
 
         if (displayContentExists) {
             logger.debug("Updated image for Display uuid:" + displayUuid);

@@ -317,7 +317,6 @@ public class ScheduledContentController {
 
         scheduledContent.getDisplayContent().setImageHash(null);
 
-        System.out.println("heyyyy" + (scheduledContent.getDisplay().getRoomCodes().length));
         if (scheduledContent.getDisplay().getRoomCodes().length > 1) {
             scheduledContent.getDisplay().setImageHash(null);
             scheduledContent.getDisplay()
