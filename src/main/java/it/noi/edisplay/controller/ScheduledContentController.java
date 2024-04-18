@@ -94,6 +94,7 @@ public class ScheduledContentController {
             logger.debug("Scheduled Content with uuid: " + uuid + " has no image.");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         byte[] image = fileImportStorageS3.download(scheduledContent.getDisplayContent().getUuid());
 
         // byte[] image =
@@ -109,6 +110,7 @@ public class ScheduledContentController {
 
         logger.debug("Get scheduled content image with uuid: " + uuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
@@ -175,6 +177,7 @@ public class ScheduledContentController {
             existingScheduledContent.setEventDescription(scheduledContentDto.getEventDescription());
             existingScheduledContent.setSpaceDesc(scheduledContentDto.getSpaceDesc());
             existingScheduledContent.setOverride(scheduledContentDto.getOverride());
+            existingScheduledContent.setInclude(scheduledContentDto.getInclude());
             existingScheduledContent.setRoom(scheduledContentDto.getRoom());
 
             scheduledContent = existingScheduledContent;
@@ -240,23 +243,6 @@ public class ScheduledContentController {
             String fileKey = scheduledContent.getDisplayContent().getUuid();
             fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
         }
-        /*
-         * System.out.println("base length---" +
-         * displayContent.getImageFields().size()); scheduledContent.getDisplay()
-         * .setImageBase64(scheduledContent.getDisplay().
-         * getCurrentContentMultiRoomsImage()); BufferedImage bImageFromConvert = null;
-         * byte[] imageBytes =
-         * Base64.getDecoder().decode(scheduledContent.getDisplay().getImageBase64());
-         * ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-         * bImageFromConvert = ImageIO.read(bis); String fileKey =
-         * scheduledContent.getDisplay().getUuid();
-         * fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert),
-         * fileKey);
-         * 
-         * scheduledContent.getDisplay() .setImageBase64(scheduledContent.getDisplay().
-         * getCurrentContentMultiRoomsImage());
-         * scheduledContent.getDisplay().setImageHash(null);
-         */
 
         ScheduledContent savedScheduledContent = scheduledContentRepository.saveAndFlush(scheduledContent);
         if (displayContentExists) {
