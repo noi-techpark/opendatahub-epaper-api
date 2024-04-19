@@ -49,6 +49,8 @@ public class ScheduledContent {
 
     private boolean override;
 
+    private boolean include;
+
     private String imageBase64;
 
     @ManyToOne
@@ -202,6 +204,14 @@ public class ScheduledContent {
 
     public void setTemplate(Template template) {
         this.template = template;
+    }
+
+    public boolean getInclude() {
+        return include;
+    }
+
+    public void setInclude(boolean include) {
+        this.include = include;
     }
 
 }

@@ -278,25 +278,7 @@ public class DisplayController {
             displayContent = display.getCurrentContent();
             if (displayContent != null) {
                 imageHash = displayContent.getImageHash();
-                if (imageHash != null) {
 
-                    // We need to validate the hash by checking if image field values are not
-                    // out-dated
-
-                    /*
-                     * Map<ImageFieldType, String> fieldValues = display
-                     * .getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display),
-                     * eventAdvance);
-                     * 
-                     * for (ImageField field : displayContent.getImageFields()) { if
-                     * (field.getFieldType() != ImageFieldType.CUSTOM_TEXT &&
-                     * (field.getCurrentFieldValue() == null ||
-                     * !field.getCurrentFieldValue().equals(fieldValues.get(field.getFieldType()))))
-                     * { displayContent.setImageHash(null);
-                     * displayContentRepository.saveAndFlush(displayContent); break; } }
-                     */
-
-                }
             }
         }
         if (imageHash == null) {
@@ -310,7 +292,7 @@ public class DisplayController {
     @SuppressWarnings("null")
     @GetMapping(value = "/get-image/{displayUuid}")
     public ResponseEntity<byte[]> getDisplayImage(@PathVariable("displayUuid") String displayUuid,
-            @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP, boolean withTextFields)
+            @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP)// , boolean withTextFields)
             throws IOException, NoSuchAlgorithmException {
         Display display = displayRepository.findByUuid(displayUuid);
         if (display == null) {
@@ -364,31 +346,7 @@ public class DisplayController {
         }
 
         byte[] image = fileImportStorageS3.download(display.getCurrentContent().getUuid());
-        // byte[] image = display.getDisplayContent().getImageBase64();
 
-        // InputStream is = new ByteArrayInputStream(image);
-        // BufferedImage bImage = ImageIO.read(is);
-
-        /*
-         * Map<ImageFieldType, String> fieldValues = null; if (withTextFields) {
-         * fieldValues =
-         * display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display),
-         * eventAdvance); imageUtil.drawImageTextFields(bImage,
-         * displayContent.getImageFields(), fieldValues); }
-         */
-
-        /*
-         * if (convertToBMP) {
-         * 
-         * if (fieldValues != null) { // Set current field values for later MD5
-         * validation for (ImageField field : displayContent.getImageFields()) { if
-         * (field.getFieldType() != ImageFieldType.CUSTOM_TEXT) {
-         * field.setCurrentFieldValue(fieldValues.get(field.getFieldType())); } } }
-         * 
-         * 
-         * displayContent.setImageHash(imageUtil.convertToMD5Hash(image));
-         * displayContentRepository.saveAndFlush(displayContent); }
-         */
         displayContent.setImageHash(imageUtil.convertToMD5Hash(image));
         displayContentRepository.saveAndFlush(displayContent);
 
@@ -432,25 +390,31 @@ public class DisplayController {
 
         } else {
             display.getDisplayContent().setImageFields(displayContent.getImageFields());
-            display.getDisplayContent().setImageBase64(displayContent.getImageBase64());
+            display.getDisplayContent()
+                    .setImageBase64(imageUtil.drawImageTextFields(null, display.getDisplayContent().getImageFields(),
+                            display.getResolution().getWidth(), display.getResolution().getHeight()));
 
-            /*
-             * if (image != null) { InputStream in = new
-             * ByteArrayInputStream(image.getBytes()); BufferedImage bImageFromConvert =
-             * ImageIO.read(in); String fileKey = display.getDisplayContent().getUuid();
-             * fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert),
-             * fileKey); }
-             */
             if (display.getDisplayContent().getImageBase64() != null) {
                 // InputStream in = new ByteArrayInputStream(image.getBytes());
                 // BufferedImage bImageFromConvert = ImageIO.read(in);
+                ImageUtil imageUtil = new ImageUtil();
+
                 BufferedImage bImageFromConvert = null;
-                byte[] imageBytes = Base64.getDecoder()
-                        .decode(display.getDisplayContent().getImageBase64().split(",")[1]);
+                byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64().split(",")[1]);
                 ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
                 bImageFromConvert = ImageIO.read(bis);
                 String fileKey = display.getDisplayContent().getUuid();
                 fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
+
+                /*
+                 * byte[] imageBytes = Base64.getDecoder()
+                 * .decode(display.getDisplayContent().getImageBase64().split(",")[1]);
+                 * ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
+                 * bImageFromConvert = ImageIO.read(bis); String fileKey =
+                 * display.getDisplayContent().getUuid();
+                 * fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert),
+                 * fileKey);
+                 */
             }
             // Display content has changed, so the current image hash is no longer valid
             display.getDisplayContent().setImageHash(null);
