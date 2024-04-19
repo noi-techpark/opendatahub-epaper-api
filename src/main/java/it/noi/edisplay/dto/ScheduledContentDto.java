@@ -13,6 +13,8 @@ public class ScheduledContentDto {
 
     private Boolean disabled;
 
+    private Boolean include;
+
     private Integer eventId;
 
     private Timestamp startDate;
@@ -170,6 +172,14 @@ public class ScheduledContentDto {
 
     public void setRoom(String room) {
         this.room = room;
+    }
+
+    public Boolean getInclude() {
+        return include;
+    }
+
+    public void setInclude(Boolean include) {
+        this.include = include;
     }
 
 }
