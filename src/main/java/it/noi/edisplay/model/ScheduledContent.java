@@ -47,9 +47,9 @@ public class ScheduledContent {
 
     private String room;
 
-    private boolean override;
+    private Boolean override;
 
-    private boolean include;
+    private Boolean include;
 
     private String imageBase64;
 
@@ -182,11 +182,11 @@ public class ScheduledContent {
         this.room = room;
     }
 
-    public boolean getOverride() {
+    public Boolean getOverride() {
         return override;
     }
 
-    public void setOverride(boolean override) {
+    public void setOverride(Boolean override) {
         this.override = override;
     }
 
@@ -206,11 +206,11 @@ public class ScheduledContent {
         this.template = template;
     }
 
-    public boolean getInclude() {
+    public Boolean getInclude() {
         return include;
     }
 
-    public void setInclude(boolean include) {
+    public void setInclude(Boolean include) {
         this.include = include;
     }
 

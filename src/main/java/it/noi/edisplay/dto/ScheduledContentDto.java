@@ -31,10 +31,10 @@ public class ScheduledContentDto {
 
     private String spaceDesc;
 
-    private boolean override;
+    private Boolean override;
 
-    private boolean include;
-    
+    private Boolean include;
+
     private String room;
 
     private DisplayContentDto displayContent;
@@ -158,11 +158,11 @@ public class ScheduledContentDto {
         this.spaceDesc = spaceDesc;
     }
 
-    public boolean getOverride() {
+    public Boolean getOverride() {
         return override;
     }
 
-    public void setOverride(boolean override) {
+    public void setOverride(Boolean override) {
         this.override = override;
     }
 
@@ -174,11 +174,11 @@ public class ScheduledContentDto {
         this.room = room;
     }
 
-    public boolean getInclude() {
+    public Boolean getInclude() {
         return include;
     }
 
-    public void setInclude(boolean include) {
+    public void setInclude(Boolean include) {
         this.include = include;
     }
 
