@@ -210,7 +210,6 @@ public class Display {
 
     public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events, int eventAdvance) {
         EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
-
         // transform minutes in milliseconds
         eventAdvance *= 60000;
         // TODO replace with room name
@@ -266,6 +265,7 @@ public class Display {
     }
 
     public DisplayContent getCurrentContent() {
+
         DisplayContent currentDisplayContent = null;
         Display display = this;
         if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
@@ -418,13 +418,6 @@ public class Display {
                     currents.add(event);
                 }
             }
-            /*
-             * Optional<ScheduledContent> earliestEvent = currentEvents.stream()
-             * .min(Comparator.comparing(ScheduledContent::getEndDate));
-             * 
-             * // Get the earliest event if present if (earliestEvent.isPresent()) {
-             * currentEvent = earliestEvent.get(); // Use the earliest event as needed }
-             */
             for (ImageField field : display.getTemplate().getDisplayContent().getImageFields()) {
                 if (!field.isRepeat() && !field.isRepeated()) {
                     imagesFields.add(field);
@@ -558,11 +551,6 @@ public class Display {
 
     public void setImageHash(String imageHash) {
         this.imageHash = imageHash;
-    }
-
-    public void manageMultiRoom() {
-        // TODO Auto-generated method stub
-
     }
 
 }

@@ -4,6 +4,8 @@
 
 package it.noi.edisplay.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ public class FileImportStorageS3 {
 
     private final String bucket;
     private final S3Client s3Client;
+    Logger logger = LoggerFactory.getLogger(FileImportStorageS3.class);
 
     public FileImportStorageS3(@Value("${aws.bucket.fileImport}") String bucket, S3Client s3Client) {
         this.bucket = bucket;
@@ -32,11 +35,22 @@ public class FileImportStorageS3 {
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
     }
 
+    /*
+     * public byte[] download(String s3FileKey) { GetObjectRequest getObjectRequest
+     * = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build(); final
+     * ResponseBytes<GetObjectResponse> object =
+     * s3Client.getObject(getObjectRequest, ResponseTransformer.toBytes()); return
+     * object.asByteArray(); }
+     */
+
     public byte[] download(String s3FileKey) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
+
         final ResponseBytes<GetObjectResponse> object = s3Client.getObject(getObjectRequest,
                 ResponseTransformer.toBytes());
+
         return object.asByteArray();
+
     }
 
     public void copy(String oldS3FileKey, String newS3FileKey) {

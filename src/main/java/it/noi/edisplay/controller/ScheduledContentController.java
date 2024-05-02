@@ -7,7 +7,6 @@ package it.noi.edisplay.controller;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
 
@@ -73,7 +72,6 @@ public class ScheduledContentController {
     @RequestMapping(value = "/get/{uuid}", method = RequestMethod.GET)
     public ResponseEntity<ScheduledContentDto> getScheduledContent(@PathVariable("uuid") String uuid) {
         ScheduledContent scheduledContent = scheduledContentRepository.findByUuid(uuid);
-
         if (scheduledContent == null) {
             logger.debug("Scheduled content with uuid: " + uuid + " not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -94,19 +92,7 @@ public class ScheduledContentController {
             logger.debug("Scheduled Content with uuid: " + uuid + " has no image.");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
         byte[] image = fileImportStorageS3.download(scheduledContent.getDisplayContent().getUuid());
-
-        // byte[] image =
-        // fileImportStorageS3.download(scheduledContent.getDisplayContent().getUuid());
-        // InputStream is = new ByteArrayInputStream(image);
-        // BufferedImage bImage = ImageIO.read(is);
-
-        /*
-         * if (withTextFields) { imageUtil.drawImageTextFields(bImage,
-         * scheduledContent.getDisplayContent().getImageFields(), null); } image =
-         * imageUtil.convertToByteArray(bImage, false, null);
-         */
 
         logger.debug("Get scheduled content image with uuid: " + uuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
@@ -132,7 +118,6 @@ public class ScheduledContentController {
         ScheduledContent scheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
         scheduledContent.setDisplay(displayRepository.findByUuid(scheduledContentDto.getDisplayUuid()));
         scheduledContent = scheduledContentRepository.saveAndFlush(scheduledContent);
-
         logger.debug("Scheduled content with uuid:" + scheduledContent.getUuid() + " created.");
         return new ResponseEntity<>(modelMapper.map(scheduledContent, ScheduledContentDto.class), HttpStatus.CREATED);
     }
@@ -154,9 +139,6 @@ public class ScheduledContentController {
         ScheduledContent scheduledContent;
         ScheduledContent existingScheduledContent = null;
         Display display = displayRepository.findByUuid(scheduledContentDto.getDisplayUuid());
-        if (display.getRoomCodes().length > 1) {
-            display.manageMultiRoom();
-        }
 
         if (scheduledContentDto.getUuid() != null) {
 
@@ -167,7 +149,6 @@ public class ScheduledContentController {
             existingScheduledContent = scheduledContentRepository.findByDisplayIdAndEventId(display.getId(),
                     scheduledContentDto.getEventId());
         }
-
         if (existingScheduledContent == null) {
             scheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
         } else {
@@ -209,35 +190,23 @@ public class ScheduledContentController {
                 DisplayContentDto.class);
 
         DisplayContent displayContent = modelMapper.map(displayContentDto, DisplayContent.class);
-
         boolean displayContentExists = scheduledContent.getDisplayContent() != null;
-        if (scheduledContent.getDisplay().getRoomCodes().length > 1) {
 
-        }
         if (!displayContentExists) {
             scheduledContent.setDisplayContent(new DisplayContent());
             scheduledContent.getDisplayContent().setScheduledContent(scheduledContent);
         }
 
-        scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());//
-        // set upload
+        scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());
         scheduledContent.getDisplayContent().setImageBase64(displayContent.getImageBase64());
 
-        if (image != null) {
-            InputStream in = new ByteArrayInputStream(image.getBytes());
-            BufferedImage bImageFromConvert = ImageIO.read(in);
-            String fileKey = scheduledContent.getDisplayContent().getUuid();
-
-            fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-        }
-
-        // Display content has changed, so the current image hash is no longer valid
         scheduledContent.getDisplayContent().setImageHash(null);
-
         if (scheduledContent.getDisplayContent().getImageBase64() != null) {
             BufferedImage bImageFromConvert = null;
             byte[] imageBytes = Base64.getDecoder()
-                    .decode(scheduledContent.getDisplayContent().getImageBase64().split(",")[1]);
+                    .decode(imageUtil.drawImageTextFields(null, scheduledContent.getDisplayContent().getImageFields(),
+                            scheduledContent.getDisplay().getResolution().getWidth(),
+                            scheduledContent.getDisplay().getResolution().getHeight()));
             ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
             bImageFromConvert = ImageIO.read(bis);
             String fileKey = scheduledContent.getDisplayContent().getUuid();

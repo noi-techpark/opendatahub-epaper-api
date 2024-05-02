@@ -13,8 +13,6 @@ public class ScheduledContentDto {
 
     private Boolean disabled;
 
-    private Boolean include;
-
     private Integer eventId;
 
     private Timestamp startDate;
@@ -35,6 +33,8 @@ public class ScheduledContentDto {
 
     private boolean override;
 
+    private boolean include;
+    
     private String room;
 
     private DisplayContentDto displayContent;
@@ -174,11 +174,11 @@ public class ScheduledContentDto {
         this.room = room;
     }
 
-    public Boolean getInclude() {
+    public boolean getInclude() {
         return include;
     }
 
-    public void setInclude(Boolean include) {
+    public void setInclude(boolean include) {
         this.include = include;
     }
 

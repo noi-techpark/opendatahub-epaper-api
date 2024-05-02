@@ -6,13 +6,11 @@ package it.noi.edisplay.dto;
 
 import java.sql.Date;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import it.noi.edisplay.model.ImageFieldType;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ImageFieldDto {
     @ApiModelProperty(hidden = true)
     private String uuid;
@@ -47,6 +45,8 @@ public class ImageFieldDto {
     private String image;
 
     private boolean border;
+
+    private boolean showDeleteButton;
 
     public String getUuid() {
         return uuid;
@@ -174,5 +174,13 @@ public class ImageFieldDto {
 
     public void setBorder(boolean border) {
         this.border = border;
+    }
+
+    public boolean isShowDeleteButton() {
+        return showDeleteButton;
+    }
+
+    public void setShowDeleteButton(boolean showDeleteButton) {
+        this.showDeleteButton = showDeleteButton;
     }
 }

@@ -47,33 +47,8 @@ public class ImageUtil {
         return baos.toByteArray();
     }
 
-    /*
-     * public void drawImageTextFields(BufferedImage bImage, List<ImageField>
-     * fields, Map<ImageFieldType, String> dynamicFieldValues) { Graphics g =
-     * bImage.getGraphics();
-     * 
-     * g.setColor(Color.BLACK); Font currentFont = g.getFont();
-     * 
-     * Map<TextAttribute, Object> attributes = new HashMap<>();
-     * attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
-     * 
-     * for (ImageField field : fields) { attributes.put(TextAttribute.SIZE,
-     * field.getFontSize()); g.setFont(Font.getFont(attributes));
-     * 
-     * String stringToDraw = '<' + field.getFieldType().toString() + '>';
-     * 
-     * if (field.getFieldType() == ImageFieldType.CUSTOM_TEXT) { stringToDraw =
-     * Objects.toString(field.getCustomText(), ""); } else if (dynamicFieldValues !=
-     * null) { stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(),
-     * stringToDraw); }
-     * 
-     * drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-     * field.getxPos(), field.getyPos()); }
-     * 
-     * g.dispose(); }
-     */
-
     public String drawImageTextFields(BufferedImage bimage, List<ImageField> boxes, int width, int height) {
+
         int canvasWidth = width; // Set canvas width
         int canvasHeight = height; // Set canvas height
         // Graphics g = bImage.getGraphics();
@@ -112,8 +87,12 @@ public class ImageUtil {
                 if (box.isBold()) {
                     attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
                 }
-                attributes.put(TextAttribute.POSTURE,
-                        box.isItalic() ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
+                if (box.isItalic()) {
+                    attributes.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
+                } else {
+                    attributes.put(TextAttribute.POSTURE, TextAttribute.POSTURE_REGULAR);
+                }
+
                 g2d.setFont(Font.getFont(attributes));
                 g2d.setColor(Color.WHITE);
                 g2d.fillRect(box.getxPos(), box.getyPos(), box.getWidth(), box.getHeight());
@@ -131,21 +110,123 @@ public class ImageUtil {
                 } else {
                     maxLines = (int) Math.floor(box.getHeight() / box.getFontSize());
                 }
-
                 // Truncate the text to only include the lines that fit
                 String[] lines = box.getCustomText().split("\n");
                 String truncatedText = "";
                 for (int i = 0; i < Math.min(lines.length, maxLines); i++) {
                     truncatedText += lines[i] + (i < lines.length - 1 ? "\n" : "");
                 }
-
                 // Draw the truncated text
                 for (int i = 0; i < truncatedText.split("\n").length; i++) {
-                    g2d.setFont(new Font(currentFont.getFamily(), box.isBold() ? Font.BOLD : Font.PLAIN,
-                            box.getFontSize() - 3));
                     g2d.setColor(Color.BLACK);
                     g2d.drawString(truncatedText.split("\n")[i], box.getxPos(),
                             box.getyPos() + box.getFontSize() * (i + 1));
+                }
+                // Draw border if specified
+                if (box.isBorder()) {
+                    g2d.setColor(Color.BLACK);
+                    g2d.setStroke(new BasicStroke(2));
+                    g2d.drawRect(box.getxPos(), box.getyPos(), box.getWidth(), box.getHeight());
+                }
+            }
+        }
+        // Dispose of the graphics context
+        g2d.dispose();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(canvasImage, "png", baos);
+            baos.flush();
+            String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+            return base64Image;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    public String drawImageTextFields1(BufferedImage bimage, List<ImageField> boxes, int width, int height) {
+
+        int canvasWidth = width; // Set canvas width
+        int canvasHeight = height; // Set canvas height
+
+        // Create a BufferedImage object
+        BufferedImage canvasImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = canvasImage.createGraphics();
+
+        // Set the background color to white
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw boxes on the canvas
+        for (ImageField box : boxes) {
+            if ("img".equals(box.getCustomText())) {
+                String base64Image = box.getImage().split(",")[1];
+                // Decode the Base64 string into a byte array
+                byte[] imageData = Base64.getDecoder().decode(base64Image);
+                try {
+                    // Create an image from the decoded byte array
+                    Image image = ImageIO.read(new ByteArrayInputStream(imageData));
+                    g2d.drawImage(image, box.getxPos(), box.getyPos(), box.getWidth(), box.getHeight(), null);
+                    if (box.isBorder()) {
+                        g2d.setColor(Color.BLACK);
+                        g2d.setStroke(new BasicStroke(2));
+                        g2d.drawRect(box.getxPos(), box.getyPos(), box.getWidth(), box.getHeight());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // Draw a rectangle for text boxes with white background and border
+                Font currentFont = g2d.getFont();
+
+                Map<TextAttribute, Object> attributes = new HashMap<>();
+                attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
+                attributes.put(TextAttribute.SIZE, box.getFontSize() - 3);
+                if (box.isBold()) {
+                    attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
+                }
+                if (box.isItalic()) {
+                    attributes.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
+                } else {
+                    attributes.put(TextAttribute.POSTURE, TextAttribute.POSTURE_REGULAR);
+                }
+                // attributes.put(TextAttribute.POSTURE, box.isItalic() ?
+                // TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
+                g2d.setFont(Font.getFont(attributes));
+                g2d.setColor(Color.WHITE);
+                g2d.fillRect(box.getxPos(), box.getyPos(), box.getWidth(), box.getHeight());
+
+                // Truncate the text to fit within the box
+                String[] lines = box.getCustomText().split("\n");
+                int maxLines = (int) Math.floor(box.getHeight() / box.getFontSize());
+                StringBuilder truncatedText = new StringBuilder();
+                for (String line : lines) {
+                    StringBuilder currentLine = new StringBuilder();
+                    FontMetrics fontMetrics = g2d.getFontMetrics();
+                    int lineWidth = 0;
+                    for (char c : line.toCharArray()) {
+                        int charWidth = fontMetrics.charWidth(c);
+                        if (lineWidth + charWidth > box.getWidth()) {
+                            // Reached end of line, append current line and start a new line
+                            truncatedText.append(currentLine).append("\n");
+                            currentLine.setLength(0);
+                            lineWidth = 0;
+                        }
+                        currentLine.append(c);
+                        lineWidth += charWidth;
+                    }
+                    // Append the current line to the truncated text
+                    truncatedText.append(currentLine).append("\n");
+                }
+
+                // Draw the truncated text
+                String finalText = truncatedText.toString().trim();
+                String[] finalLines = finalText.split("\n");
+                for (int i = 0; i < Math.min(finalLines.length, maxLines); i++) {
+                    g2d.setFont(new Font(currentFont.getFamily(), box.isBold() ? Font.BOLD : Font.PLAIN,
+                            box.getFontSize() - 3));
+                    g2d.setColor(Color.BLACK);
+                    g2d.drawString(finalLines[i], box.getxPos(), box.getyPos() + box.getFontSize() * (i + 1));
                 }
 
                 // Draw border if specified
@@ -157,20 +238,17 @@ public class ImageUtil {
             }
         }
 
-        // Dispose of the graphics context
         g2d.dispose();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             ImageIO.write(canvasImage, "png", baos);
             baos.flush();
             String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
-            if (boxes.size() > 1) {
-                return base64Image;
-            }
+            return base64Image;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
-
     }
 
     public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)

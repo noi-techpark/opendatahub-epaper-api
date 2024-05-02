@@ -262,7 +262,9 @@ public class DisplayController {
 
         // MD5 validation
         if (display.getRoomCodes().length > 1) {
-            if (display.getCurrentContentMultiRoomsImage() != null) {
+            if (display.getCurrentContentMultiRoomsImage() != null) {// added &&
+                                                                     // display.getCurrentContentMultiRoomsImage()!=
+                                                                     // display.getImageBase64()
                 display.setImageBase64(display.getCurrentContentMultiRoomsImage());
                 BufferedImage bImageFromConvert = null;
                 byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64().split(",")[1]);
@@ -270,7 +272,6 @@ public class DisplayController {
                 bImageFromConvert = ImageIO.read(bis);
                 String fileKey = display.getUuid();
                 fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-
                 imageHash = display.getImageHash();
             }
         } else {
@@ -307,16 +308,6 @@ public class DisplayController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
 
-            if (display.getCurrentContentMultiRoomsImage() != null && display.getImageBase64() != null
-                    && display.getImageBase64() != display.getCurrentContentMultiRoomsImage()) {
-
-                BufferedImage bImageFromConvert = null;
-                byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64());
-                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                bImageFromConvert = ImageIO.read(bis);
-                String fileKey = display.getUuid();
-                fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-            }
             if (display.getCurrentContentMultiRoomsImage() != null) {
                 display.setImageBase64(display.getCurrentContentMultiRoomsImage());
                 BufferedImage bImageFromConvert = null;
@@ -326,12 +317,12 @@ public class DisplayController {
                 String fileKey = display.getUuid();
                 fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
             }
+
             if (display.getImageBase64() == null) {
 
                 logger.debug("Display with uuid " + displayUuid + " has no image.");
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-
             byte[] image = fileImportStorageS3.download(display.getUuid());
             display.setImageHash(imageUtil.convertToMD5Hash(image));
             logger.debug("Get display image with uuid: " + displayUuid);
@@ -395,10 +386,7 @@ public class DisplayController {
                             display.getResolution().getWidth(), display.getResolution().getHeight()));
 
             if (display.getDisplayContent().getImageBase64() != null) {
-                // InputStream in = new ByteArrayInputStream(image.getBytes());
-                // BufferedImage bImageFromConvert = ImageIO.read(in);
                 ImageUtil imageUtil = new ImageUtil();
-
                 BufferedImage bImageFromConvert = null;
                 byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64().split(",")[1]);
                 ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
