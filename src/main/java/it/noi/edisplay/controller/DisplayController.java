@@ -260,27 +260,11 @@ public class DisplayController {
 
         String imageHash = null;
 
-        // MD5 validation
-        if (display.getRoomCodes().length > 1) {
-            if (display.getCurrentContentMultiRoomsImage() != null) {// added &&
-                                                                     // display.getCurrentContentMultiRoomsImage()!=
-                                                                     // display.getImageBase64()
-                display.setImageBase64(display.getCurrentContentMultiRoomsImage());
-                BufferedImage bImageFromConvert = null;
-                byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64().split(",")[1]);
-                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                bImageFromConvert = ImageIO.read(bis);
-                String fileKey = display.getUuid();
-                fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-                imageHash = display.getImageHash();
-            }
-        } else {
-            DisplayContent displayContent = null;
-            displayContent = display.getCurrentContent();
-            if (displayContent != null) {
-                imageHash = displayContent.getImageHash();
+        DisplayContent displayContent = null;
+        displayContent = display.getCurrentContent();
+        if (displayContent != null) {
+            imageHash = displayContent.getImageHash();
 
-            }
         }
         if (imageHash == null) {
             imageHash = "no-hash";
@@ -382,7 +366,7 @@ public class DisplayController {
         } else {
             display.getDisplayContent().setImageFields(displayContent.getImageFields());
             display.getDisplayContent()
-                    .setImageBase64(imageUtil.drawImageTextFields(null, display.getDisplayContent().getImageFields(),
+                    .setImageBase64(imageUtil.drawImageTextFields(display.getDisplayContent().getImageFields(),
                             display.getResolution().getWidth(), display.getResolution().getHeight()));
 
             if (display.getDisplayContent().getImageBase64() != null) {

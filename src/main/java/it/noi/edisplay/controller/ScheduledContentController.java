@@ -204,7 +204,7 @@ public class ScheduledContentController {
         if (scheduledContent.getDisplayContent().getImageBase64() != null) {
             BufferedImage bImageFromConvert = null;
             byte[] imageBytes = Base64.getDecoder()
-                    .decode(imageUtil.drawImageTextFields(null, scheduledContent.getDisplayContent().getImageFields(),
+                    .decode(imageUtil.drawImageTextFields(scheduledContent.getDisplayContent().getImageFields(),
                             scheduledContent.getDisplay().getResolution().getWidth(),
                             scheduledContent.getDisplay().getResolution().getHeight()));
             ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);

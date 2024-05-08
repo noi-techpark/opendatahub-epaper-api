@@ -295,108 +295,6 @@ public class Display {
 
     }
 
-    @SuppressWarnings("null")
-    public void getCurrentContentMultiRooms() {
-        Display display = this;
-        List<DisplayContent> currentDisplayContents = new ArrayList<>();
-        ScheduledContent currentEvent = null;
-        List<ScheduledContent> currents = new ArrayList<>();
-        List<ImageField> imagesFields = new ArrayList<>();
-        List<ImageField> someimagesFields = new ArrayList<>();
-        if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
-            Date currentDate = new Date();
-
-            // Find all current events
-            List<ScheduledContent> currentEvents = display.getScheduledContent().stream()
-                    .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .collect(Collectors.toList());
-            // Add display content from current events
-            for (ScheduledContent event : currentEvents) {
-                if (!Boolean.TRUE.equals(event.getDisabled()) && event.getDisplayContent() != null) {
-                    currentDisplayContents.add(event.getDisplayContent());
-                    currents.add(event);
-                }
-            }
-            Optional<ScheduledContent> earliestEvent = currentEvents.stream()
-                    .min(Comparator.comparing(ScheduledContent::getEndDate));
-
-            // Get the earliest event if present
-            if (earliestEvent.isPresent()) {
-                currentEvent = earliestEvent.get();
-                // Use the earliest event as needed
-            }
-
-            for (ImageField field : display.getTemplate().getDisplayContent().getImageFields()) {
-                if (!field.isRepeat() && !field.isRepeated()) {
-                    imagesFields.add(field);
-                }
-            }
-
-            int index = 1;
-
-            for (ImageField fields : display.getTemplate().getDisplayContent().getImageFields()) {
-                if (!fields.isRepeat() && !fields.isRepeated()) {
-                    imagesFields.add(fields);
-                }
-            }
-            for (String room : display.getRoomCodes()) {
-                ScheduledContent scheduledContent = null;
-                Iterator<ScheduledContent> iterator = currents.iterator();
-                while (iterator.hasNext()) {
-                    ScheduledContent scheduledd1 = iterator.next();
-                    if (room.equals(scheduledd1.getRoom())) {
-                        scheduledContent = scheduledd1;
-                        iterator.remove(); // Use iterator to safely remove the item
-                        break; // Break the loop as we found the item
-                    }
-                }
-
-                if (scheduledContent != null) {
-                    int start = display.getTemplate().getRoomData()[1]
-                            + (index - 1) * display.getTemplate().getRoomData()[2];
-                    int end = start + display.getTemplate().getRoomData()[2];
-
-                    for (ImageField fields : display.getTemplate().getDisplayContent().getImageFields()) {
-                        if (fields.getyPos() >= start && fields.getyPos() <= end
-                                && (fields.isRepeat() || fields.isRepeated())) {
-                            someimagesFields.add(fields);
-                        }
-
-                    }
-
-                    for (ImageField fields : scheduledContent.getDisplayContent().getImageFields()) {
-                        for (ImageField field : someimagesFields) {
-
-                            if (field.getFieldType().toString() == fields.getFieldType().toString()) {
-                                field.setCustomText(fields.getCustomText());
-                                imagesFields.add(field);
-                            }
-                        }
-                    }
-                    someimagesFields.clear();
-
-                    for (ImageField fields : scheduledContent.getDisplayContent().getImageFields()) {
-                        if (!fields.isRepeat() && !fields.isRepeated()) {
-                            // check
-                            while (!(fields.getyPos() >= start && fields.getyPos() <= end)) {
-                                fields.setyPos(fields.getyPos() - display.getTemplate().getRoomData()[2]);
-                            }
-                            imagesFields.add(fields);
-                        }
-
-                    }
-                    index++;
-                }
-
-            }
-            ImageUtil imageUtil = new ImageUtil();
-            imageUtil.drawImageTextFields(null, imagesFields, display.getResolution().getWidth(),
-                    display.getResolution().getHeight());
-
-        }
-
-    }
-
     public String getCurrentContentMultiRoomsImage() {
         Display display = this;
         List<DisplayContent> currentDisplayContents = new ArrayList<>();
@@ -484,7 +382,7 @@ public class Display {
 
         }
         ImageUtil imageUtil = new ImageUtil();
-        return imageUtil.drawImageTextFields(null, imagesFields, display.getResolution().getWidth(),
+        return imageUtil.drawImageTextFields(imagesFields, display.getResolution().getWidth(),
                 display.getResolution().getHeight());
 
     }
