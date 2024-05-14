@@ -32,6 +32,9 @@ services:
       POSTGRES_PASSWORD: epaper
     hostname: postgres
     volumes:
-      - /tmp/epaper_pgdata:/var/lib/postgresql/data
+      - epaper-psql:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:5432"
+
+volumes:
+  epaper-psql:
