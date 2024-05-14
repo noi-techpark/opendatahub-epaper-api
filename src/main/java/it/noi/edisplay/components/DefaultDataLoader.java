@@ -47,6 +47,7 @@ public class DefaultDataLoader {
             resolution.setWidth(1440);
             resolution.setHeight(2560);
             resolution.setBitDepth(24);
+            resolutionRepository.save(resolution);
             
             Resolution resolutionSmall = new Resolution();
             resolutionSmall.setWidth(1872);
