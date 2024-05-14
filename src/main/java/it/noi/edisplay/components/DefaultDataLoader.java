@@ -42,21 +42,24 @@ public class DefaultDataLoader {
             Template meetingRoomTemplate = new Template();
             Template freeSoftwareLabTemplate = new Template();
             Template noiTemplate = new Template();
+            
             Resolution resolution = new Resolution();
             resolution.setWidth(1440);
             resolution.setHeight(2560);
             resolution.setBitDepth(24);
+            
             Resolution resolutionSmall = new Resolution();
             resolutionSmall.setWidth(1872);
             resolutionSmall.setHeight(1404);
             resolutionSmall.setBitDepth(24);
             resolutionRepository.save(resolutionSmall);
-            Resolution resolutionMS = new Resolution();
-            resolutionSmall.setWidth(1440);
-            resolutionSmall.setHeight(5120);
-            resolutionSmall.setBitDepth(24);
-            resolutionRepository.save(resolutionMS);
-            resolutionRepository.save(resolution);
+            
+            Resolution resolutionBig = new Resolution();
+            resolutionBig.setWidth(1440);
+            resolutionBig.setHeight(5120);
+            resolutionBig.setBitDepth(24);
+            resolutionRepository.save(resolutionBig);
+
             officeTemplate.setName("Office");
             meetingRoomTemplate.setName("Meeting Room");
             freeSoftwareLabTemplate.setName("Free Software Lab");
@@ -96,11 +99,11 @@ public class DefaultDataLoader {
             resolutionSmall.setHeight(1404);
             resolutionSmall.setBitDepth(4);
             resolutionRepository.save(resolutionSmall);
-            Resolution resolutionMS = new Resolution();
+            Resolution resolutionBig = new Resolution();
             resolutionSmall.setWidth(1440);
             resolutionSmall.setHeight(5120);
             resolutionSmall.setBitDepth(24);
-            resolutionRepository.save(resolutionMS);
+            resolutionRepository.save(resolutionBig);
         }
     }
 }
