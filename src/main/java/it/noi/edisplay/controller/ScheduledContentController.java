@@ -96,7 +96,6 @@ public class ScheduledContentController {
 
         logger.debug("Get scheduled content image with uuid: " + uuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
-
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
@@ -109,7 +108,7 @@ public class ScheduledContentController {
         }
         List<ScheduledContentDto> dtoList = noiDataLoader.getAllDisplayEvents(display);
 
-        logger.debug("All scheduled content requested");
+        logger.debug("All scheduled content requested. {}", dtoList.size());
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 

@@ -6,6 +6,7 @@ package it.noi.edisplay.components;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,13 +47,14 @@ public class NOIDataLoader {
 
     @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
+        logger.info("Loading Events");
         if (enabled) {
-            logger.debug("Loading Events from OpenDataHub START");
+            logger.info("Loading Events from OpenDataHub START");
 
             events = openDataRestService.getEvents();
 
-            logger.debug("Loaded " + events.size() + " events");
-            logger.debug("Loading Events from OpenDataHub DONE");
+            logger.info("Loaded " + events.size() + " events");
+            logger.info("Loading Events from OpenDataHub DONE");
         }
     }
 
@@ -108,11 +110,14 @@ public class NOIDataLoader {
                     // Filter events based on NOI room that the display is in
                     if (events != null && !events.isEmpty() && room.getTodaynoibzit() != null
                             && !room.getTodaynoibzit().isEmpty()) {
+                                
                         List<EventDto> noiEvents = events.stream().filter(item -> {
                             String spaceDesc = item.getSpaceDescList().stream().filter(desc -> desc != null) // Filter
                                     .findFirst().orElse("");
-                            return spaceDesc.contains("NOI " + room.getTodaynoibzit().replace("NOI ", ""));
+                            String roomName = room.getTodaynoibzit().replace("NOI ", "");
+                            return spaceDesc.equals(roomName);
                         }).collect(Collectors.toList());
+
                         for (EventDto noiEvent : noiEvents) {
                             // Look for modified NOI events that are saved in the eInk database
                             ScheduledContentDto scheduledContentDto = dtoList.stream()
