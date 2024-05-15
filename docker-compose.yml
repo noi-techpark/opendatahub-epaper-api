@@ -11,7 +11,7 @@ services:
     volumes:
       - ./:/code
     working_dir: /code
-    command: "mvn -B spring-boot:run" # -Dspring-boot.run.profiles=local"
+    command: "mvn spring-boot:run" # -Dspring-boot.run.profiles=local"
     depends_on:
       - postgres
     env_file:
@@ -21,9 +21,11 @@ services:
       DB_USERNAME: epaper
       DB_PASSWORD: epaper
       APP_DEBUG: epaper
+      MAVEN_OPTS: -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9000"
     tty: true
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
+      - 9000:9000
   postgres:
     image: "postgres:11-alpine"
     environment:
