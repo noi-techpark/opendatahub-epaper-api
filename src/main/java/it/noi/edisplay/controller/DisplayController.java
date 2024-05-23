@@ -288,7 +288,7 @@ public class DisplayController {
 
             Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
 
-            List<ImageField> imageFields = displayContent.getImageFields();
+            List<ImageField> imageFields = new ArrayList<>(displayContent.getImageFields());
 
             int roomAmount = display.getRoomCodes().length;
             int roomSectionHeight = display.getResolution().getHeight() / roomAmount;
@@ -300,7 +300,7 @@ public class DisplayController {
                     imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom);
                     // increment y position for every room
                     for (ImageField imageField : imageFields) {
-                        if (!imageField.getFixed()) {
+                        if (Boolean.FALSE.equals(imageField.getFixed())) {
                             imageField.setyPos(imageField.getyPos() + roomSectionHeight);
                         }
                     }
