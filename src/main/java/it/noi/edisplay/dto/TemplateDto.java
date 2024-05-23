@@ -13,8 +13,12 @@ public class TemplateDto {
     private String name;
 
     private String description;
-    
+
+    private Integer maxRooms;
+
     private DisplayContentDto displayContent;
+
+    private ResolutionDto resolution;
 
     @ApiModelProperty(hidden = true)
     private String uuid;
@@ -70,4 +74,21 @@ public class TemplateDto {
     public void setDisplayContent(DisplayContentDto displayContent) {
         this.displayContent = displayContent;
     }
+
+    public ResolutionDto getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(ResolutionDto resolution) {
+        this.resolution = resolution;
+    }
+
+    public Integer getMaxRooms() {
+        return maxRooms;
+    }
+
+    public void setMaxRooms(Integer maxRooms) {
+        this.maxRooms = maxRooms;
+    }
+
 }

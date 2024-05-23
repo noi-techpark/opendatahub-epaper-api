@@ -22,13 +22,15 @@ public class ImageFieldDto {
     private Integer yPos;
 
     private String customText;
-    
+
     private Integer fontSize;
 
+    private Boolean fixed;
+
     private ImageFieldType fieldType;
-    
+
     private Integer height;
-    
+
     private Integer width;
 
     public String getUuid() {
@@ -110,4 +112,13 @@ public class ImageFieldDto {
     public void setWidth(Integer width) {
         this.width = width;
     }
+
+    public Boolean getFixed() {
+        return fixed;
+    }
+
+    public void setFixed(Boolean fixed) {
+        this.fixed = fixed;
+    }
+
 }

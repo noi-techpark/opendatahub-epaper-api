@@ -4,13 +4,16 @@
 
 package it.noi.edisplay.components;
 
-import it.noi.edisplay.model.*;
-import it.noi.edisplay.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import it.noi.edisplay.model.Resolution;
+import it.noi.edisplay.model.Template;
+import it.noi.edisplay.repositories.ResolutionRepository;
+import it.noi.edisplay.repositories.TemplateRepository;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -33,10 +36,10 @@ public class DefaultDataLoader {
 	public void onStartUp() throws IOException {
 
 		// add default templates
-		addTemplate("Office");
-		addTemplate("Meeting Room");
-		addTemplate("Free Software Lab");
-		addTemplate(EVENT_TEMPLATE_NAME);
+		// addTemplate("Office");
+		// addTemplate("Meeting Room");
+		// addTemplate("Free Software Lab");
+		// addTemplate(EVENT_TEMPLATE_NAME);
 
 		// add default resolutions
 		addResolution(1440, 2560, 24);
@@ -60,6 +63,8 @@ public class DefaultDataLoader {
 		if (templateRepository.findByName(name) == null) {
 			Template template = new Template();
 			template.setName(name);
+			// template.setResolution(null);(name);
+
 			templateRepository.saveAndFlush(template);
 
 			logger.info("New template with name: {} added.", name);

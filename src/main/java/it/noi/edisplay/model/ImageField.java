@@ -38,17 +38,19 @@ public class ImageField {
     private Integer yPos;
 
     private String customText;
-    
+
     private Integer fontSize;
-    
+
     private Integer height;
-    
+
     private Integer width;
-    
-    @ManyToOne(fetch=FetchType.EAGER)
+
+    private Boolean fixed;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "display_content_id", nullable = false)
     private DisplayContent displayContent;
-    
+
     @Enumerated(EnumType.STRING)
     private ImageFieldType fieldType;
 
@@ -59,7 +61,7 @@ public class ImageField {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
-    
+
     private String currentFieldValue;
 
     public Integer getId() {
@@ -170,4 +172,13 @@ public class ImageField {
     public void setWidth(Integer width) {
         this.width = width;
     }
+
+    public Boolean getFixed() {
+        return fixed;
+    }
+
+    public void setFixed(Boolean fixed) {
+        this.fixed = fixed;
+    }
+
 }

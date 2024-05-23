@@ -23,7 +23,9 @@ import javax.annotation.PostConstruct;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -80,7 +82,32 @@ public class NOIDataLoader {
                 if (room != null) {
                     // Filter events based on NOI room that the display is in
                     noiEvents.addAll(events.stream().filter(
-                            item -> item.getSpaceDescList().contains(room.getTodaynoibzit().replace("NOI ", "")))
+                            item -> item.getSpaceDescList()
+                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
+                                            : room.getTodaynoibzit().replace("NOI ", "")))
+                            .collect(Collectors.toList()));
+                }
+
+            }
+        }
+        return noiEvents;
+    }
+
+    public Map<String, List<EventDto>> getNOIDisplayEventsByRoom(Display display) {
+
+        Map<String, List<EventDto>> noiEvents = new HashMap<>();
+
+        if (display.getRoomCodes() != null) {
+            // Get correct NOI room by Room Code
+            for (String roomCode : display.getRoomCodes()) {
+                NOIPlaceData room = places.stream().filter(item -> item.getScode().equals(roomCode))
+                        .findFirst().orElse(null);
+                if (room != null) {
+                    // Filter events based on NOI room that the display is in
+                    noiEvents.put(roomCode, events.stream().filter(
+                            item -> item.getSpaceDescList()
+                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
+                                            : room.getTodaynoibzit().replace("NOI ", "")))
                             .collect(Collectors.toList()));
                 }
 
@@ -108,7 +135,7 @@ public class NOIDataLoader {
                     // Filter events based on NOI room that the display is in
                     List<EventDto> noiEvents = events.stream()
                             .filter(item -> item.getSpaceDescList()
-                                    .contains(room.getTodaynoibzit().isEmpty() ? ""
+                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
                                             : room.getTodaynoibzit().replace("NOI ", "")))
                             .collect(Collectors.toList());
                     for (EventDto noiEvent : noiEvents) {

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-version: "3.4"
 services:
   api:
     build:
@@ -12,7 +11,7 @@ services:
     volumes:
       - ./:/code
     working_dir: /code
-    command: "mvn -B spring-boot:run" # -Dspring-boot.run.profiles=local"
+    command: "mvn spring-boot:run" # -Dspring-boot.run.profiles=local"
     depends_on:
       - postgres
     env_file:
@@ -22,9 +21,11 @@ services:
       DB_USERNAME: epaper
       DB_PASSWORD: epaper
       APP_DEBUG: epaper
+      MAVEN_OPTS: -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9000"
     tty: true
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
+      - 9000:9000
   postgres:
     image: "postgres:11-alpine"
     environment:
@@ -33,6 +34,9 @@ services:
       POSTGRES_PASSWORD: epaper
     hostname: postgres
     volumes:
-      - /tmp/epaper_pgdata:/var/lib/postgresql/data
+      - epaper-psql:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:5432"
+
+volumes:
+  epaper-psql:

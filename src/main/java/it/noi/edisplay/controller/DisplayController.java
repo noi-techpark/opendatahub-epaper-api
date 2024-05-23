@@ -8,6 +8,7 @@ import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.DisplayStateDto;
+import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.dto.ResolutionDto;
 import it.noi.edisplay.model.*;
 import it.noi.edisplay.repositories.*;
@@ -35,6 +36,7 @@ import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -283,7 +285,28 @@ public class DisplayController {
         Map<ImageFieldType, String> fieldValues = null;
         if (withTextFields) {
             fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display), eventAdvance);
-            imageUtil.drawImageTextFields(bImage, displayContent.getImageFields(), fieldValues);
+
+            Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
+
+            List<ImageField> imageFields = displayContent.getImageFields();
+
+            int roomAmount = display.getRoomCodes().length;
+            int roomSectionHeight = display.getResolution().getHeight() / roomAmount;
+
+            for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
+                Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
+                // don't show room, if no event is happening
+                if (!fieldValuesByRoom.get(ImageFieldType.EVENT_ORGANIZER).equals("")) {
+                    imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom);
+                    // increment y position for every room
+                    for (ImageField imageField : imageFields) {
+                        if (!imageField.getFixed()) {
+                            imageField.setyPos(imageField.getyPos() + roomSectionHeight);
+                        }
+                    }
+                }
+            }
+
         }
         image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
 

@@ -7,9 +7,21 @@ package it.noi.edisplay.model;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "templates")
@@ -25,6 +37,11 @@ public class Template {
 
     private String description;
 
+    private Integer maxRooms;
+
+    @ManyToOne
+    private Resolution resolution;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
@@ -33,7 +50,7 @@ public class Template {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
-    @OneToOne(mappedBy = "template", cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "template", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
 
     public Integer getId() {
@@ -97,4 +114,21 @@ public class Template {
         displayContent.setTemplate(this);
         this.displayContent = displayContent;
     }
+
+    public Resolution getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(Resolution resolution) {
+        this.resolution = resolution;
+    }
+
+    public Integer getMaxRooms() {
+        return maxRooms;
+    }
+
+    public void setMaxRooms(Integer maxRooms) {
+        this.maxRooms = maxRooms;
+    }
+
 }
