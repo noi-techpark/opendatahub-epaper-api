@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -32,9 +33,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.DisplayContentDto;
+import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.dto.ScheduledContentDto;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.DisplayContent;
+import it.noi.edisplay.model.ImageField;
+import it.noi.edisplay.model.ImageFieldType;
 import it.noi.edisplay.model.ScheduledContent;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.DisplayRepository;
@@ -100,12 +104,20 @@ public class ScheduledContentController {
         BufferedImage bImage = ImageIO.read(is);
 
         if (withTextFields) {
-            imageUtil.drawImageTextFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null);
+            int roomAmount = scheduledContent.getDisplayContent().getTemplate().getMaxRooms();
+            int roomSectionHeight = scheduledContent.getDisplayContent().getTemplate().getResolution().getHeight()
+                    / roomAmount;
+            for (int roomIndex = 0; roomIndex < roomAmount; roomIndex++) {
+                imageUtil.drawImageTextFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null,
+                        roomIndex, roomSectionHeight);
+            }
         }
+
         image = imageUtil.convertToByteArray(bImage, false, null);
 
         logger.debug("Get scheduled content image with uuid: " + uuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)

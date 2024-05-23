@@ -36,7 +36,6 @@ import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -288,22 +287,17 @@ public class DisplayController {
 
             Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
 
-            List<ImageField> imageFields = new ArrayList<>(displayContent.getImageFields());
+            List<ImageField> imageFields = displayContent.getImageFields();
 
             int roomAmount = display.getRoomCodes().length;
             int roomSectionHeight = display.getResolution().getHeight() / roomAmount;
-
+            int roomIndex = 0;
             for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
                 Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
                 // don't show room, if no event is happening
                 if (!fieldValuesByRoom.get(ImageFieldType.EVENT_ORGANIZER).equals("")) {
-                    imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom);
-                    // increment y position for every room
-                    for (ImageField imageField : imageFields) {
-                        if (Boolean.FALSE.equals(imageField.getFixed())) {
-                            imageField.setyPos(imageField.getyPos() + roomSectionHeight);
-                        }
-                    }
+                    imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom, roomIndex, roomSectionHeight);
+                    roomIndex++;
                 }
             }
 

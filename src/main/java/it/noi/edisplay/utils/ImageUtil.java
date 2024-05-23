@@ -40,7 +40,7 @@ public class ImageUtil {
     }
 
     public void drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
-            Map<ImageFieldType, String> dynamicFieldValues) {
+            Map<ImageFieldType, String> dynamicFieldValues, int roomIndex, int roomSectionHeight) {
         Graphics g = bImage.getGraphics();
 
         g.setColor(Color.BLACK);
@@ -60,8 +60,14 @@ public class ImageUtil {
                 stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), stringToDraw);
             }
 
-            drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                    field.getxPos(), field.getyPos());
+            if (Boolean.TRUE.equals(field.getFixed())) {
+                drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
+                        field.getxPos(), field.getyPos());
+            } else {
+                drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
+                        field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight));
+            }
+
         }
 
         g.dispose();
@@ -77,19 +83,19 @@ public class ImageUtil {
             image = getScaledImage(image, resolution.getWidth(), resolution.getHeight());
 
             switch (resolution.getBitDepth()) {
-            case 4:
-                byte[] v = new byte[1 << 4];
-                for (int i = 0; i < v.length; ++i)
-                    v[i] = (byte) (i * 17);
-                ColorModel cm = new IndexColorModel(4, v.length, v, v, v);
-                WritableRaster wr = cm.createCompatibleWritableRaster(image.getWidth(), image.getHeight());
-                outputImage = new BufferedImage(cm, wr, false, null);
-                break;
-            case 24:
-                outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-                break;
-            default:
-                outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                case 4:
+                    byte[] v = new byte[1 << 4];
+                    for (int i = 0; i < v.length; ++i)
+                        v[i] = (byte) (i * 17);
+                    ColorModel cm = new IndexColorModel(4, v.length, v, v, v);
+                    WritableRaster wr = cm.createCompatibleWritableRaster(image.getWidth(), image.getHeight());
+                    outputImage = new BufferedImage(cm, wr, false, null);
+                    break;
+                case 24:
+                    outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    break;
+                default:
+                    outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
             }
 
             Graphics2D g2d = outputImage.createGraphics();

@@ -98,7 +98,13 @@ public class TemplateController {
         BufferedImage bImage = ImageIO.read(is);
 
         if (withTextFields) {
-            imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null);
+            int roomAmount = template.getMaxRooms();
+            int roomSectionHeight = template.getResolution().getHeight()
+                    / roomAmount;
+            for (int roomIndex = 0; roomIndex <= roomAmount; roomIndex++) {
+                imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null,
+                        roomIndex, roomSectionHeight);
+            }
         }
         image = imageUtil.convertToByteArray(bImage, false, null);
 
@@ -126,7 +132,7 @@ public class TemplateController {
                     resolutionDto.getHeight(), resolutionDto.getBitDepth());
             template.setResolution(resolution);
         }
-        
+
         try {
             template = templateRepository.saveAndFlush(template);
         } catch (DataIntegrityViolationException e) {
