@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -94,8 +95,9 @@ public class NOIDataLoader {
     }
 
     public Map<String, List<EventDto>> getNOIDisplayEventsByRoom(Display display) {
-
-        Map<String, List<EventDto>> noiEvents = new HashMap<>();
+        
+        // use LinkedHashMap to have sorted map
+        Map<String, List<EventDto>> noiEvents = new LinkedHashMap<>();
 
         if (display.getRoomCodes() != null) {
             // Get correct NOI room by Room Code
