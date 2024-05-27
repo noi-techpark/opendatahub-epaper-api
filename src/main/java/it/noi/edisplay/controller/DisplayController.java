@@ -294,11 +294,18 @@ public class DisplayController {
             int roomIndex = 0;
             for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
                 Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
-                // don't show room, if no event is happening
-                if (!fieldValuesByRoom.get(ImageFieldType.EVENT_ORGANIZER).equals("")) {
-                    imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom, roomIndex, roomSectionHeight);
+                boolean hasDrawnSomething = imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
+                        roomIndex, roomSectionHeight);
+
+                if (hasDrawnSomething) {
                     roomIndex++;
                 }
+            }
+
+            // no room event has been drawn, show default
+            if (roomIndex == 0) {
+                imageUtil.drawImageTextFields(bImage, imageFields, display.getDefaultTextFieldValues(), roomIndex,
+                        roomSectionHeight);
             }
 
         }

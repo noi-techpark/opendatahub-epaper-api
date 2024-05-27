@@ -39,8 +39,11 @@ public class ImageUtil {
         return baos.toByteArray();
     }
 
-    public void drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
+    public boolean drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
             Map<ImageFieldType, String> dynamicFieldValues, int roomIndex, int roomSectionHeight) {
+        // count draw lines, to see if something has actually been drawn
+        int drawCounter = 0;
+
         Graphics g = bImage.getGraphics();
 
         g.setColor(Color.BLACK);
@@ -57,20 +60,25 @@ public class ImageUtil {
             if (field.getFieldType() == ImageFieldType.CUSTOM_TEXT) {
                 stringToDraw = Objects.toString(field.getCustomText(), "");
             } else if (dynamicFieldValues != null) {
-                stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), stringToDraw);
+                stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), "");
             }
 
-            if (Boolean.TRUE.equals(field.getFixed())) {
-                drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                        field.getxPos(), field.getyPos());
-            } else {
-                drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                        field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight));
+            if (stringToDraw.length() > 0) {
+                if (Boolean.TRUE.equals(field.getFixed())) {
+                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
+                            field.getxPos(), field.getyPos());
+                } else {
+                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
+                            field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight));
+                }
+                drawCounter++;
             }
 
         }
 
         g.dispose();
+
+        return drawCounter > 0;
     }
 
     public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)

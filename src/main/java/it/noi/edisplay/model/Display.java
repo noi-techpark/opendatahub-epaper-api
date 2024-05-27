@@ -210,11 +210,6 @@ public class Display {
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
-        } else {
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome to NOI Techpark");
-            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
-            fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
-            fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
         }
 
         // Upcoming event
@@ -235,6 +230,15 @@ public class Display {
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, "");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, "");
         }
+        return fieldValues;
+    }
+
+    public Map<ImageFieldType, String> getDefaultTextFieldValues() {
+        EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
+        fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome to NOI Techpark");
+        fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
+        fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
+        fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
         return fieldValues;
     }
 
