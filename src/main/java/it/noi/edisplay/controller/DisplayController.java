@@ -304,7 +304,8 @@ public class DisplayController {
 
             // no room event has been drawn, show default
             if (roomIndex == 0) {
-                imageUtil.drawImageTextFields(bImage, imageFields, display.getDefaultTextFieldValues(), roomIndex,
+                fieldValues = display.getDefaultTextFieldValues();
+                imageUtil.drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
                         roomSectionHeight);
             }
 
