@@ -27,6 +27,10 @@ public class ImageFieldDto {
 
     private Boolean fixed;
 
+    private Boolean italic;
+
+    private Boolean bold;
+
     private ImageFieldType fieldType;
 
     private Integer height;
@@ -119,6 +123,22 @@ public class ImageFieldDto {
 
     public void setFixed(Boolean fixed) {
         this.fixed = fixed;
+    }
+
+    public Boolean getItalic() {
+        return italic;
+    }
+
+    public void setItalic(Boolean italic) {
+        this.italic = italic;
+    }
+
+    public Boolean getBold() {
+        return bold;
+    }
+
+    public void setBold(Boolean bold) {
+        this.bold = bold;
     }
 
 }

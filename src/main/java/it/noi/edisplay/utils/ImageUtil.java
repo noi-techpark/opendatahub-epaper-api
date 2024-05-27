@@ -48,11 +48,18 @@ public class ImageUtil {
 
         g.setColor(Color.BLACK);
         Font currentFont = g.getFont();
-        Map<TextAttribute, Object> attributes = new HashMap<>();
-        attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
 
         for (ImageField field : fields) {
+            Map<TextAttribute, Object> attributes = new HashMap<>();
+            attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
+
+            attributes.put(TextAttribute.WEIGHT,
+                    field.getBold() ? TextAttribute.WEIGHT_BOLD : TextAttribute.WEIGHT_REGULAR);
+            attributes.put(TextAttribute.POSTURE,
+                    field.getItalic() ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
+
             attributes.put(TextAttribute.SIZE, field.getFontSize());
+            
             g.setFont(Font.getFont(attributes));
 
             String stringToDraw = '<' + field.getFieldType().toString() + '>';
@@ -79,6 +86,7 @@ public class ImageUtil {
         g.dispose();
 
         return drawCounter > 0;
+
     }
 
     public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)
