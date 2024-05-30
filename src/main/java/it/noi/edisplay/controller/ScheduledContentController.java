@@ -33,12 +33,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.DisplayContentDto;
-import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.dto.ScheduledContentDto;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.DisplayContent;
-import it.noi.edisplay.model.ImageField;
-import it.noi.edisplay.model.ImageFieldType;
 import it.noi.edisplay.model.ScheduledContent;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.DisplayRepository;
@@ -105,11 +102,12 @@ public class ScheduledContentController {
 
         if (withTextFields) {
             int roomAmount = scheduledContent.getDisplayContent().getTemplate().getMaxRooms();
-            int roomSectionHeight = scheduledContent.getDisplayContent().getTemplate().getResolution().getHeight()
-                    / roomAmount;
+            int padding = scheduledContent.getDisplayContent().getPadding();
+            int roomSectionHeight = (scheduledContent.getDisplayContent().getTemplate().getResolution().getHeight()
+                    - (padding * 2)) / roomAmount;
             for (int roomIndex = 0; roomIndex < roomAmount; roomIndex++) {
                 imageUtil.drawImageTextFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null,
-                        roomIndex, roomSectionHeight);
+                        roomIndex, roomSectionHeight, padding);
             }
         }
 
@@ -216,6 +214,7 @@ public class ScheduledContentController {
             scheduledContent.getDisplayContent().setScheduledContent(scheduledContent);
         }
         scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());
+        scheduledContent.getDisplayContent().setPadding(displayContent.getPadding());
 
         if (image != null) {
             InputStream in = new ByteArrayInputStream(image.getBytes());
@@ -272,6 +271,7 @@ public class ScheduledContentController {
         }
 
         scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());
+        scheduledContent.getDisplayContent().setPadding(displayContent.getPadding());
 
         // Display content has changed, so the current image hash is no longer valid
         scheduledContent.getDisplayContent().setImageHash(null);

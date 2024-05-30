@@ -55,6 +55,9 @@ public class DisplayContent {
 
     private String imageHash;
 
+    // header and footer size
+    private Integer padding;
+
     public DisplayContent() {
         uuid = UUID.randomUUID().toString();
     }
@@ -145,4 +148,13 @@ public class DisplayContent {
     public void setImageHash(String imageHash) {
         this.imageHash = imageHash;
     }
+
+    public Integer getPadding() {
+        return padding;
+    }
+
+    public void setPadding(Integer padding) {
+        this.padding = padding;
+    }
+
 }

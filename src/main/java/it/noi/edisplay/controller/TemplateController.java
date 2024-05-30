@@ -99,11 +99,12 @@ public class TemplateController {
 
         if (withTextFields) {
             int roomAmount = template.getMaxRooms();
-            int roomSectionHeight = template.getResolution().getHeight()
-                    / roomAmount;
+            int padding = template.getDisplayContent().getPadding();
+            int roomSectionHeight = (template.getResolution().getHeight() - (padding * 2)) / roomAmount;
+
             for (int roomIndex = 0; roomIndex <= roomAmount; roomIndex++) {
                 imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null,
-                        roomIndex, roomSectionHeight);
+                        roomIndex, roomSectionHeight, padding);
             }
         }
         image = imageUtil.convertToByteArray(bImage, false, null);
@@ -193,6 +194,7 @@ public class TemplateController {
             template.getDisplayContent().setTemplate(template);
         }
         template.getDisplayContent().setImageFields(displayContent.getImageFields());
+        template.getDisplayContent().setPadding(displayContent.getPadding());
 
         if (image != null) {
             InputStream in = new ByteArrayInputStream(image.getBytes());

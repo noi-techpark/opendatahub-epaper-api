@@ -4,6 +4,9 @@
 
 package it.noi.edisplay.utils;
 
+import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.model.Display;
+import it.noi.edisplay.model.DisplayContent;
 import it.noi.edisplay.model.ImageField;
 import it.noi.edisplay.model.ImageFieldType;
 import it.noi.edisplay.model.Resolution;
@@ -39,8 +42,33 @@ public class ImageUtil {
         return baos.toByteArray();
     }
 
+    public void drawDisplayImage(Display display, DisplayContent displayContent, BufferedImage bImage,
+            Map<String, List<EventDto>> noiDisplayEventsByRoom,
+            List<ImageField> imageFields, int eventAdvance) {
+        int roomAmount = display.getRoomCodes().length;
+        int padding = displayContent.getPadding() == null ? 0 : displayContent.getPadding();
+        int roomSectionHeight = (display.getResolution().getHeight() - (padding * 2)) / roomAmount;
+        int roomIndex = 0;
+        for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
+            Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
+            boolean hasDrawnSomething = drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
+                    roomIndex, roomSectionHeight, padding);
+
+            if (hasDrawnSomething) {
+                roomIndex++;
+            }
+        }
+
+        // no room event has been drawn, show default
+        if (roomIndex == 0) {
+            Map<ImageFieldType, String> fieldValues = display.getDefaultTextFieldValues();
+            drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
+                    roomSectionHeight, padding);
+        }
+    }
+
     public boolean drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
-            Map<ImageFieldType, String> dynamicFieldValues, int roomIndex, int roomSectionHeight) {
+            Map<ImageFieldType, String> dynamicFieldValues, int roomIndex, int roomSectionHeight, int padding) {
         // count draw lines, to see if something has actually been drawn
         int drawCounter = 0;
 
@@ -59,7 +87,7 @@ public class ImageUtil {
                     field.getItalic() ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
 
             attributes.put(TextAttribute.SIZE, field.getFontSize());
-            
+
             g.setFont(Font.getFont(attributes));
 
             String stringToDraw = '<' + field.getFieldType().toString() + '>';
@@ -73,10 +101,10 @@ public class ImageUtil {
             if (stringToDraw.length() > 0) {
                 if (Boolean.TRUE.equals(field.getFixed())) {
                     drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                            field.getxPos(), field.getyPos());
+                            field.getxPos(), field.getyPos() + padding);
                 } else {
                     drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                            field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight));
+                            field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight) + padding);
                 }
                 drawCounter++;
             }
@@ -86,7 +114,6 @@ public class ImageUtil {
         g.dispose();
 
         return drawCounter > 0;
-
     }
 
     public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)

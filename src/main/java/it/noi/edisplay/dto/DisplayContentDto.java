@@ -19,6 +19,9 @@ public class DisplayContentDto {
 
     private List<ImageFieldDto> imageFields;
 
+    // header and footer size
+    private Integer padding;
+
     public String getUuid() {
         return uuid;
     }
@@ -50,4 +53,13 @@ public class DisplayContentDto {
     public void setImageFields(List<ImageFieldDto> imageFields) {
         this.imageFields = imageFields;
     }
+
+    public Integer getPadding() {
+        return padding;
+    }
+
+    public void setPadding(Integer padding) {
+        this.padding = padding;
+    }
+
 }

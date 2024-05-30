@@ -240,25 +240,7 @@ public class DisplayController {
 
 		List<ImageField> imageFields = displayContent.getImageFields();
 
-		int roomAmount = display.getRoomCodes().length;
-		int roomSectionHeight = display.getResolution().getHeight() / roomAmount;
-		int roomIndex = 0;
-		for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
-			Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
-			boolean hasDrawnSomething = imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
-					roomIndex, roomSectionHeight);
-
-			if (hasDrawnSomething) {
-				roomIndex++;
-			}
-		}
-
-		// no room event has been drawn, show default
-		if (roomIndex == 0) {
-			Map<ImageFieldType, String> fieldValues = display.getDefaultTextFieldValues();
-			imageUtil.drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
-					roomSectionHeight);
-		}
+		imageUtil.drawDisplayImage(display, displayContent, bImage, noiDisplayEventsByRoom, imageFields, eventAdvance);
 
 		image = imageUtil.convertToByteArray(bImage, true, display.getResolution());
 
@@ -268,7 +250,7 @@ public class DisplayController {
 			displayContent.setImageHash(null);
 			displayContentRepository.saveAndFlush(displayContent);
 		}
-		
+
 		if (imageHash == null) {
 			imageHash = "no-hash";
 		}
@@ -303,31 +285,10 @@ public class DisplayController {
 		Map<ImageFieldType, String> fieldValues = null;
 		if (withTextFields) {
 			fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display), eventAdvance);
-
 			Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
-
 			List<ImageField> imageFields = displayContent.getImageFields();
-
-			int roomAmount = display.getRoomCodes().length;
-			int roomSectionHeight = display.getResolution().getHeight() / roomAmount;
-			int roomIndex = 0;
-			for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
-				Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
-				boolean hasDrawnSomething = imageUtil.drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
-						roomIndex, roomSectionHeight);
-
-				if (hasDrawnSomething) {
-					roomIndex++;
-				}
-			}
-
-			// no room event has been drawn, show default
-			if (roomIndex == 0) {
-				fieldValues = display.getDefaultTextFieldValues();
-				imageUtil.drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
-						roomSectionHeight);
-			}
-
+			imageUtil.drawDisplayImage(display, displayContent, bImage, noiDisplayEventsByRoom, imageFields,
+					eventAdvance);
 		}
 		image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
 
@@ -372,6 +333,7 @@ public class DisplayController {
 			display.getDisplayContent().setDisplay(display);
 		}
 		display.getDisplayContent().setImageFields(displayContent.getImageFields());
+		display.getDisplayContent().setPadding(displayContent.getPadding());
 
 		if (image != null) {
 			InputStream in = new ByteArrayInputStream(image.getBytes());
@@ -427,6 +389,7 @@ public class DisplayController {
 		}
 
 		display.getDisplayContent().setImageFields(displayContent.getImageFields());
+		display.getDisplayContent().setPadding(displayContent.getPadding());
 
 		// Display content has changed, so the current image hash is no longer valid
 		display.getDisplayContent().setImageHash(null);
