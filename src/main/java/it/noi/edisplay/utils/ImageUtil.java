@@ -65,6 +65,23 @@ public class ImageUtil {
             drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
                     roomSectionHeight, padding);
         }
+
+        // draw room separation lines
+        Graphics2D g = (Graphics2D) bImage.getGraphics();
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(4));
+        int height = display.getResolution().getHeight();
+        int width = display.getResolution().getWidth();
+
+        // don't draw line, if big totem with 2 displays, that are already separated
+        boolean drawCenterLine = height != 5120;
+
+        for (int i = 1; i < roomAmount; i++) {
+            int y = padding + (roomSectionHeight * i);
+            if (drawCenterLine || i != roomAmount / 2)
+                g.drawLine(0, y, width, y);
+        }
+        g.dispose();
     }
 
     public boolean drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
