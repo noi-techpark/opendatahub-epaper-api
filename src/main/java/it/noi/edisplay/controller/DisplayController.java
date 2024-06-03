@@ -233,9 +233,6 @@ public class DisplayController {
 		InputStream is = new ByteArrayInputStream(image);
 		BufferedImage bImage = ImageIO.read(is);
 
-		display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display),
-				eventAdvance);
-
 		Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
 
 		List<ImageField> imageFields = displayContent.getImageFields();
@@ -282,9 +279,7 @@ public class DisplayController {
 		InputStream is = new ByteArrayInputStream(image);
 		BufferedImage bImage = ImageIO.read(is);
 
-		Map<ImageFieldType, String> fieldValues = null;
 		if (withTextFields) {
-			fieldValues = display.getTextFieldValues(noiDataLoader.getNOIDisplayEvents(display), eventAdvance);
 			Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
 			List<ImageField> imageFields = displayContent.getImageFields();
 			imageUtil.drawDisplayImage(display, displayContent, bImage, noiDisplayEventsByRoom, imageFields,
@@ -294,15 +289,6 @@ public class DisplayController {
 
 		// Set MD5 hash for Display if the image is in native format
 		if (convertToBMP) {
-			if (fieldValues != null) {
-				// Set current field values for later MD5 validation
-				for (ImageField field : displayContent.getImageFields()) {
-					if (field.getFieldType() != ImageFieldType.CUSTOM_TEXT) {
-						field.setCurrentFieldValue(fieldValues.get(field.getFieldType()));
-					}
-				}
-			}
-
 			displayContent.setImageHash(imageUtil.convertToMD5Hash(image));
 			displayContentRepository.saveAndFlush(displayContent);
 		}

@@ -187,7 +187,7 @@ public class Display {
         this.scheduledContent = scheduledContent;
     }
 
-    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events, int eventAdvance) {
+    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events, int eventAdvance, String roomName) {
         EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
 
         // transform minutes in milliseconds
@@ -204,7 +204,7 @@ public class Display {
                 item -> item.getRoomStartDateUTC() < currentTimePlusAdvance && item.getRoomEndDateUTC() > currentTime)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
-            fieldValues.put(ImageFieldType.LOCATION_NAME, currentEvent.getSpaceDesc().replace("NOI ", ""));
+            fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getCompanyName());
             fieldValues.put(ImageFieldType.EVENT_START_DATE,

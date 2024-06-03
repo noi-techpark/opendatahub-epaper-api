@@ -49,11 +49,12 @@ public class ImageUtil {
         int padding = displayContent.getPadding() == null ? 0 : displayContent.getPadding();
         int roomSectionHeight = (display.getResolution().getHeight() - (padding * 2)) / roomAmount;
         int roomIndex = 0;
-        for (List<EventDto> eventsByRoom : noiDisplayEventsByRoom.values()) {
-            Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance);
+        for (String roomName : noiDisplayEventsByRoom.keySet()) {
+            List<EventDto> eventsByRoom = noiDisplayEventsByRoom.get(roomName);
+            Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance,
+                    roomName);
             boolean hasDrawnSomething = drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
                     roomIndex, roomSectionHeight, padding);
-
             if (hasDrawnSomething) {
                 roomIndex++;
             }

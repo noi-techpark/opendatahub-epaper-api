@@ -23,7 +23,6 @@ import javax.annotation.PostConstruct;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +94,7 @@ public class NOIDataLoader {
     }
 
     public Map<String, List<EventDto>> getNOIDisplayEventsByRoom(Display display) {
-        
+
         // use LinkedHashMap to have sorted map
         Map<String, List<EventDto>> noiEvents = new LinkedHashMap<>();
 
@@ -106,13 +105,13 @@ public class NOIDataLoader {
                         .findFirst().orElse(null);
                 if (room != null) {
                     // Filter events based on NOI room that the display is in
-                    noiEvents.put(roomCode, events.stream().filter(
+                    String roomName = room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
+                            : room.getTodaynoibzit().replace("NOI ", "");
+                    noiEvents.put(roomName, events.stream().filter(
                             item -> item.getSpaceDescList()
-                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
-                                            : room.getTodaynoibzit().replace("NOI ", "")))
+                                    .contains(roomName))
                             .collect(Collectors.toList()));
                 }
-
             }
         }
         return noiEvents;
