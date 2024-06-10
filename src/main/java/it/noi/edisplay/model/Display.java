@@ -206,6 +206,7 @@ public class Display {
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, currentEvent.getSubtitle());
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getCompanyName());
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
@@ -219,6 +220,7 @@ public class Display {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, upcomingEvent.getSubtitle());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getCompanyName());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
                     f.format(new Timestamp((upcomingEvent.getRoomStartDateUTC()))));
