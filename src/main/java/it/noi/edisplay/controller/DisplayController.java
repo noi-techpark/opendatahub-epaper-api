@@ -51,6 +51,9 @@ public class DisplayController {
 	@Value("${event.advance}")
 	private int eventAdvance;
 
+	@Value("${event.offset}")
+	private int eventOffset;
+
 	@Autowired
 	private DisplayRepository displayRepository;
 
@@ -237,7 +240,7 @@ public class DisplayController {
 
 		List<ImageField> imageFields = displayContent.getImageFields();
 
-		imageUtil.drawDisplayImage(display, displayContent, bImage, noiDisplayEventsByRoom, imageFields, eventAdvance);
+		imageUtil.drawDisplayImage(display, displayContent, bImage, noiDisplayEventsByRoom, imageFields, eventAdvance + eventOffset);
 
 		image = imageUtil.convertToByteArray(bImage, true, display.getResolution());
 
@@ -283,7 +286,7 @@ public class DisplayController {
 			Map<String, List<EventDto>> noiDisplayEventsByRoom = noiDataLoader.getNOIDisplayEventsByRoom(display);
 			List<ImageField> imageFields = displayContent.getImageFields();
 			imageUtil.drawDisplayImage(display, displayContent, bImage, noiDisplayEventsByRoom, imageFields,
-					eventAdvance);
+					eventAdvance + eventOffset);
 		}
 		image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
 
