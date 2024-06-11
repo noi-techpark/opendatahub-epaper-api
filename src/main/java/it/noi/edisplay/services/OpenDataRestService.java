@@ -35,11 +35,8 @@ public class OpenDataRestService {
 
 	public List<EventDto> getEvents() {
 
-        // transform minutes in milliseconds
-        eventOffset *= 60000;
-
 		ArrayList<EventDto> result = new ArrayList<>();
-		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime() + eventOffset);
+		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime() + eventOffset * 60000);
 		EventDto[] eventDtos = restTemplate.getForObject(urlWithTimestamp, EventDto[].class);
 		Collections.addAll(result, eventDtos);
 		return result;
