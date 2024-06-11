@@ -9,6 +9,7 @@ import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.dto.NOIPlaceData;
 import it.noi.edisplay.dto.NOIPlaceDto;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -25,14 +26,20 @@ public class OpenDataRestService {
 	private String eventLocationUrl = "https://tourism.api.opendatahub.com/v1/EventShort/RoomMapping";
 	private String placesUrl = "https://mobility.api.opendatahub.com/v2/flat/NOI-Place?select=scode,smetadata.name.en,smetadata.room_label,smetadata.todaynoibzit&limit=-1&where=and(smetadata.type.in.(Meetingroom,Seminarroom),sorigin.neq.office365,sactive.eq.true)";
 
+	@Value("${event.offset}")
+	private int eventOffset;
 
 	public OpenDataRestService(RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder.build();
 	}
 
 	public List<EventDto> getEvents() {
+
+        // transform minutes in milliseconds
+        eventOffset *= 60000;
+
 		ArrayList<EventDto> result = new ArrayList<>();
-		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime());
+		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime() + eventOffset);
 		EventDto[] eventDtos = restTemplate.getForObject(urlWithTimestamp, EventDto[].class);
 		Collections.addAll(result, eventDtos);
 		return result;
@@ -48,7 +55,7 @@ public class OpenDataRestService {
 
 		return result;
 	}
-	
+
 	public List<NOIPlaceData> getNOIPlaces() {
 	    NOIPlaceDto places = restTemplate.getForObject(placesUrl, NOIPlaceDto.class);
 	    if (places != null) {
