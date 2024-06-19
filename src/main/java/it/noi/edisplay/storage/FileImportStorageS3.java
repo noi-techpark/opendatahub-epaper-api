@@ -16,7 +16,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class FileImportStorageS3 {
@@ -35,22 +37,27 @@ public class FileImportStorageS3 {
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
     }
 
-    /*
-     * public byte[] download(String s3FileKey) { GetObjectRequest getObjectRequest
-     * = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build(); final
-     * ResponseBytes<GetObjectResponse> object =
-     * s3Client.getObject(getObjectRequest, ResponseTransformer.toBytes()); return
-     * object.asByteArray(); }
-     */
-
     public byte[] download(String s3FileKey) {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
 
-        final ResponseBytes<GetObjectResponse> object = s3Client.getObject(getObjectRequest,
-                ResponseTransformer.toBytes());
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
+            final ResponseBytes<GetObjectResponse> object = s3Client.getObject(getObjectRequest,
+                    ResponseTransformer.toBytes());
+            return object.asByteArray();
+            // Process the object as needed
 
-        return object.asByteArray();
-
+        } catch (NoSuchKeyException e) {
+            // Handle the specific case where the key does not exist
+            System.err.println("The specified key does not exist: " + s3FileKey);
+            // You can log this error or return a specific message to the client
+        } catch (S3Exception e) {
+            // Handle other S3 exceptions
+            System.err.println("S3 Exception: " + e.awsErrorDetails().errorMessage());
+        } catch (Exception e) {
+            // Handle any other exceptions
+            System.err.println("An unexpected error occurred: " + e.getMessage());
+        }
+        return null;
     }
 
     public void copy(String oldS3FileKey, String newS3FileKey) {

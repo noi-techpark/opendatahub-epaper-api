@@ -6,12 +6,10 @@ package it.noi.edisplay.model;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +35,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import it.noi.edisplay.dto.EventDto;
-import it.noi.edisplay.utils.ImageUtil;
 
 /**
  * Entity class for Displays that contains all needed information for an
@@ -268,122 +265,43 @@ public class Display {
 
         DisplayContent currentDisplayContent = null;
         Display display = this;
+
         if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
             // Current Event
             Date currentDate = new Date();
-            ScheduledContent currentEvent = display.getScheduledContent().stream()
+
+            List<ScheduledContent> currentEvents = display.getScheduledContent().stream()
                     .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .findFirst().orElse(null);
-            if (currentEvent != null && !Boolean.TRUE.equals(currentEvent.getDisabled())
-                    && currentEvent.getDisplayContent() != null) {
-                currentDisplayContent = currentEvent.getDisplayContent();
+                    .filter(item -> !Boolean.TRUE.equals(item.getDisabled()) && item.getDisplayContent() != null)
+                    .sorted(Comparator.comparing(ScheduledContent::getStartDate)).collect(Collectors.toList());
+            // If there are two or more current events
+            if (currentEvents.size() >= 2) {
+                // Check for an override event
+                Optional<ScheduledContent> overrideEvent = currentEvents.stream().filter(ScheduledContent::getOverride)
+                        .findFirst();
+                Optional<ScheduledContent> idEvent = currentEvents.stream().filter(event -> event.getEventId() != null)
+                        .findFirst();
+
+                // If an override event exists, return it
+                if (overrideEvent.isPresent()) {
+                    return overrideEvent.get().getDisplayContent();
+                } else if (idEvent.isPresent()) {
+                    return idEvent.get().getDisplayContent();
+
+                }
+
             }
-            ScheduledContent overrideEvent = display
-                    .getScheduledContent().stream().filter(item -> item.getOverride()
-                            && item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .findFirst().orElse(null);
-            if (overrideEvent != null && !Boolean.TRUE.equals(overrideEvent.getDisabled())
-                    && overrideEvent.getDisplayContent() != null) {
-                return overrideEvent.getDisplayContent();
-            }
+
+            // Return the first valid event if there are less than two events or no override
+            // event is found
+            return currentEvents.isEmpty() ? null : currentEvents.get(0).getDisplayContent();
         }
 
         if (currentDisplayContent == null) {
             currentDisplayContent = display.getDisplayContent();
         }
+
         return currentDisplayContent;
-
-    }
-
-    public String getCurrentContentMultiRoomsImage() {
-        Display display = this;
-        List<DisplayContent> currentDisplayContents = new ArrayList<>();
-        List<ScheduledContent> currents = new ArrayList<>();
-        List<ImageField> imagesFields = new ArrayList<>();
-        List<ImageField> someimagesFields = new ArrayList<>();
-        if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
-            Date currentDate = new Date();
-
-            // Find all current events
-            List<ScheduledContent> currentEvents = display.getScheduledContent().stream()
-                    .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .collect(Collectors.toList());
-
-            // Add display content from current events
-            for (ScheduledContent event : currentEvents) {
-                if (!Boolean.TRUE.equals(event.getDisabled()) && event.getDisplayContent() != null) {
-                    currentDisplayContents.add(event.getDisplayContent());
-                    currents.add(event);
-                }
-            }
-            for (ImageField field : display.getTemplate().getDisplayContent().getImageFields()) {
-                if (!field.isRepeat() && !field.isRepeated()) {
-                    imagesFields.add(field);
-                }
-            }
-
-            int index = 1;
-
-            for (ImageField fields : display.getTemplate().getDisplayContent().getImageFields()) {
-                if (!fields.isRepeat() && !fields.isRepeated()) {
-                    imagesFields.add(fields);
-                }
-            }
-            for (String room : display.getRoomCodes()) {
-                ScheduledContent scheduledContent = null;
-                Iterator<ScheduledContent> iterator = currents.iterator();
-                while (iterator.hasNext()) {
-                    ScheduledContent scheduledd1 = iterator.next();
-                    if (room.equals(scheduledd1.getRoom())) {
-                        scheduledContent = scheduledd1;
-                        iterator.remove(); // Use iterator to safely remove the item
-                        break; // Break the loop as we found the item
-                    }
-                }
-
-                if (scheduledContent != null) {
-                    int start = display.getTemplate().getRoomData()[1]
-                            + (index - 1) * display.getTemplate().getRoomData()[2];
-                    int end = start + display.getTemplate().getRoomData()[2];
-
-                    for (ImageField fields : display.getTemplate().getDisplayContent().getImageFields()) {
-                        if (fields.getyPos() >= start && fields.getyPos() <= end
-                                && (fields.isRepeat() || fields.isRepeated())) {
-                            someimagesFields.add(fields);
-                        }
-
-                    }
-
-                    for (ImageField fields : scheduledContent.getDisplayContent().getImageFields()) {
-                        for (ImageField field : someimagesFields) {
-
-                            if (field.getFieldType().toString() == fields.getFieldType().toString()) {
-                                field.setCustomText(fields.getCustomText());
-                                imagesFields.add(field);
-                            }
-                        }
-                    }
-                    someimagesFields.clear();
-
-                    for (ImageField fields : scheduledContent.getDisplayContent().getImageFields()) {
-                        if (!fields.isRepeat() && !fields.isRepeated()) {
-                            // check
-                            while (!(fields.getyPos() >= start && fields.getyPos() <= end)) {
-                                fields.setyPos(fields.getyPos() - display.getTemplate().getRoomData()[2]);
-                            }
-                            imagesFields.add(fields);
-                        }
-
-                    }
-                    index++;
-                }
-
-            }
-
-        }
-        ImageUtil imageUtil = new ImageUtil();
-        return imageUtil.drawImageTextFields(imagesFields, display.getResolution().getWidth(),
-                display.getResolution().getHeight());
 
     }
 

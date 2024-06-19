@@ -53,6 +53,8 @@ public class ScheduledContent {
 
     private String imageBase64;
 
+    private String companyName;
+
     @ManyToOne
     private Display display;
 
@@ -160,9 +162,9 @@ public class ScheduledContent {
     }
 
     public void setDisplayContent(DisplayContent displayContent) {
-        if (displayContent != null) {
-            displayContent.setScheduledContent(this);
-        }
+        /*
+         * if (displayContent != null) { displayContent.setScheduledContent(this); }
+         */
         this.displayContent = displayContent;
     }
 
@@ -212,6 +214,14 @@ public class ScheduledContent {
 
     public void setInclude(Boolean include) {
         this.include = include;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
 }

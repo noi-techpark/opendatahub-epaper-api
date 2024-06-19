@@ -7,6 +7,7 @@ package it.noi.edisplay.controller;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -31,12 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import it.noi.edisplay.components.NOIDataLoader;
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.DisplayDto;
 import it.noi.edisplay.dto.DisplayStateDto;
@@ -44,6 +40,7 @@ import it.noi.edisplay.dto.ResolutionDto;
 import it.noi.edisplay.dto.TemplateDto;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.DisplayContent;
+import it.noi.edisplay.model.ImageField;
 import it.noi.edisplay.model.Resolution;
 import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.DisplayContentRepository;
@@ -80,9 +77,6 @@ public class DisplayController {
     ScheduledContentRepository scheduledContentRepository;
 
     @Autowired
-    private NOIDataLoader noiDataLoader;
-
-    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
@@ -110,7 +104,6 @@ public class DisplayController {
         ArrayList<DisplayDto> dtoList = new ArrayList<>();
         for (Display display : list) {
             DisplayDto displayDto = modelMapper.map(display, DisplayDto.class);
-
             // Modelmapper or Hibernate bug?
             // Sometimes displayDto.displayContent is null, mapping it separately seems to
             // help
@@ -119,7 +112,6 @@ public class DisplayController {
                 displayDto.setDisplayContent(modelMapper.map(display.getDisplayContent(), DisplayContentDto.class));
 
             DisplayContent currentContent = display.getCurrentContent();
-
             if (currentContent != null)
                 displayDto.setCurrentImageHash(currentContent.getImageHash());
 
@@ -130,14 +122,15 @@ public class DisplayController {
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity<Object> createDisplay(@RequestBody DisplayDto displayDto) {
+    public ResponseEntity<Object> createDisplay(@RequestBody DisplayDto displayDto) throws IOException {
 
         Display display = modelMapper.map(displayDto, Display.class);
-
         if (displayDto.getDisplayContent() == null) {
-            display.setDisplayContent(null);
-        }
+            display.setDisplayContent(new DisplayContent());
+            displayContentRepository.saveAndFlush(display.getDisplayContent());
+            // display.setDisplayContent(templateContent(display).getDisplayContent());
 
+        }
         ResolutionDto resolutionDto = displayDto.getResolution();
         if (resolutionDto != null) {
             Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
@@ -162,6 +155,7 @@ public class DisplayController {
 
         try {
             display = displayRepository.saveAndFlush(display);
+
         } catch (DataIntegrityViolationException e) {
             Throwable rootCause = e.getRootCause();
             if (rootCause != null)
@@ -180,21 +174,20 @@ public class DisplayController {
 
         if (display == null) {
             logger.debug("Deletion of display with uuid:" + displayUuid + " failed.");
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
         displayRepository.delete(display);
         logger.debug("Deleted display with uuid:" + displayUuid);
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/update/", method = RequestMethod.PUT)
-    public ResponseEntity<Object> updateDisplay(@RequestBody DisplayDto displayDto) {
+    public ResponseEntity<Object> updateDisplay(@RequestBody DisplayDto displayDto) throws IOException {
         Display display = displayRepository.findByUuid(displayDto.getUuid());
         if (display == null) {
             logger.debug("Update display with uuid:" + displayDto.getUuid() + " failed. Display not found.");
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         ResolutionDto resolutionDto = displayDto.getResolution();
@@ -211,6 +204,13 @@ public class DisplayController {
                 display.setResolution(newResolution);
             }
         }
+        TemplateDto templateDto = displayDto.getTemplate();
+        if (templateDto != null) {
+            Template template = templateRepository.findByUuid(templateDto.getUuid());
+            if (template != null) {
+                display.setTemplate(template);
+            }
+        }
 
         display.setBatteryPercentage(displayDto.getBatteryPercentage());
         display.setName(displayDto.getName());
@@ -219,13 +219,9 @@ public class DisplayController {
         display.setIgnoreScheduledContent(displayDto.getIgnoreScheduledContent());
         display.setWarningMessage(displayDto.getWarningMessage());
         display.setRoomCodes(displayDto.getRoomCodes());
-        TemplateDto templateDto = displayDto.getTemplate();
-        if (templateDto != null) {
-            Template template = templateRepository.findByUuid(templateDto.getUuid());
-            if (template != null) {
-                display.setTemplate(template);
-            }
-        }
+        display.setLastUpdate(new Date());
+
+        // templateContent(display);
 
         try {
             display = displayRepository.saveAndFlush(display);
@@ -238,220 +234,157 @@ public class DisplayController {
         }
 
         logger.debug("Updated display with uuid:" + display.getUuid());
-        return new ResponseEntity(modelMapper.map(display, DisplayDto.class), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(modelMapper.map(display, DisplayDto.class), HttpStatus.ACCEPTED);
     }
 
     @PostMapping(value = "/sync-status/{displayUuid}", consumes = "application/json")
     public ResponseEntity<String> syncDisplayStatus(@PathVariable("displayUuid") String displayUuid,
-            @RequestBody DisplayStateDto stateDto) throws IOException {
+            @RequestBody DisplayStateDto stateDto) throws IOException, NoSuchAlgorithmException {
         Display display = displayRepository.findByUuid(displayUuid);
 
         if (display == null) {
             logger.debug("Cannot find a Display with uuid:" + displayUuid);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
         display.setBatteryPercentage(stateDto.getBatteryPercentage());
         display.setErrorMessage(stateDto.getErrorMessage());
         display.setWarningMessage(stateDto.getWarningMessage());
         display.setLastState(new Date());
-
         displayRepository.saveAndFlush(display);
-
-        String imageHash = null;
-
-        DisplayContent displayContent = null;
-        displayContent = display.getCurrentContent();
-        if (displayContent != null) {
-            imageHash = displayContent.getImageHash();
-
+        // new
+        DisplayContent displayContent = display.getCurrentContent();
+        String key = null;
+        if (displayContent == null) {
+            if (fileImportStorageS3.download(display.getDisplayContent().getUuid()) != null) {
+                key = display.getDisplayContent().getUuid();
+                displayContent = display.getDisplayContent();
+            } else {
+                logger.debug("Display with uuid " + displayUuid + " has no image.");
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } else {
+            key = displayContent.getUuid();
         }
+        String imageHash = displayContent.getImageHash();
+        byte[] image = fileImportStorageS3.download(key);
+        InputStream is = new ByteArrayInputStream(image);
+        BufferedImage bImage = ImageIO.read(is);
+        image = imageUtil.convertToByteArray(bImage, true, display.getResolution());
+        String generatedHash = imageUtil.convertToMD5Hash(image);
+
+        if (!generatedHash.equals(imageHash)) {
+            displayContent.setImageHash(null);
+            displayContentRepository.saveAndFlush(displayContent);
+        }
+
         if (imageHash == null) {
             imageHash = "no-hash";
         }
 
         logger.debug("Status updated and image hash returned for display with uuid:" + displayUuid);
         return new ResponseEntity<>(imageHash, HttpStatus.OK);
+
     }
 
-    @SuppressWarnings("null")
     @GetMapping(value = "/get-image/{displayUuid}")
     public ResponseEntity<byte[]> getDisplayImage(@PathVariable("displayUuid") String displayUuid,
-            @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP)// , boolean withTextFields)
+            @RequestParam(value = "convertToBMP", required = false) boolean convertToBMP)
             throws IOException, NoSuchAlgorithmException {
         Display display = displayRepository.findByUuid(displayUuid);
+
         if (display == null) {
             logger.debug("Display with uuid " + displayUuid + " was not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (display.getRoomCodes().length > 1) {
-
-            if (display.getCurrentContentMultiRoomsImage() == null) {
-                logger.debug("Display with uuid " + displayUuid + " has no image.");
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-
-            if (display.getCurrentContentMultiRoomsImage() != null) {
-                display.setImageBase64(display.getCurrentContentMultiRoomsImage());
-                BufferedImage bImageFromConvert = null;
-                byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64());
-                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                bImageFromConvert = ImageIO.read(bis);
-                String fileKey = display.getUuid();
-                fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-            }
-
-            if (display.getImageBase64() == null) {
-
-                logger.debug("Display with uuid " + displayUuid + " has no image.");
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            byte[] image = fileImportStorageS3.download(display.getUuid());
-            display.setImageHash(imageUtil.convertToMD5Hash(image));
-            logger.debug("Get display image with uuid: " + displayUuid);
-            return new ResponseEntity<>(image, HttpStatus.OK);
-        }
-
+        // checkTemplateChanged(display);
         DisplayContent displayContent = display.getCurrentContent();
 
         if (displayContent == null) {
             logger.debug("Display with uuid " + displayUuid + " has no image.");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        String key = displayContent.getUuid();
+        byte[] image = fileImportStorageS3.download(key);
+        if (image != null) {
+            InputStream is = new ByteArrayInputStream(image);
+            BufferedImage bImage = ImageIO.read(is);
+            image = imageUtil.convertToByteArray(bImage, convertToBMP, display.getResolution());
+        }
+        // Set MD5 hash for Display if the image is in native format if
 
-        byte[] image = fileImportStorageS3.download(display.getCurrentContent().getUuid());
-
-        displayContent.setImageHash(imageUtil.convertToMD5Hash(image));
-        displayContentRepository.saveAndFlush(displayContent);
+        if (convertToBMP) {
+            displayContent.setImageHash(imageUtil.convertToMD5Hash(image));
+            displayContentRepository.saveAndFlush(displayContent);
+        }
 
         logger.debug("Get display image with uuid: " + displayUuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
 
     }
 
-    @PostMapping(value = "/set-new-image/{displayUuid}", consumes = "multipart/form-data")
-    public ResponseEntity<DisplayContentDto> setDisplayContent(@PathVariable("displayUuid") String displayUuid,
-            @RequestParam("displayContentDtoJson") String displayContentDtoJson,
-            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
-        Display display = displayRepository.findByUuid(displayUuid);
-        if (display == null) {
-            logger.debug("Display with uuid " + displayUuid + " was not found.");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public void checkTemplateChanged(Display display) throws IOException {
+        if (display.getDisplayContent() != null
+                && display.getDisplayContent().getLastUpdate().before(display.getTemplate().getLastUpdate())) {
+            templateContent1(display);
+            display = displayRepository.saveAndFlush(display);
         }
-        DisplayContentDto displayContentDto = new ObjectMapper().readValue(displayContentDtoJson,
-                DisplayContentDto.class);
-        DisplayContent displayContent = modelMapper.map(displayContentDto, DisplayContent.class);
-
-        boolean displayContentExists = display.getDisplayContent() != null;
-
-        if (!displayContentExists) {
-            display.setDisplayContent(new DisplayContent());
-            display.getDisplayContent().setDisplay(display);
-        }
-        if (display.getRoomCodes().length > 1) {
-            if (display.getCurrentContentMultiRoomsImage() != null) {
-                display.setImageBase64(display.getCurrentContentMultiRoomsImage());
-                // if (display.getImageBase64() != null) {
-                BufferedImage bImageFromConvert = null;
-                byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64().split(",")[1]);
-                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                bImageFromConvert = ImageIO.read(bis);
-                String fileKey = display.getUuid();
-                fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-                // }
-                display.setImageHash(null);
-            }
-
-        } else {
-            display.getDisplayContent().setImageFields(displayContent.getImageFields());
-            display.getDisplayContent()
-                    .setImageBase64(imageUtil.drawImageTextFields(display.getDisplayContent().getImageFields(),
-                            display.getResolution().getWidth(), display.getResolution().getHeight()));
-
-            if (display.getDisplayContent().getImageBase64() != null) {
-                ImageUtil imageUtil = new ImageUtil();
-                BufferedImage bImageFromConvert = null;
-                byte[] imageBytes = Base64.getDecoder().decode(display.getImageBase64().split(",")[1]);
-                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                bImageFromConvert = ImageIO.read(bis);
-                String fileKey = display.getDisplayContent().getUuid();
-                fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-
-                /*
-                 * byte[] imageBytes = Base64.getDecoder()
-                 * .decode(display.getDisplayContent().getImageBase64().split(",")[1]);
-                 * ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                 * bImageFromConvert = ImageIO.read(bis); String fileKey =
-                 * display.getDisplayContent().getUuid();
-                 * fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert),
-                 * fileKey);
-                 */
-            }
-            // Display content has changed, so the current image hash is no longer valid
-            display.getDisplayContent().setImageHash(null);
-
-        }
-
-        Display savedDisplay = displayRepository.saveAndFlush(display);
-
-        if (displayContentExists) {
-            logger.debug("Updated image for Display uuid:" + displayUuid);
-            return new ResponseEntity<>(HttpStatus.OK);
-        }
-
-        logger.debug("Created image for Display uuid:" + displayUuid);
-        return new ResponseEntity<>(modelMapper.map(savedDisplay.getDisplayContent(), DisplayContentDto.class),
-                HttpStatus.CREATED);
     }
 
-    @PostMapping(value = "/set-template-image/{displayUuid}")
-    public ResponseEntity<DisplayContentDto> setDisplayContentByTemplate(
-            @PathVariable("displayUuid") String displayUuid, String templateUuid,
-            @RequestBody DisplayContentDto displayContentDto) throws JsonProcessingException {
-        Display display = displayRepository.findByUuid(displayUuid);
-        if (display == null) {
-            logger.debug("Display with uuid " + displayUuid + " was not found.");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public Display templateContent1(Display display) throws IOException {
+        List<ImageField> imageFields = new ArrayList<>();
+        for (ImageField imageField : display.getTemplate().getDisplayContent().getImageFields()) {
+            if (display.getTemplate().isMultipleRoom() && !imageField.isRepeat() && !imageField.isRepeated()) {
+                imageFields.add(copy(imageField, imageField.getCustomText().toString()));
+            } else if (imageField.getFieldType().toString().equals("OTHER")) {
+                imageFields.add(copy(imageField, imageField.getCustomText()));
+            }
         }
+        display.getDisplayContent().setImageFields(imageFields);
 
-        Template template = templateRepository.findByUuid(templateUuid);
+        if (imageFields.size() > 0) {
+            display.getDisplayContent().setImageFields(imageFields);
+            ImageUtil imageUtil = new ImageUtil();
+            display.getDisplayContent()
+                    .setImageBase64(imageUtil.drawImageTextFields(display.getDisplayContent().getImageFields(),
+                            display.getResolution().getWidth(), display.getResolution().getHeight(),
+                            display.getTemplate()));
 
-        if (template == null) {
-            logger.debug("Template with uuid " + displayUuid + " was not found.");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            BufferedImage bImageFromConvert = null;
+            byte[] imageBytes = Base64.getDecoder().decode(display.getDisplayContent().getImageBase64());
+            ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
+            bImageFromConvert = ImageIO.read(bis);
+            fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert),
+                    display.getDisplayContent().getUuid());
+        } else {
+            display.getDisplayContent().setImageBase64(null);
         }
+        display.getDisplayContent().setDisplay(display);
+        display.getDisplayContent().setLastUpdate(new Date());
+        return display;
+    }
 
-        DisplayContent displayContent = modelMapper.map(displayContentDto, DisplayContent.class);
+    private ImageField copy(ImageField imageField, String text) {
+        ImageField imageFieldNew = new ImageField();
+        imageFieldNew.setBold(imageField.isBold());
+        imageFieldNew.setBorder(imageField.isBorder());
+        imageFieldNew.setInvert(imageField.isInvert());
+        imageFieldNew.setCreated(imageField.getCreated());
+        imageFieldNew.setCurrentFieldValue(imageField.getCurrentFieldValue());
+        imageFieldNew.setCustomText(text);
+        imageFieldNew.setDisplayContent(imageField.getDisplayContent());
+        imageFieldNew.setFieldType(imageField.getFieldType());
+        imageFieldNew.setFontSize(imageField.getFontSize());
+        imageFieldNew.setHeight(imageField.getHeight());
+        imageFieldNew.setImage(imageField.getImage());
+        imageFieldNew.setItalic(imageField.isItalic());
+        imageFieldNew.setLastUpdate(new Date());
+        imageFieldNew.setRepeat(imageField.isRepeat());
+        imageFieldNew.setRepeated(imageField.isRepeated());
+        imageFieldNew.setWidth(imageField.getWidth());
+        imageFieldNew.setxPos(imageField.getxPos());
+        imageFieldNew.setyPos(imageField.getyPos());
+        return imageFieldNew;
 
-        boolean displayContentExists = display.getDisplayContent() != null;
-        if (!displayContentExists) {
-            display.setDisplayContent(new DisplayContent());
-            display.getDisplayContent().setDisplay(display);
-        }
-
-        if (template.getDisplayContent() != null) {
-            // Copy background image from template
-            fileImportStorageS3.copy(template.getDisplayContent().getUuid(), display.getDisplayContent().getUuid());
-        }
-
-        display.getDisplayContent().setImageFields(displayContent.getImageFields());
-        // display.getDisplayContent().setImageUpload(displayContent.getImageUpload());
-
-        // Display content has changed, so the current image hash is no longer valid
-        display.getDisplayContent().setImageHash(null);
-
-        Display savedDisplay = displayRepository.saveAndFlush(display);
-
-        // multiii
-
-        if (displayContentExists) {
-            logger.debug("Updated image for Display uuid:" + displayUuid);
-            return new ResponseEntity<>(HttpStatus.OK);
-        }
-
-        logger.debug("Created image for Display uuid:" + displayUuid);
-        return new ResponseEntity<>(modelMapper.map(savedDisplay.getDisplayContent(), DisplayContentDto.class),
-                HttpStatus.CREATED);
     }
 }

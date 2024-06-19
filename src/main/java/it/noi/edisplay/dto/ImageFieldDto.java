@@ -46,6 +46,8 @@ public class ImageFieldDto {
 
     private boolean border;
 
+    private boolean invert;
+
     private boolean showDeleteButton;
 
     public String getUuid() {
@@ -182,5 +184,13 @@ public class ImageFieldDto {
 
     public void setShowDeleteButton(boolean showDeleteButton) {
         this.showDeleteButton = showDeleteButton;
+    }
+
+    public boolean isInvert() {
+        return invert;
+    }
+
+    public void setInvert(boolean invert) {
+        this.invert = invert;
     }
 }

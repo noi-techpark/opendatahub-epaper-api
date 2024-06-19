@@ -1,5 +1,4 @@
 #!/bin/bash
-
 mkdir -p ~/.m2
 cat > ~/.m2/settings.xml << EOF
 <settings>

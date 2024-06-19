@@ -37,6 +37,8 @@ public class ScheduledContentDto {
 
     private String room;
 
+    private String companyName;
+
     private DisplayContentDto displayContent;
 
     @ApiModelProperty(hidden = true)
@@ -180,6 +182,15 @@ public class ScheduledContentDto {
 
     public void setInclude(Boolean include) {
         this.include = include;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+
+    }
+
+    public String getCompanyName() {
+        return companyName;
     }
 
 }
