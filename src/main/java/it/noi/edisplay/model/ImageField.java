@@ -54,6 +54,8 @@ public class ImageField {
 
     private boolean bold;
 
+    private boolean invert;
+
     private String image;
 
     private boolean border;
@@ -230,5 +232,13 @@ public class ImageField {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public boolean isInvert() {
+        return invert;
+    }
+
+    public void setInvert(boolean invert) {
+        this.invert = invert;
     }
 }

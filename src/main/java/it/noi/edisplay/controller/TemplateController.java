@@ -7,9 +7,9 @@ package it.noi.edisplay.controller;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -37,9 +37,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.noi.edisplay.dto.DisplayContentDto;
 import it.noi.edisplay.dto.ResolutionDto;
 import it.noi.edisplay.dto.TemplateDto;
+import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.DisplayContent;
 import it.noi.edisplay.model.Resolution;
 import it.noi.edisplay.model.Template;
+import it.noi.edisplay.repositories.DisplayRepository;
 import it.noi.edisplay.repositories.ResolutionRepository;
 import it.noi.edisplay.repositories.TemplateRepository;
 import it.noi.edisplay.storage.FileImportStorageS3;
@@ -54,6 +56,8 @@ public class TemplateController {
 
     @Autowired
     TemplateRepository templateRepository;
+    @Autowired
+    DisplayRepository displayRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -184,6 +188,8 @@ public class TemplateController {
         template.setMultipleRoom(templateDto.getMultipleRoom());
         template.setRoomData(templateDto.getRoomData());
 
+        template.setLastUpdate(new Date());
+
         try {
             templateRepository.saveAndFlush(template);
         } catch (DataIntegrityViolationException e) {
@@ -203,7 +209,6 @@ public class TemplateController {
             @RequestParam("displayContentDtoJson") String displayContentDtoJson,
             @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
         Template template = templateRepository.findByUuid(templateUuid);
-
         if (template == null) {
             logger.debug("Template with uuid " + templateUuid + " was not found.");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -220,26 +225,24 @@ public class TemplateController {
             template.getDisplayContent().setTemplate(template);
         }
         template.getDisplayContent().setImageFields(displayContent.getImageFields());// set upload
-        template.getDisplayContent().setImageBase64(displayContent.getImageBase64());
+        // template.getDisplayContent().setImageBase64(displayContent.getImageBase64());
+        template.getDisplayContent()
+                .setImageBase64(imageUtil.drawImageTextFields(template.getDisplayContent().getImageFields(),
+                        template.getResolution().getWidth(), template.getResolution().getHeight(), template)); // quaa
 
-        if (image != null) {
-            InputStream in = new ByteArrayInputStream(image.getBytes());
-            BufferedImage bImageFromConvert = ImageIO.read(in);
-            String fileKey = template.getDisplayContent().getUuid();
-            fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
-
-        }
         if (template.getDisplayContent().getImageBase64() != null) {
             // InputStream in = new ByteArrayInputStream(image.getBytes());
             // BufferedImage bImageFromConvert = ImageIO.read(in);
+
             BufferedImage bImageFromConvert = null;
-            byte[] imageBytes = Base64.getDecoder().decode(template.getDisplayContent().getImageBase64().split(",")[1]);
+            byte[] imageBytes = Base64.getDecoder().decode(template.getDisplayContent().getImageBase64());
             ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
             bImageFromConvert = ImageIO.read(bis);
 
             String fileKey = template.getDisplayContent().getUuid();
             fileImportStorageS3.upload(imageUtil.convertToMonochrome(bImageFromConvert), fileKey);
         }
+        template.setLastUpdate(new Date());
         Template savedTemplate = templateRepository.saveAndFlush(template);
 
         if (templateContentExists) {
@@ -260,6 +263,16 @@ public class TemplateController {
             logger.debug("Delete template with uuid:" + uuid + " failed.");
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
+
+        List<Display> displays = displayRepository.findAll();
+        for (Display display : displays) {
+            if (display.getTemplate().equals(template)) {
+                System.out.println("helloo");
+                logger.debug("Template is assigned to a display, cannot be deleted");
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+        }
+
         templateRepository.delete(template);
         logger.debug("Deleted template with uuid:" + uuid);
         return new ResponseEntity(HttpStatus.OK);

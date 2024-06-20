@@ -6,8 +6,9 @@ package it.noi.edisplay.components;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -47,14 +48,13 @@ public class NOIDataLoader {
 
     @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
-        logger.info("Loading Events");
         if (enabled) {
-            logger.info("Loading Events from OpenDataHub START");
+            logger.debug("Loading Events from OpenDataHub START");
 
             events = openDataRestService.getEvents();
 
-            logger.info("Loaded " + events.size() + " events");
-            logger.info("Loading Events from OpenDataHub DONE");
+            logger.debug("Loaded " + events.size() + " events");
+            logger.debug("Loading Events from OpenDataHub DONE");
         }
     }
 
@@ -72,7 +72,6 @@ public class NOIDataLoader {
 
     public List<EventDto> getNOIDisplayEvents(Display display) {
         List<EventDto> noiEvents = new ArrayList<>();
-
         if (display.getRoomCodes() != null) {
             // Get correct NOI room by Room Code
             for (String roomCode : display.getRoomCodes()) {
@@ -81,9 +80,35 @@ public class NOIDataLoader {
                         .orElse(null);
                 if (room != null) {
                     // Filter events based on NOI room that the display is in
-                    noiEvents.addAll(events.stream().filter(
-                            item -> item.getSpaceDescList().contains(room.getTodaynoibzit().replace("NOI ", "")))
+                    noiEvents.addAll(events.stream()
+                            .filter(item -> item.getSpaceDescList()
+                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
+                                            : room.getTodaynoibzit().replace("NOI ", "")))
                             .collect(Collectors.toList()));
+                }
+
+            }
+        }
+        return noiEvents;
+    }
+
+    public Map<String, List<EventDto>> getNOIDisplayEventsByRoom(Display display) {
+
+        // use LinkedHashMap to have sorted map
+        Map<String, List<EventDto>> noiEvents = new LinkedHashMap<>();
+
+        if (display.getRoomCodes() != null) {
+            // Get correct NOI room by Room Code
+            for (String roomCode : display.getRoomCodes()) {
+                NOIPlaceData room = places.stream().filter(item -> item.getScode().equals(roomCode)).findFirst()
+                        .orElse(null);
+                if (room != null) {
+                    // Filter events based on NOI room that the display is in
+                    noiEvents.put(roomCode,
+                            events.stream().filter(item -> item.getSpaceDescList()
+                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
+                                            : room.getTodaynoibzit().replace("NOI ", "")))
+                                    .collect(Collectors.toList()));
                 }
 
             }
@@ -93,9 +118,7 @@ public class NOIDataLoader {
 
     public List<ScheduledContentDto> getAllDisplayEvents(Display display) {
         List<ScheduledContent> scheduledContentList = display.getScheduledContent();
-
         ArrayList<ScheduledContentDto> dtoList = new ArrayList<>();
-
         // Add events that are in the eInk database
         for (ScheduledContent scheduledContent : scheduledContentList)
             dtoList.add(modelMapper.map(scheduledContent, ScheduledContentDto.class));
@@ -108,39 +131,38 @@ public class NOIDataLoader {
                         .orElse(null);
                 if (room != null) {
                     // Filter events based on NOI room that the display is in
-                    if (events != null && !events.isEmpty() && room.getTodaynoibzit() != null
-                            && !room.getTodaynoibzit().isEmpty()) {
-                                
-                        List<EventDto> noiEvents = events.stream().filter(item -> {
-                            String spaceDesc = item.getSpaceDescList().stream().filter(desc -> desc != null) // Filter
-                                    .findFirst().orElse("");
-                            String roomName = room.getTodaynoibzit().replace("NOI ", "");
-                            return spaceDesc.equals(roomName);
-                        }).collect(Collectors.toList());
-
-                        for (EventDto noiEvent : noiEvents) {
-                            // Look for modified NOI events that are saved in the eInk database
-                            ScheduledContentDto scheduledContentDto = dtoList.stream()
-                                    .filter(item -> item.getEventId() != null
-                                            && item.getEventId().equals(noiEvent.getEventId()))
-                                    .findFirst().orElse(null);
-                            // If NOI event is not present in the eInk database, create new DTO
-                            if (scheduledContentDto == null) {
-                                scheduledContentDto = new ScheduledContentDto();
-                                scheduledContentDto.setStartDate(new Timestamp(noiEvent.getRoomStartDateUTC()));
-                                scheduledContentDto.setEndDate(new Timestamp(noiEvent.getRoomEndDateUTC()));
-                                scheduledContentDto.setEventDescription(noiEvent.getEventDescriptionEN());
-                                scheduledContentDto.setEventId(noiEvent.getEventId());
-                                scheduledContentDto.setDisplayUuid(display.getUuid());
-                                scheduledContentDto.setSpaceDesc(noiEvent.getSpaceDesc());
-                                dtoList.add(scheduledContentDto);
-                            }
+                    List<EventDto> noiEvents = events.stream()
+                            .filter(item -> item.getSpaceDescList()
+                                    .contains(room.getTodaynoibzit() == null || room.getTodaynoibzit().isEmpty() ? ""
+                                            : room.getTodaynoibzit().replace("NOI ", "")))
+                            .collect(Collectors.toList());
+                    for (EventDto noiEvent : noiEvents) {
+                        // Look for modified NOI events that are saved in the eInk database
+                        ScheduledContentDto scheduledContentDto = dtoList.stream().filter(
+                                item -> item.getEventId() != null && item.getEventId().equals(noiEvent.getEventId()))
+                                .findFirst().orElse(null);
+                        if (scheduledContentDto == null && noiEvent.getEventId() != null) {
+                            scheduledContentDto = new ScheduledContentDto();
+                            scheduledContentDto.setStartDate(new Timestamp(noiEvent.getRoomStartDateUTC()));
+                            scheduledContentDto.setEndDate(new Timestamp(noiEvent.getRoomEndDateUTC()));
+                            scheduledContentDto.setEventDescription(
+                                    noiEvent.getEventDescriptionEN() != null ? noiEvent.getEventDescriptionEN() : "");
+                            scheduledContentDto.setEventId(noiEvent.getEventId());
+                            scheduledContentDto.setDisplayUuid(display.getUuid() != null ? display.getUuid() : "");
+                            scheduledContentDto
+                                    .setSpaceDesc(noiEvent.getSpaceDesc() != null ? noiEvent.getSpaceDesc() : "");
+                            scheduledContentDto.setRoom(roomCode != null ? roomCode : "");
+                            scheduledContentDto
+                                    .setCompanyName(noiEvent.getCompanyName() != null ? noiEvent.getCompanyName() : "");
 
                             scheduledContentDto.setOriginalStartDate(new Timestamp(noiEvent.getRoomStartDateUTC()));
                             scheduledContentDto.setOriginalEndDate(new Timestamp(noiEvent.getRoomEndDateUTC()));
                             scheduledContentDto.setOriginalEventDescription(noiEvent.getEventDescriptionEN());
+                            dtoList.add(scheduledContentDto);
                         }
+
                     }
+
                 }
             }
         }

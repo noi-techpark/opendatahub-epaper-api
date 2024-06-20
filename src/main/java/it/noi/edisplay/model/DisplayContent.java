@@ -98,10 +98,13 @@ public class DisplayContent {
     }
 
     public void setImageFields(List<ImageField> imageFields) {
+        if (imageFields == null) {
+            return;
+        }
         for (ImageField field : imageFields) {
             field.setDisplayContent(this);
-
         }
+
         if (this.imageFields == null) {
             this.imageFields = imageFields;
         } else { // If the list already exists, we have to modify it otherwise Hibernate will not
