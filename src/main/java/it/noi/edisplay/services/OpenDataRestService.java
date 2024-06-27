@@ -19,7 +19,7 @@ public class OpenDataRestService {
 	private final RestTemplate restTemplate;
 	private String eventsUrl = "https://tourism.api.opendatahub.com/v1/EventShort/GetbyRoomBooked?startdate=%s&eventlocation=NOI&datetimeformat=uxtimestamp&onlyactive=true";
 	private String eventLocationUrl = "https://tourism.api.opendatahub.com/v1/EventShort/RoomMapping";
-	private String placesUrl = "https://mobility.api.opendatahub.com/v2/flat/NOI-Place?select=scode,smetadata.name.en,smetadata.room_label,smetadata.todaynoibzit&limit=-1&where=and(smetadata.type.in.(Meetingroom,Seminarroom),sorigin.neq.office365,sactive.eq.true)";
+	private String placesUrl = "https://mobility.api.opendatahub.com/v2/flat/NOI-Place?select=scode,smetadata.name.en,smetadata.room_label,smetadata.todaynoibzit&limit=-1&where=and(smetadata.type.in.(Meetingroom,Seminarroom),sorigin.eq.office365,sactive.eq.true)";
 
 
 	public OpenDataRestService(RestTemplateBuilder restTemplateBuilder) {
@@ -44,7 +44,7 @@ public class OpenDataRestService {
 
 		return result;
 	}
-	
+
 	public List<NOIPlaceData> getNOIPlaces() {
 	    NOIPlaceDto places = restTemplate.getForObject(placesUrl, NOIPlaceDto.class);
 	    if (places != null) {
