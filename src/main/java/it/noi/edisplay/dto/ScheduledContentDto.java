@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.dto;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -24,7 +28,9 @@ public class ScheduledContentDto {
     private Timestamp originalEndDate;
 
     private String originalEventDescription;
-    
+
+    private String spaceDesc;
+
     private DisplayContentDto displayContent;
 
     @ApiModelProperty(hidden = true)
@@ -137,4 +143,13 @@ public class ScheduledContentDto {
     public void setDisplayContent(DisplayContentDto displayContent) {
         this.displayContent = displayContent;
     }
+
+    public String getSpaceDesc() {
+        return spaceDesc;
+    }
+
+    public void setSpaceDesc(String spaceDesc) {
+        this.spaceDesc = spaceDesc;
+    }
+
 }

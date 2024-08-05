@@ -1,9 +1,16 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.controller;
 
 import it.noi.edisplay.dto.DisplayContentDto;
+import it.noi.edisplay.dto.ResolutionDto;
 import it.noi.edisplay.dto.TemplateDto;
 import it.noi.edisplay.model.DisplayContent;
+import it.noi.edisplay.model.Resolution;
 import it.noi.edisplay.model.Template;
+import it.noi.edisplay.repositories.ResolutionRepository;
 import it.noi.edisplay.repositories.TemplateRepository;
 import it.noi.edisplay.storage.FileImportStorageS3;
 import it.noi.edisplay.utils.ImageUtil;
@@ -14,7 +21,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +52,9 @@ public class TemplateController {
 
     @Autowired
     TemplateRepository templateRepository;
+
+    @Autowired
+    private ResolutionRepository resolutionRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -80,7 +98,14 @@ public class TemplateController {
         BufferedImage bImage = ImageIO.read(is);
 
         if (withTextFields) {
-            imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null);
+            int roomAmount = template.getMaxRooms();
+            int padding = template.getDisplayContent().getPadding();
+            int roomSectionHeight = (template.getResolution().getHeight() - (padding * 2)) / roomAmount;
+
+            for (int roomIndex = 0; roomIndex <= roomAmount; roomIndex++) {
+                imageUtil.drawImageTextFields(bImage, template.getDisplayContent().getImageFields(), null,
+                        roomIndex, roomSectionHeight, padding);
+            }
         }
         image = imageUtil.convertToByteArray(bImage, false, null);
 
@@ -101,6 +126,14 @@ public class TemplateController {
     @PostMapping(value = "/create")
     public ResponseEntity<Object> createTemplate(@RequestBody TemplateDto templateDto) {
         Template template = modelMapper.map(templateDto, Template.class);
+
+        ResolutionDto resolutionDto = templateDto.getResolution();
+        if (resolutionDto != null) {
+            Resolution resolution = resolutionRepository.findByWidthAndHeightAndBitDepth(resolutionDto.getWidth(),
+                    resolutionDto.getHeight(), resolutionDto.getBitDepth());
+            template.setResolution(resolution);
+        }
+
         try {
             template = templateRepository.saveAndFlush(template);
         } catch (DataIntegrityViolationException e) {
@@ -161,6 +194,7 @@ public class TemplateController {
             template.getDisplayContent().setTemplate(template);
         }
         template.getDisplayContent().setImageFields(displayContent.getImageFields());
+        template.getDisplayContent().setPadding(displayContent.getPadding());
 
         if (image != null) {
             InputStream in = new ByteArrayInputStream(image.getBytes());

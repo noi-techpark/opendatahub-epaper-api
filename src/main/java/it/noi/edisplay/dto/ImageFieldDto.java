@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.dto;
 
 import java.sql.Date;
@@ -18,13 +22,19 @@ public class ImageFieldDto {
     private Integer yPos;
 
     private String customText;
-    
+
     private Integer fontSize;
 
+    private Boolean fixed;
+
+    private Boolean italic;
+
+    private Boolean bold;
+
     private ImageFieldType fieldType;
-    
+
     private Integer height;
-    
+
     private Integer width;
 
     public String getUuid() {
@@ -106,4 +116,29 @@ public class ImageFieldDto {
     public void setWidth(Integer width) {
         this.width = width;
     }
+
+    public Boolean getFixed() {
+        return fixed;
+    }
+
+    public void setFixed(Boolean fixed) {
+        this.fixed = fixed;
+    }
+
+    public Boolean getItalic() {
+        return italic;
+    }
+
+    public void setItalic(Boolean italic) {
+        this.italic = italic;
+    }
+
+    public Boolean getBold() {
+        return bold;
+    }
+
+    public void setBold(Boolean bold) {
+        this.bold = bold;
+    }
+
 }

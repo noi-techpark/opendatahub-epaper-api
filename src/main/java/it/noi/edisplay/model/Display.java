@@ -1,6 +1,11 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.model;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import it.noi.edisplay.dto.EventDto;
@@ -31,10 +36,10 @@ public class Display {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-//	@NotNull
+    // @NotNull
     private String name;
 
-//	@NotNull
+    // @NotNull
     private String uuid;
 
     @CreationTimestamp
@@ -57,15 +62,16 @@ public class Display {
 
     private String warningMessage;
 
-//	@NotNull
+    // @NotNull
     @ManyToOne
     private Resolution resolution;
 
     @ManyToOne
     private Template template;
 
-    @ManyToOne
-    private Location location;
+    @Type(type = "string-array")
+    @Column(name = "room_codes", columnDefinition = "text[]")
+    private String[] roomCodes;
 
     @OneToOne(mappedBy = "display", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private DisplayContent displayContent;
@@ -165,14 +171,6 @@ public class Display {
         this.template = template;
     }
 
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
     public DisplayContent getDisplayContent() {
         return displayContent;
     }
@@ -189,18 +187,11 @@ public class Display {
         this.scheduledContent = scheduledContent;
     }
 
-    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events, int eventAdvance) {
+    public Map<ImageFieldType, String> getTextFieldValues(List<EventDto> events, int eventAdvance, String roomName) {
         EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
 
         // transform minutes in milliseconds
         eventAdvance *= 60000;
-
-        // Location
-        if (this.getLocation() != null) {
-            fieldValues.put(ImageFieldType.LOCATION_NAME, this.getLocation().getName());
-        } else {
-            fieldValues.put(ImageFieldType.LOCATION_NAME, "Location not specified");
-        }
 
         SimpleDateFormat f = new SimpleDateFormat("dd.MM.yyyy | HH:mm");
         f.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
@@ -213,16 +204,13 @@ public class Display {
                 item -> item.getRoomStartDateUTC() < currentTimePlusAdvance && item.getRoomEndDateUTC() > currentTime)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
+            fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, currentEvent.getSubtitle());
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getCompanyName());
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
-        } else {
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome to NOI Techpark");
-            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
-            fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
-            fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
         }
 
         // Upcoming event
@@ -232,6 +220,7 @@ public class Display {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, upcomingEvent.getSubtitle());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getCompanyName());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
                     f.format(new Timestamp((upcomingEvent.getRoomStartDateUTC()))));
@@ -243,6 +232,15 @@ public class Display {
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE, "");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE, "");
         }
+        return fieldValues;
+    }
+
+    public Map<ImageFieldType, String> getDefaultTextFieldValues() {
+        EnumMap<ImageFieldType, String> fieldValues = new EnumMap<>(ImageFieldType.class);
+        fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, "Welcome to NOI Techpark");
+        fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
+        fieldValues.put(ImageFieldType.EVENT_START_DATE, "");
+        fieldValues.put(ImageFieldType.EVENT_END_DATE, "");
         return fieldValues;
     }
 
@@ -305,5 +303,13 @@ public class Display {
             return eventDto.getEventDescriptionDE() + "\n" + eventDto.getEventDescriptionEN() + "\n"
                     + eventDto.getEventDescriptionIT();
         }
+    }
+
+    public String[] getRoomCodes() {
+        return roomCodes;
+    }
+
+    public void setRoomCodes(String[] roomCodes) {
+        this.roomCodes = roomCodes;
     }
 }

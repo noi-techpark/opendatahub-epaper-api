@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.controller;
 
 import java.awt.image.BufferedImage;
@@ -5,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -96,12 +101,21 @@ public class ScheduledContentController {
         BufferedImage bImage = ImageIO.read(is);
 
         if (withTextFields) {
-            imageUtil.drawImageTextFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null);
+            int roomAmount = scheduledContent.getDisplayContent().getTemplate().getMaxRooms();
+            int padding = scheduledContent.getDisplayContent().getPadding();
+            int roomSectionHeight = (scheduledContent.getDisplayContent().getTemplate().getResolution().getHeight()
+                    - (padding * 2)) / roomAmount;
+            for (int roomIndex = 0; roomIndex < roomAmount; roomIndex++) {
+                imageUtil.drawImageTextFields(bImage, scheduledContent.getDisplayContent().getImageFields(), null,
+                        roomIndex, roomSectionHeight, padding);
+            }
         }
+
         image = imageUtil.convertToByteArray(bImage, false, null);
 
         logger.debug("Get scheduled content image with uuid: " + uuid);
         return new ResponseEntity<>(image, HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET)
@@ -161,6 +175,7 @@ public class ScheduledContentController {
             existingScheduledContent.setStartDate(scheduledContentDto.getStartDate());
             existingScheduledContent.setEndDate(scheduledContentDto.getEndDate());
             existingScheduledContent.setEventDescription(scheduledContentDto.getEventDescription());
+            existingScheduledContent.setSpaceDesc(scheduledContentDto.getSpaceDesc());
             scheduledContent = existingScheduledContent;
         }
 
@@ -199,6 +214,7 @@ public class ScheduledContentController {
             scheduledContent.getDisplayContent().setScheduledContent(scheduledContent);
         }
         scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());
+        scheduledContent.getDisplayContent().setPadding(displayContent.getPadding());
 
         if (image != null) {
             InputStream in = new ByteArrayInputStream(image.getBytes());
@@ -255,6 +271,7 @@ public class ScheduledContentController {
         }
 
         scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());
+        scheduledContent.getDisplayContent().setPadding(displayContent.getPadding());
 
         // Display content has changed, so the current image hash is no longer valid
         scheduledContent.getDisplayContent().setImageHash(null);

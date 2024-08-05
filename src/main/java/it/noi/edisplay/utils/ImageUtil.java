@@ -1,5 +1,12 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.utils;
 
+import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.model.Display;
+import it.noi.edisplay.model.DisplayContent;
 import it.noi.edisplay.model.ImageField;
 import it.noi.edisplay.model.ImageFieldType;
 import it.noi.edisplay.model.Resolution;
@@ -17,8 +24,6 @@ import java.awt.image.WritableRaster;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,17 +42,70 @@ public class ImageUtil {
         return baos.toByteArray();
     }
 
-    public void drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
-            Map<ImageFieldType, String> dynamicFieldValues) {
+    public void drawDisplayImage(Display display, DisplayContent displayContent, BufferedImage bImage,
+            Map<String, List<EventDto>> noiDisplayEventsByRoom,
+            List<ImageField> imageFields, int eventAdvance) {
+        int roomAmount = display.getRoomCodes().length;
+        int padding = displayContent.getPadding() == null ? 0 : displayContent.getPadding();
+        int roomSectionHeight = (display.getResolution().getHeight() - (padding * 2)) / roomAmount;
+        int roomIndex = 0;
+        for (String roomName : noiDisplayEventsByRoom.keySet()) {
+            List<EventDto> eventsByRoom = noiDisplayEventsByRoom.get(roomName);
+            Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance,
+                    roomName);
+            boolean hasDrawnSomething = drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
+                    roomIndex, roomSectionHeight, padding);
+            if (hasDrawnSomething) {
+                roomIndex++;
+            }
+        }
+
+        // no room event has been drawn, show default
+        if (roomIndex == 0) {
+            Map<ImageFieldType, String> fieldValues = display.getDefaultTextFieldValues();
+            drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
+                    roomSectionHeight, padding);
+        }
+
+        // draw room separation lines
+        Graphics2D g = (Graphics2D) bImage.getGraphics();
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(4));
+        int height = display.getResolution().getHeight();
+        int width = display.getResolution().getWidth();
+
+        // don't draw line, if big totem with 2 displays, that are already separated
+        boolean drawCenterLine = height != 5120;
+
+        for (int i = 1; i < roomAmount; i++) {
+            int y = padding + (roomSectionHeight * i);
+            if (drawCenterLine || i != roomAmount / 2)
+                g.drawLine(0, y, width, y);
+        }
+        g.dispose();
+    }
+
+    public boolean drawImageTextFields(BufferedImage bImage, List<ImageField> fields,
+            Map<ImageFieldType, String> dynamicFieldValues, int roomIndex, int roomSectionHeight, int padding) {
+        // count draw lines, to see if something has actually been drawn
+        int drawCounter = 0;
+
         Graphics g = bImage.getGraphics();
 
         g.setColor(Color.BLACK);
         Font currentFont = g.getFont();
-        Map<TextAttribute, Object> attributes = new HashMap<>();
-        attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
 
         for (ImageField field : fields) {
+            Map<TextAttribute, Object> attributes = new HashMap<>();
+            attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
+
+            attributes.put(TextAttribute.WEIGHT,
+                    field.getBold() ? TextAttribute.WEIGHT_BOLD : TextAttribute.WEIGHT_REGULAR);
+            attributes.put(TextAttribute.POSTURE,
+                    field.getItalic() ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
+
             attributes.put(TextAttribute.SIZE, field.getFontSize());
+
             g.setFont(Font.getFont(attributes));
 
             String stringToDraw = '<' + field.getFieldType().toString() + '>';
@@ -55,14 +113,25 @@ public class ImageUtil {
             if (field.getFieldType() == ImageFieldType.CUSTOM_TEXT) {
                 stringToDraw = Objects.toString(field.getCustomText(), "");
             } else if (dynamicFieldValues != null) {
-                stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), stringToDraw);
+                stringToDraw = dynamicFieldValues.getOrDefault(field.getFieldType(), "");
             }
 
-            drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                    field.getxPos(), field.getyPos());
+            if (stringToDraw.length() > 0) {
+                if (Boolean.TRUE.equals(field.getFixed())) {
+                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
+                            field.getxPos(), field.getyPos() + padding);
+                } else {
+                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
+                            field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight) + padding);
+                }
+                drawCounter++;
+            }
+
         }
 
         g.dispose();
+
+        return drawCounter > 0;
     }
 
     public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)
@@ -75,19 +144,19 @@ public class ImageUtil {
             image = getScaledImage(image, resolution.getWidth(), resolution.getHeight());
 
             switch (resolution.getBitDepth()) {
-            case 4:
-                byte[] v = new byte[1 << 4];
-                for (int i = 0; i < v.length; ++i)
-                    v[i] = (byte) (i * 17);
-                ColorModel cm = new IndexColorModel(4, v.length, v, v, v);
-                WritableRaster wr = cm.createCompatibleWritableRaster(image.getWidth(), image.getHeight());
-                outputImage = new BufferedImage(cm, wr, false, null);
-                break;
-            case 24:
-                outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-                break;
-            default:
-                outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                case 4:
+                    byte[] v = new byte[1 << 4];
+                    for (int i = 0; i < v.length; ++i)
+                        v[i] = (byte) (i * 17);
+                    ColorModel cm = new IndexColorModel(4, v.length, v, v, v);
+                    WritableRaster wr = cm.createCompatibleWritableRaster(image.getWidth(), image.getHeight());
+                    outputImage = new BufferedImage(cm, wr, false, null);
+                    break;
+                case 24:
+                    outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    break;
+                default:
+                    outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
             }
 
             Graphics2D g2d = outputImage.createGraphics();

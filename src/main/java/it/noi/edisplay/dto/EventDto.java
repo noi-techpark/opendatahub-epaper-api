@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.dto;
 
 import java.util.ArrayList;
@@ -18,12 +22,15 @@ public class EventDto implements Comparable<EventDto> {
 
     @JsonProperty("EventDescriptionEN")
 	private String eventDescriptionEN;
-	
+
     @JsonProperty("EventDescriptionDE")
     private String eventDescriptionDE;
-   
+
     @JsonProperty("EventDescriptionIT")
     private String eventDescriptionIT;
+
+	@JsonProperty("Subtitle")
+	private String subtitle;
 
 	@JsonProperty("CompanyName")
 	private String companyName;
@@ -33,13 +40,13 @@ public class EventDto implements Comparable<EventDto> {
 
 	@JsonProperty("RoomEndDateUTC")
 	private Long roomEndDateUTC;
-	
+
     @JsonProperty("RoomStartDate")
     private String roomStartDate;
 
     @JsonProperty("RoomEndDate")
     private String roomEndDate;
-    
+
     @JsonProperty("EventId")
     private Integer eventId;
 
@@ -114,7 +121,15 @@ public class EventDto implements Comparable<EventDto> {
     public void setEventId(Integer eventId) {
         this.eventId = eventId;
     }
-    
+
+	public String getSubtitle() {
+		return subtitle;
+	}
+
+	public void setSubtitle(String subtitle) {
+		this.subtitle = subtitle;
+	}
+
     @Override
     public int compareTo(EventDto o) {
       return getRoomStartDateUTC().compareTo(o.getRoomStartDateUTC());

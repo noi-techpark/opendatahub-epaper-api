@@ -1,4 +1,7 @@
-version: "3.4"
+# SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 services:
   api:
     build:
@@ -8,27 +11,32 @@ services:
     volumes:
       - ./:/code
     working_dir: /code
-    command: "mvn -B spring-boot:run" # -Dspring-boot.run.profiles=local"
+    command: "mvn spring-boot:run" # -Dspring-boot.run.profiles=local"
     depends_on:
       - postgres
     env_file:
       - .env
     environment:
       DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      APP_DEBUG: ${APP_DEBUG}
+      DB_USERNAME: epaper
+      DB_PASSWORD: epaper
+      APP_DEBUG: epaper
+      MAVEN_OPTS: -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9000"
     tty: true
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
+      - 9000:9000
   postgres:
     image: "postgres:11-alpine"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: epaper
+      POSTGRES_USER: epaper
+      POSTGRES_PASSWORD: epaper
     hostname: postgres
     volumes:
-      - /tmp/epaper_pgdata:/var/lib/postgresql/data
+      - epaper-psql:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:5432"
+
+volumes:
+  epaper-psql:

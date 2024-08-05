@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.model;
 
 import java.util.Date;
@@ -10,7 +14,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -37,21 +40,24 @@ public class DisplayContent {
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
-    
-    @OneToOne(fetch=FetchType.LAZY)
+
+    @OneToOne(fetch = FetchType.LAZY)
     private Display display;
-    
-    @OneToOne(fetch=FetchType.LAZY)
+
+    @OneToOne(fetch = FetchType.LAZY)
     private Template template;
-    
-    @OneToOne(fetch=FetchType.LAZY)
+
+    @OneToOne(fetch = FetchType.LAZY)
     private ScheduledContent scheduledContent;
 
-    @OneToMany(mappedBy="displayContent", cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy = "displayContent", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<ImageField> imageFields;
-    
+
     private String imageHash;
-    
+
+    // header and footer size
+    private Integer padding;
+
     public DisplayContent() {
         uuid = UUID.randomUUID().toString();
     }
@@ -93,13 +99,17 @@ public class DisplayContent {
     }
 
     public void setImageFields(List<ImageField> imageFields) {
-        for (ImageField field : imageFields) { 
+        if (imageFields == null) {
+            return;
+        }
+        for (ImageField field : imageFields) {
             field.setDisplayContent(this);
         }
-        
+
         if (this.imageFields == null) {
             this.imageFields = imageFields;
-        } else { //If the list already exists, we have to modify it otherwise Hibernate will not work properly
+        } else { // If the list already exists, we have to modify it otherwise Hibernate will not
+                 // work properly
             this.imageFields.clear();
             if (imageFields != null) {
                 this.imageFields.addAll(imageFields);
@@ -138,4 +148,13 @@ public class DisplayContent {
     public void setImageHash(String imageHash) {
         this.imageHash = imageHash;
     }
+
+    public Integer getPadding() {
+        return padding;
+    }
+
+    public void setPadding(Integer padding) {
+        this.padding = padding;
+    }
+
 }

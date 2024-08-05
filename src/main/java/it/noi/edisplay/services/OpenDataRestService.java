@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package it.noi.edisplay.services;
 
 
@@ -5,6 +9,7 @@ import it.noi.edisplay.dto.EventDto;
 import it.noi.edisplay.dto.NOIPlaceData;
 import it.noi.edisplay.dto.NOIPlaceDto;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,16 +24,19 @@ public class OpenDataRestService {
 	private final RestTemplate restTemplate;
 	private String eventsUrl = "https://tourism.api.opendatahub.com/v1/EventShort/GetbyRoomBooked?startdate=%s&eventlocation=NOI&datetimeformat=uxtimestamp&onlyactive=true";
 	private String eventLocationUrl = "https://tourism.api.opendatahub.com/v1/EventShort/RoomMapping";
-	private String placesUrl = "https://mobility.api.opendatahub.com/v2/flat/NOI-Place?select=scode,smetadata.name.en,smetadata.room_label,smetadata.todaynoibzit&limit=-1&where=and(smetadata.type.in.(Meetingroom,Seminarroom),sorigin.eq.office365,sactive.eq.true)";
+	private String placesUrl = "https://mobility.api.opendatahub.com/v2/flat/NOI-Place?select=sorigin,scode,smetadata.name.en,smetadata.room_label,smetadata.todaynoibzit&limit=-1&where=and(smetadata.type.in.(Meetingroom,Seminarroom),sorigin.eq.office365,sactive.eq.true,smetadata.name.en.neq.null)";
 
+	@Value("${event.offset}")
+	private int eventOffset;
 
 	public OpenDataRestService(RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder.build();
 	}
 
 	public List<EventDto> getEvents() {
+
 		ArrayList<EventDto> result = new ArrayList<>();
-		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime());
+		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime() + eventOffset * 60000);
 		EventDto[] eventDtos = restTemplate.getForObject(urlWithTimestamp, EventDto[].class);
 		Collections.addAll(result, eventDtos);
 		return result;
