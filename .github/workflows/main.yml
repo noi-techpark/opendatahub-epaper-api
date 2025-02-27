@@ -45,7 +45,7 @@ jobs:
           X_DOCKER_TAG: ${{ env.DOCKER_TAG }}
           X_SERVER_PORT: 1012
 
-          X_DB_URL: "jdbc:postgresql://test-pg-bdp.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
+          X_DB_URL: "jdbc:postgresql://test-pg-misc.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
           X_DB_USERNAME: "epaper"
           X_DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST }}
 
