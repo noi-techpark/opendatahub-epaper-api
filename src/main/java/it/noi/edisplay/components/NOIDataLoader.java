@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
+// import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -46,7 +46,7 @@ public class NOIDataLoader {
     @Autowired
     ModelMapper modelMapper;
 
-    @Scheduled(cron = "${cron.opendata.events}")
+    // @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
         if (enabled) {
             logger.debug("Loading Events from OpenDataHub START");
@@ -58,7 +58,7 @@ public class NOIDataLoader {
         }
     }
 
-    @Scheduled(cron = "${cron.opendata.locations}")
+    // @Scheduled(cron = "${cron.opendata.locations}")
     public void loadNoiPlaces() {
         if (enabled) {
             logger.debug("Loading Places from OpenDataHub START");
