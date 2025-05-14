@@ -49,22 +49,28 @@ public class ImageUtil {
         int padding = displayContent.getPadding() == null ? 0 : displayContent.getPadding();
         int roomSectionHeight = (display.getResolution().getHeight() - (padding * 2)) / roomAmount;
         int roomIndex = 0;
+
+        if (noiDisplayEventsByRoom.isEmpty()) {
+            Map<ImageFieldType, String> fieldValues = display.getDefaultTextFieldValues();
+            drawImageTextFields(bImage, imageFields, fieldValues, roomIndex, roomSectionHeight, padding);
+            return;
+        }
+
         for (String roomName : noiDisplayEventsByRoom.keySet()) {
             List<EventDto> eventsByRoom = noiDisplayEventsByRoom.get(roomName);
-            Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance,
-                    roomName);
-            boolean hasDrawnSomething = drawImageTextFields(bImage, imageFields, fieldValuesByRoom,
-                    roomIndex, roomSectionHeight, padding);
-            if (hasDrawnSomething) {
-                roomIndex++;
+            if (eventsByRoom != null && !eventsByRoom.isEmpty()) {
+                Map<ImageFieldType, String> fieldValuesByRoom = display.getTextFieldValues(eventsByRoom, eventAdvance, roomName);
+                boolean hasDrawnSomething = drawImageTextFields(bImage, imageFields, fieldValuesByRoom, roomIndex, roomSectionHeight, padding);
+                if (hasDrawnSomething) {
+                    roomIndex++;
+                }
             }
         }
 
         // no room event has been drawn, show default
         if (roomIndex == 0) {
             Map<ImageFieldType, String> fieldValues = display.getDefaultTextFieldValues();
-            drawImageTextFields(bImage, imageFields, fieldValues, roomIndex,
-                    roomSectionHeight, padding);
+            drawImageTextFields(bImage, imageFields, fieldValues, roomIndex, roomSectionHeight, padding);
         }
 
         // draw room separation lines
@@ -74,12 +80,13 @@ public class ImageUtil {
         int height = display.getResolution().getHeight();
         int width = display.getResolution().getWidth();
 
-        // don't draw line, if big totem with 2 displays, that are already separated
-        boolean drawCenterLine = height != 5120;
+        // special handling for big totem (height == 5120)
+        boolean isBigTotem = height == 5120;
 
         for (int i = 1; i < roomAmount; i++) {
             int y = padding + (roomSectionHeight * i);
-            if (drawCenterLine || i != roomAmount / 2)
+
+            if (!isBigTotem || i != roomAmount / 2)
                 g.drawLine(0, y, width, y);
         }
         g.dispose();
@@ -96,6 +103,9 @@ public class ImageUtil {
         Font currentFont = g.getFont();
 
         for (ImageField field : fields) {
+            // if field is null, let's continue
+            if (field == null) continue;
+
             Map<TextAttribute, Object> attributes = new HashMap<>();
             attributes.put(TextAttribute.FAMILY, currentFont.getFamily());
 
@@ -117,16 +127,19 @@ public class ImageUtil {
             }
 
             if (stringToDraw.length() > 0) {
+                int yPos;
                 if (Boolean.TRUE.equals(field.getFixed())) {
-                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                            field.getxPos(), field.getyPos() + padding);
+                    yPos = field.getyPos() + padding;
                 } else {
-                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(),
-                            field.getxPos(), field.getyPos() + (roomIndex * roomSectionHeight) + padding);
+                    yPos = field.getyPos() + (roomIndex * roomSectionHeight) + padding;
                 }
-                drawCounter++;
+                
+                // drwing text within visible area
+                if (yPos >= 0) {
+                    drawStringMultiLine(g, stringToDraw, field.getWidth(), field.getHeight(), field.getxPos(), yPos);
+                    drawCounter++;
+                }
             }
-
         }
 
         g.dispose();
@@ -134,8 +147,7 @@ public class ImageUtil {
         return drawCounter > 0;
     }
 
-    public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution)
-            throws IOException {
+    public byte[] convertToByteArray(BufferedImage image, boolean toNativeFormat, Resolution resolution) throws IOException {
         BufferedImage outputImage;
         String format;
         if (toNativeFormat && resolution != null) {
@@ -183,10 +195,12 @@ public class ImageUtil {
     }
 
     private void drawStringMultiLine(Graphics g, String text, int maxLineWidth, int maxHeight, int x, int y) {
+        if (text == null || text.isEmpty()) return;
+
         FontMetrics m = g.getFontMetrics();
 
         int availableLines = maxHeight / m.getHeight();
-        if (availableLines == 0) {
+        if (availableLines <= 0) {
             availableLines = 1;
         }
 
@@ -206,6 +220,9 @@ public class ImageUtil {
 
         String[] enforcedLines = text.split("\\n");
         for (int i = 0; i < enforcedLines.length; i++) {
+            // lets keep skipping empty lines
+            if (enforcedLines[i].trim().isEmpty()) continue;
+
             String[] words = enforcedLines[i].split(" ");
 
             if (currentLineIndex < availableLines) {
@@ -213,7 +230,7 @@ public class ImageUtil {
             }
 
             for (int j = 1; j < words.length; j++) {
-                if (currentLineIndex < availableLines && m.stringWidth(lines[currentLineIndex] + words[j]) < maxWidth) {
+                if (currentLineIndex < availableLines && m.stringWidth(lines[currentLineIndex] + " " + words[j]) < maxWidth) {
                     // There is enough space in line, append text
                     lines[currentLineIndex] += " " + words[j];
                 } else {
@@ -235,11 +252,13 @@ public class ImageUtil {
     }
 
     private String appendThreeDots(FontMetrics m, String text, int maxWidth) {
-        int textLenght = text.length();
+        if (text == null) return "...";
+
+        int textLength = text.length();
         if (m.stringWidth(text + "...") < maxWidth) {
             text = text + "...";
-        } else if (textLenght >= 3) {
-            text = text.substring(0, textLenght - 3) + "...";
+        } else if (textLength >= 3) {
+            text = text.substring(0, textLength - 3) + "...";
         } else {
             text = "...";
         }
