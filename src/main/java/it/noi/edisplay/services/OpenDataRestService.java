@@ -22,9 +22,15 @@ import java.util.List;
 public class OpenDataRestService {
 
 	private final RestTemplate restTemplate;
-	private String eventsUrl = "https://tourism.api.opendatahub.com/v1/EventShort/GetbyRoomBooked?startdate=%s&eventlocation=NOI&datetimeformat=uxtimestamp&publishedon=noi-totem";
-	private String eventLocationUrl = "https://tourism.api.opendatahub.com/v1/EventShort/RoomMapping";
-	private String placesUrl = "https://mobility.api.opendatahub.com/v2/flat/NOI-Place?select=sorigin,scode,smetadata.name.en,smetadata.room_label,smetadata.todaynoibzit&limit=-1&where=and(smetadata.type.in.(Meetingroom,Seminarroom),sorigin.eq.office365,sactive.eq.true,smetadata.name.en.neq.null)";
+
+	@Value("${open.data.events.url}")
+	private String eventsUrl;
+
+	@Value("${open.data.event.locations.url}")
+	private String eventLocationUrl;
+
+	@Value("${open.data.places.url}")
+	private String placesUrl;
 
 	@Value("${event.offset}")
 	private int eventOffset;
@@ -34,11 +40,12 @@ public class OpenDataRestService {
 	}
 
 	public List<EventDto> getEvents() {
-
 		ArrayList<EventDto> result = new ArrayList<>();
 		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime() + eventOffset * 60000);
 		EventDto[] eventDtos = restTemplate.getForObject(urlWithTimestamp, EventDto[].class);
-		Collections.addAll(result, eventDtos);
+		if (eventDtos != null) {
+			Collections.addAll(result, eventDtos);
+		}
 		return result;
 	}
 
@@ -46,9 +53,12 @@ public class OpenDataRestService {
 		ArrayList<String> result = new ArrayList<>();
 		String eventLocationsRawString = restTemplate.getForObject(eventLocationUrl, String.class);
 
-		eventLocationsRawString = eventLocationsRawString.substring(1, eventLocationsRawString.length() - 1 );
-		for(String s : eventLocationsRawString.split(","))
-			result.add(s.split(":")[0].replaceAll("\"", ""));
+		if (eventLocationsRawString != null && eventLocationsRawString.length() > 2) {
+			eventLocationsRawString = eventLocationsRawString.substring(1, eventLocationsRawString.length() - 1 );
+			for(String s : eventLocationsRawString.split(",")) {
+				result.add(s.split(":")[0].replaceAll("\"", ""));
+			}
+		}
 
 		return result;
 	}
