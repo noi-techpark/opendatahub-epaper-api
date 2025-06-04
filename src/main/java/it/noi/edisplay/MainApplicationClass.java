@@ -35,7 +35,7 @@ public class MainApplicationClass  extends SpringBootServletInitializer {
 
 	// Fix the CORS errors fir VUE.js, otherwise no data will arrive at VUE
 	@Bean
-	public FilterRegistrationBean simpleCorsFilter() {
+	public FilterRegistrationBean<CorsFilter> simpleCorsFilter() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
@@ -44,7 +44,7 @@ public class MainApplicationClass  extends SpringBootServletInitializer {
 		config.setAllowedMethods(Collections.singletonList("*"));
 		config.setAllowedHeaders(Collections.singletonList("*"));
 		source.registerCorsConfiguration("/**", config);
-		FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
+		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
 		bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		return bean;
 	}
