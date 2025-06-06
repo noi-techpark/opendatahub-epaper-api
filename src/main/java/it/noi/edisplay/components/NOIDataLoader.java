@@ -58,7 +58,7 @@ public class NOIDataLoader {
     }
 
 
-    // @Scheduled(cron = "${cron.opendata.events}")
+    @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
         if (!enabled) return;
 
@@ -77,7 +77,7 @@ public class NOIDataLoader {
         }
     }
 
-    // @Scheduled(cron = "${cron.opendata.locations}")
+    @Scheduled(cron = "${cron.opendata.locations}")
     public void loadNoiPlaces() {
         if (!enabled) return;
 
