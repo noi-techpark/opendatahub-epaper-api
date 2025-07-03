@@ -4,10 +4,10 @@ SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
 SPDX-License-Identifier: CC0-1.0
 -->
 
-# it.bz.opendatahub.epaper.api
+# opendatahub-epaper-api
 
-[![REUSE Compliance](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
-[![CI/CD](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml)
+[![REUSE Compliance](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
+[![CI/CD](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml)
 
 REST API for the E-Ink-Displays System Webapp.
 Communicates with Ardunios over WIFI HTTP to send images and make state requests.
@@ -19,7 +19,7 @@ DB Version control system. The API can do CRUD operations on Displays,
 Locations and Templates. Templates are predefined Images that can be modified and loaded on the Displays.
 
 **Table of Contents**
-- [it.bz.opendatahub.epaper.api](#itbzopendatahubepaperapi)
+- [opendatahub-epaper-api](#itbzopendatahubepaperapi)
 	- [Installation guide](#installation-guide)
 		- [Source code](#source-code)
 	- [Run Application](#run-application)
@@ -43,13 +43,13 @@ Locations and Templates. Templates are predefined Images that can be modified an
 Get a copy of the repository:
 
 ```bash
-git clone https://github.com/noi-techpark/it.bz.opendatahub.epaper.api.git
+git clone https://github.com/noi-techpark/opendatahub-epaper-api.git
 ```
 
 Change directory:
 
 ```bash
-cd it.bz.opendatahub.epaper.api
+cd opendatahub-epaper-api
 ```
 
 ## Run Application

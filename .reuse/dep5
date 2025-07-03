@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: it.bz.opendatahub.epaper.api
+Upstream-Name: opendatahub-epaper-api
 Upstream-Contact: NOI Techpark <digital@noi.bz.it>
-Source: https://github.com/noi-techpark/it.bz.opendatahub.epaper.api
+Source: https://github.com/noi-techpark/opendatahub-epaper-api
 
 Files: .github/* infrastructure/* .gitignore .pre-commit-config.yaml LICENSE .env.example .editorconfig image-templates/* src/main/resources/default-templates/* *.properties
 Copyright: (c) NOI Techpark <digital@noi.bz.it>
