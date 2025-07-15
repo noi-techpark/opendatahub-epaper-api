@@ -63,15 +63,15 @@ public class NOIDataLoader {
     public void loadNoiTodayEvents() {
         if (!enabled) return;
 
-        logger.debug("Loading Events from OpenDataHub ...");
+        logger.info("Loading Events from OpenDataHub ...");
         try {
             List<EventDto> loadedEventDtos = openDataRestService.getEvents();
-            if (loadedEventDtos == null) {
+            if (loadedEventDtos != null) {
                 events = loadedEventDtos;
             } else {
                 events = Collections.emptyList();
             }
-            logger.debug("Loaded {} events!", events.size());
+            logger.info("Loaded {} events!", events.size());
         } catch (Exception e) {
             logger.error("Failed to load events from OpenDataHub", e);
             events = Collections.emptyList();
