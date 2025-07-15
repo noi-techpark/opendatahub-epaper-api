@@ -66,7 +66,7 @@ public class NOIDataLoader {
         logger.debug("Loading Events from OpenDataHub ...");
         try {
             List<EventDto> loadedEventDtos = openDataRestService.getEvents();
-            if (loadedEventDtos == null) {
+            if (loadedEventDtos != null) {
                 events = loadedEventDtos;
             } else {
                 events = Collections.emptyList();
