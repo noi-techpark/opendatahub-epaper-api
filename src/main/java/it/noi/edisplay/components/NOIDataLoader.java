@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.PostConstruct;
 
@@ -58,7 +59,7 @@ public class NOIDataLoader {
     }
 
 
-    // @Scheduled(cron = "${cron.opendata.events}")
+    @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
         if (!enabled) return;
 
@@ -77,7 +78,7 @@ public class NOIDataLoader {
         }
     }
 
-    // @Scheduled(cron = "${cron.opendata.locations}")
+    @Scheduled(cron = "${cron.opendata.locations}")
     public void loadNoiPlaces() {
         if (!enabled) return;
 
