@@ -6,8 +6,8 @@ SPDX-License-Identifier: CC0-1.0
 
 # it.bz.opendatahub.epaper.api
 
-[![REUSE Compliance](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
-[![CI/CD](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml)
+[![REUSE Compliance](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
+[![CI/CD](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml)
 
 REST API for the E-Ink-Displays System Webapp.
 Communicates with Ardunios over WIFI HTTP to send images and make state requests.
