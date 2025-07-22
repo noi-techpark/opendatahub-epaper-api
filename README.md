@@ -6,7 +6,7 @@ SPDX-License-Identifier: CC0-1.0
 
 # opendatahub-epaper-api
 
-[![REUSE Compliance](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
+[![REUSE Compliance](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/opendatahub-docs/wiki/REUSE)
 [![CI/CD](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml)
 
 REST API for the E-Ink-Displays System Webapp.
@@ -14,7 +14,7 @@ Communicates with Ardunios over WIFI HTTP to send images and make state requests
 
 Created with [Spring BootFramework](https://spring.io/projects/spring-boot),
 [Hibernate](https://hibernate.org/) and
-[PostgreSQL](https://www.postgresql.org/) with [Flyway](https://flywaydb.org/)
+[PostgreSQL](https://www.postgresql.org/) with [Flyway](https://www.red-gate.com/products/flyway/community)
 DB Version control system. The API can do CRUD operations on Displays,
 Locations and Templates. Templates are predefined Images that can be modified and loaded on the Displays.
 
@@ -43,7 +43,7 @@ Locations and Templates. Templates are predefined Images that can be modified an
 Get a copy of the repository:
 
 ```bash
-git clone https://github.com/noi-techpark/opendatahub-epaper-api.git
+git clone https://github.com/noi-techpark/opendatahub-epaper-api
 ```
 
 Change directory:
@@ -132,8 +132,8 @@ for details.
 ## Set up to send image to display
 
 - Start the API
-- Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/e-ink-displays-backend)
-- Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to use the webapp to send the image
+- Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/opendatahub-epaper-backend)
+- Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/opendatahub-epaper-webapp) to use the webapp to send the image
 
 ## Swagger
 
@@ -144,7 +144,7 @@ Swagger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OA
 Tests can be created with JUnit and there are already some simple Tests for
 
 ## Integration test
-All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](https://github.com/noi-techpark/e-ink-displays-api/tree/development/src/test/java).
+All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](https://github.com/noi-techpark/opendatahub-epaper-api/tree/development/src/test/java).
 
 ## Licenses
 The E-Display Backend is free software. It is licensed under GNU GENERAL
@@ -155,12 +155,12 @@ More info can be found [here](https://www.gnu.org/licenses/gpl-3.0.en.html)
 - [Spring Boot Framework](https://spring.io/projects/spring-boot)
 - [Hibernate](https://hibernate.org/)
 - [PostgreSQL](https://www.postgresql.org/)
-- [Flyway](https://flywaydb.org/)
+- [Flyway](https://www.red-gate.com/products/flyway/community)
 - [Swagger](https://swagger.io/)
 
 ## REUSE
 
-This project is [REUSE](https://reuse.software) compliant, more information about the usage of REUSE in NOI Techpark repositories can be found [here](https://github.com/noi-techpark/odh-docs/wiki/Guidelines-for-developers-and-licenses#guidelines-for-contributors-and-new-developers).
+This project is [REUSE](https://reuse.software) compliant, more information about the usage of REUSE in NOI Techpark repositories can be found [here](https://github.com/noi-techpark/opendatahub-docs/wiki/Guidelines-for-developers-and-licenses).
 
 Since the CI for this project checks for REUSE compliance you might find it useful to use a pre-commit hook checking for REUSE compliance locally. The [pre-commit-config](.pre-commit-config.yaml) file in the repository root is already configured to check for REUSE compliance with help of the [pre-commit](https://pre-commit.com) tool.
 
