@@ -80,6 +80,8 @@ Swagger UI documentation is available at:
 http://localhost:8080/swagger-ui.html#/
 ```
 
+For detailed documentation, see [Documentation](DOCUMENTATION.md)
+
 ## Setting Up E-Ink Displays
 
 To configure and use physical displays:
