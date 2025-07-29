@@ -14,7 +14,7 @@ The Open Data Hub E-Paper API is a sophisticated system that integrates data fro
 ```mermaid
 graph TD
 	A[OpenDataHub] -->|REST API| B[NOIDataLoader]
-	B -->|Process & Cache| C|PostgreSQL DB]
+	B -->|Process & Cache| C[PostgreSQL DB]
 	C -->|Fetch| D[Display Service]
 	D -->|Render | E[E-Paper Displays]
 	F[Web Application] -->|HTTP REST| D
