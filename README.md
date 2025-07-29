@@ -4,13 +4,12 @@ SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
 SPDX-License-Identifier: CC0-1.0
 -->
 
-# it.bz.opendatahub.epaper.api
+# Open Data Hub E-Paper API
 
 [![REUSE Compliance](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
 [![CI/CD](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/it.bz.opendatahub.epaper.api/actions/workflows/main.yml)
 
-REST API for the E-Ink-Displays System Webapp.
-Communicates with Ardunios over WIFI HTTP to send images and make state requests.
+A REST API service for managing E-Ink Display Systems. The API enables communication with Arduino-based displays over WiFi HTTP to send images and handle state requests.
 
 Created with [Spring BootFramework](https://spring.io/projects/spring-boot),
 [Hibernate](https://hibernate.org/) and
@@ -18,8 +17,27 @@ Created with [Spring BootFramework](https://spring.io/projects/spring-boot),
 DB Version control system. The API can do CRUD operations on Displays,
 Locations and Templates. Templates are predefined Images that can be modified and loaded on the Displays.
 
+# Features
+- CRUD operations for managing Displays, Locations and Templates
+- Template-based image generation and modification
+- Real-time display state synchronization
+- Integration with NOI event data
+- Image processing and conversion for e-paper displays
+- Status and error monitoring
+- S3-compatible storage for images
+- Support for multiple display resolutions
+
+# Technology Stack
+- [Spring BootFramework](https://spring.io/projects/spring-boot) - Core framework
+- [Hibernate](https://hibernate.org/) - ORM and database operations
+- [PostgreSQL](https://www.postgresql.org/) - Database
+- [Flyway](https://flywaydb.org/)
+- [Swagger]()
+
 **Table of Contents**
-- [it.bz.opendatahub.epaper.api](#itbzopendatahubepaperapi)
+- [Open Data Hub E-Paper API](#open-data-hub-e-paper-api)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
 	- [Installation guide](#installation-guide)
 		- [Source code](#source-code)
 	- [Run Application](#run-application)
@@ -34,6 +52,7 @@ Locations and Templates. Templates are predefined Images that can be modified an
 	- [Integration test](#integration-test)
 	- [Licenses](#licenses)
 		- [Third party components](#third-party-components)
+	- [REUSE](#reuse)
 
 
 ## Installation guide
