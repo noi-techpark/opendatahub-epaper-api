@@ -4,171 +4,130 @@ SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
 SPDX-License-Identifier: CC0-1.0
 -->
 
-# opendatahub-epaper-api
+# Open Data Hub E-Paper API
 
-[![REUSE Compliance](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/opendatahub-docs/wiki/REUSE)
+[![REUSE Compliance](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/reuse.yml/badge.svg)](https://github.com/noi-techpark/odh-docs/wiki/REUSE#badges)
 [![CI/CD](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml/badge.svg)](https://github.com/noi-techpark/opendatahub-epaper-api/actions/workflows/main.yml)
 
-REST API for the E-Ink-Displays System Webapp.
-Communicates with Ardunios over WIFI HTTP to send images and make state requests.
+A REST API service for managing E-Ink Display Systems. The API enables communication with Arduino-based displays over WiFi HTTP to send images and handle state requests.
 
-Created with [Spring BootFramework](https://spring.io/projects/spring-boot),
-[Hibernate](https://hibernate.org/) and
-[PostgreSQL](https://www.postgresql.org/) with [Flyway](https://www.red-gate.com/products/flyway/community)
-DB Version control system. The API can do CRUD operations on Displays,
-Locations and Templates. Templates are predefined Images that can be modified and loaded on the Displays.
+## Features
+- CRUD operations for managing Displays, Locations and Templates
+- Template-based image generation and modification
+- Real-time display state synchronization
+- Integration with NOI event data
+- Image processing and conversion for e-paper displays
+- Status and error monitoring
+- S3-compatible storage for images
+- Support for multiple display resolutions
 
-**Table of Contents**
-- [opendatahub-epaper-api](#itbzopendatahubepaperapi)
-	- [Installation guide](#installation-guide)
-		- [Source code](#source-code)
-	- [Run Application](#run-application)
-		- [Execute without Docker](#execute-without-docker)
-			- [Database](#database)
-			- [Application](#application)
-		- [Execute with Docker](#execute-with-docker)
-		- [Show today.noi.bz.it events](#show-todaynoibzit-events)
-	- [Set up to send image to display](#set-up-to-send-image-to-display)
-	- [Swagger](#swagger)
-	- [Unit Tests](#unit-tests)
-	- [Integration test](#integration-test)
-	- [Licenses](#licenses)
-		- [Third party components](#third-party-components)
+## Technology Stack
+- [Spring Boot Framework](https://spring.io/projects/spring-boot) - Core framework
+- [Hibernate](https://hibernate.org/) - ORM and database operations
+- [PostgreSQL](https://www.postgresql.org/) - Database
+- [Flyway](https://flywaydb.org/) - Database version control
+- [Swagger](https://swagger.io/) - API documentation
+- Java 11+
+
+## Installation
+
+### Prerequisites
+
+- JDK 11 or above
+- Maven
+- PostgreSQL 12.5 or above
+- S3-compatible storage service
+
+### Database Setup
+1. Install PostgreSQL on your machine
+2. Create a database and user:
 
 
-## Installation guide
-
-### Source code
-
-Get a copy of the repository:
-
-```bash
-git clone https://github.com/noi-techpark/opendatahub-epaper-api
-```
-
-Change directory:
-
-```bash
-cd opendatahub-epaper-api
-```
-
-## Run Application
-Run **MainApplicationClass.java** in your IDE and Spring Boot will start, Flyway create tables in your database and the the API is ready to use! Enjoy!
-
-### Execute without Docker
-
-#### Database
-Install PostgreSQL on your machine (tested and developed on PSQL 12.5)
-Create Database named **edisplays** with user **edisplay-user**
 ```sql
 CREATE DATABASE epaper;
 CREATE USER epaper;
 ```
 
-Make sure that a default schema called `public` exists, and that the owner is `epaper`.
+Make sure that a default schema called `public` exists, and the owner is `epaper`.
 
-#### Application
-Copy the file `src/main/resources/application.properties` to `src/main/resources/application-local.properties` and adjust the variables that get their values from environment variables. You can take a look at the `.env.example` for some help.
+### Application Setup
+1. Clone the repository and enter the directory:
+```bash
+git clone https://gthub.com/noi-techpark/opendatahub-epaper-api.git
+cd opendatahub-epaper-api
+```
 
-Build the project:
-
+2. Build the project:
 ```bash
 mvn -Dspring.profiles.active=local clean install
 ```
 
-Run the project:
-
+3. Run the application:
 ```bash
 mvn -Dspring.profiles.active=local spring-boot:run
 ```
 
-The service will be available at localhost and your specified server port.
-
-### Execute with Docker
-
-Copy the file `.env.example` to `.env` and adjust the configuration parameters.
-
-Then you can start the application using the following command:
-
+## Docker Deployment
+The application can also be containerized and deployed using Docker. A Dockerfile is provided in the repository.
+Create a .env file and copy the contents of .env.example into it and adjust the configuration parameters.
+Start the application using:
 ```bash
-docker-compose up
+sudo docker compose up
 ```
 
-The service will be available at localhost and your specified server port.
+## API Documentation
 
-### Show today.noi.bz.it events
-
-You can show events info from today.noi.bz.it on displays. To do so enable in .env file following values
-NOI_EVENTS_ENABLED enables the service
-NOI_CRON_EVENTS is the cron job that fetches the events periodically from the OpenDataHub
-NOI_CRON_LOCATIONS is the cron job that fetches the locations periodically from the OpenDataHub
-
+Swagger UI documentation is available at:
 ```
-NOI_EVENTS_ENABLED=false
-NOI_CRON_EVENTS=0 0 0/12 * * ?
-NOI_CRON_LOCATIONS=0 0/10 6-24 * * ?
-```
-NOTE: The cron jobs annotations don't need to be modified. Just if you prefer other update times.
-
-The scheduler cron annotation works as follows:
-```
- ┌───────────── second (0 - 59)
- │ ┌───────────── minute (0 - 59)
- │ │ ┌───────────── hour (0 - 23)
- │ │ │ ┌───────────── day of the month (1 - 31)
- │ │ │ │ ┌───────────── month (1 - 12) (or JAN-DEC)
- │ │ │ │ │ ┌───────────── day of the week (0 - 7)
- │ │ │ │ │ │              (or MON-SUN -- 0 or 7 is Sunday)
- │ │ │ │ │ │
- * * * * * *
+http://localhost:8080/swagger-ui.html#/
 ```
 
-Where `*/10` means every 10 seconds/minutes/, whereas `0/10` means every 10
-seconds/minutes/... but starting from 0. For example, for minutes that would be
-`8:00`, `8:10` etc. See [this spring.io
-blogpost](https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions)
-for details.
+For detailed documentation, see [Documentation](DOCUMENTATION.md)
 
-## Set up to send image to display
+## Setting Up E-Ink Displays
 
-- Start the API
-- Set up a physical display by following the README of the [backend](https://github.com/noi-techpark/opendatahub-epaper-backend)
-- Follow the next steps in the README of the [webapp](https://github.com/noi-techpark/opendatahub-epaper-webapp) to use the webapp to send the image
+To configure and use physical displays:
 
-## Swagger
+1. Start this API service
+2. Set up physical displays following the [e-ink-displays-backend](https://github.com/noi-techpark/e-ink-displays-backend) guide
+3. Use the [e-ink-displays-webapp](https://github.com/noi-techpark/e-ink-displays-webapp) to manage displays and content
 
-Swagger can be reached under http://localhost:8080/swagger-ui.html#/ and uses OAuth for verification.
+## Development
 
-## Unit Tests
+### Testing
 
-Tests can be created with JUnit and there are already some simple Tests for
+The project may be tested with both:
+- **Unit Tests**
+- **Integration Tests**
 
-## Integration test
-All JPARepositories can be tested with JPA Data Tests. Examples can be found in [test folder](https://github.com/noi-techpark/opendatahub-epaper-api/tree/development/src/test/java).
+### REUSE Compliance
 
-## Licenses
-The E-Display Backend is free software. It is licensed under GNU GENERAL
-PUBLIC LICENSE Version 3 from 29 June 2007.
-More info can be found [here](https://www.gnu.org/licenses/gpl-3.0.en.html)
+This project follows [REUSE](https://reuse.software) compliance standards. To ensure compliance during development:
 
-### Third party components
-- [Spring Boot Framework](https://spring.io/projects/spring-boot)
-- [Hibernate](https://hibernate.org/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Flyway](https://www.red-gate.com/products/flyway/community)
-- [Swagger](https://swagger.io/)
-
-## REUSE
-
-This project is [REUSE](https://reuse.software) compliant, more information about the usage of REUSE in NOI Techpark repositories can be found [here](https://github.com/noi-techpark/opendatahub-docs/wiki/Guidelines-for-developers-and-licenses).
-
-Since the CI for this project checks for REUSE compliance you might find it useful to use a pre-commit hook checking for REUSE compliance locally. The [pre-commit-config](.pre-commit-config.yaml) file in the repository root is already configured to check for REUSE compliance with help of the [pre-commit](https://pre-commit.com) tool.
-
-Install the tool by running:
+1. Install pre-commit:
 ```bash
 pip install pre-commit
 ```
-Then install the pre-commit hook via the config file by running:
+
+2. Install the pre-commit hook:
 ```bash
 pre-commit install
 ```
+
+## License
+
+This project is licensed under GNU GENERAL PUBLIC LICENSE Version 3 (GPL-3.0) from 29th June 2007. See [LICENSE](LICENSE)
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request (PR)
+
+## Support
+
+For suport and questions, please [open an issue](https://github.com/noi-techpark/opendatahub-epaper-api/issues/new) on GitHub.
+
+
+

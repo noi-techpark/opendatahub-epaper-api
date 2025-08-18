@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import it.noi.edisplay.model.Resolution;
-// import it.noi.edisplay.model.Template;
+import it.noi.edisplay.model.Template;
 import it.noi.edisplay.repositories.ResolutionRepository;
-// import it.noi.edisplay.repositories.TemplateRepository;
+import it.noi.edisplay.repositories.TemplateRepository;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -26,8 +26,8 @@ public class DefaultDataLoader {
 	@Value("${cron.enabled}")
 	private Boolean enabled;
 
-	// @Autowired
-	// private TemplateRepository templateRepository;
+	@Autowired
+	private TemplateRepository templateRepository;
 
 	@Autowired
 	private ResolutionRepository resolutionRepository;
@@ -59,15 +59,15 @@ public class DefaultDataLoader {
 		}
 	}
 
-	// private void addTemplate(String name) {
-	// 	if (templateRepository.findByName(name) == null) {
-	// 		Template template = new Template();
-	// 		template.setName(name);
-	// 		// template.setResolution(null);(name);
+	private void addTemplate(String name) {
+		if (templateRepository.findByName(name) == null) {
+			Template template = new Template();
+			template.setName(name);
+			// template.setResolution(null);(name);
 
-	// 		templateRepository.saveAndFlush(template);
+			templateRepository.saveAndFlush(template);
 
-	// 		logger.info("New template with name: {} added.", name);
-	// 	}
-	// }
+			logger.info("New template with name: {} added.", name);
+		}
+	}
 }

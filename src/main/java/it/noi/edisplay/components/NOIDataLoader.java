@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.PostConstruct;
 
@@ -58,26 +59,26 @@ public class NOIDataLoader {
     }
 
 
-    // @Scheduled(cron = "${cron.opendata.events}")
+    @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
         if (!enabled) return;
 
-        logger.debug("Loading Events from OpenDataHub ...");
+        logger.info("Loading Events from OpenDataHub ...");
         try {
             List<EventDto> loadedEventDtos = openDataRestService.getEvents();
-            if (loadedEventDtos == null) {
+            if (loadedEventDtos != null) {
                 events = loadedEventDtos;
             } else {
                 events = Collections.emptyList();
             }
-            logger.debug("Loaded {} events!", events.size());
+            logger.info("Loaded {} events!", events.size());
         } catch (Exception e) {
             logger.error("Failed to load events from OpenDataHub", e);
             events = Collections.emptyList();
         }
     }
 
-    // @Scheduled(cron = "${cron.opendata.locations}")
+    @Scheduled(cron = "${cron.opendata.locations}")
     public void loadNoiPlaces() {
         if (!enabled) return;
 
