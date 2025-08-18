@@ -41,6 +41,8 @@ A REST API service for managing E-Ink Display Systems. The API enables communica
 ### Database Setup
 1. Install PostgreSQL on your machine
 2. Create a database and user:
+
+
 ```sql
 CREATE DATABASE epaper;
 CREATE USER epaper;
