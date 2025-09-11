@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.keycloak.authorization.client.util.Http;
 // import org.hibernate.annotations.common.util.impl.LoggerFactory;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -147,14 +148,24 @@ public class ScheduledContentService {
     }
 
     public ResponseEntity<Void> updateSchdeduledContent(ScheduledContentDto scheduledContentDto) {
-        ScheduledContent existingScheduledContent = findExistingScheduledContent(scheduledContentDto);
+        if (scheduledContentDto.getUuid() == null) {
+            logger.error("UUID is required for update operations");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        ScheduledContent existingScheduledContent = scheduledContentRepository.findByUuid(scheduledContentDto.getUuid());
 
         if (existingScheduledContent == null) {
-            ScheduledContent newScheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
-            scheduledContentRepository.saveAndFlush(newScheduledContent);
-            logger.debug("Created a new scheduled content with uuid {}", newScheduledContent.getUuid());
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            logger.error("ScheduledContent with UUID {} not found", scheduledContentDto.getUuid());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
+        // if (existingScheduledContent == null) {
+        //     ScheduledContent newScheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
+        //     scheduledContentRepository.saveAndFlush(newScheduledContent);
+        //     logger.debug("Created a new scheduled content with uuid {}", newScheduledContent.getUuid());
+        //     return new ResponseEntity<>(HttpStatus.CREATED);
+        // }
 
         // update existing scheduled content
         existingScheduledContent.setDisabled(scheduledContentDto.getDisabled());
