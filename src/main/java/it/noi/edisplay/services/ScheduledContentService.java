@@ -150,7 +150,7 @@ public class ScheduledContentService {
     public ResponseEntity<Void> updateScheduledContent(ScheduledContentDto scheduledContentDto) {
         ScheduledContent scheduledContent;
         ScheduledContent existingScheduledContent;
-        Display display = displayRepository.findByUuid(scheduledContentDto.getUuid());
+        Display display = displayRepository.findByUuid(scheduledContentDto.getDisplayUuid());
         if (scheduledContentDto.getUuid() != null) {
             existingScheduledContent = scheduledContentRepository.findByUuid(scheduledContentDto.getUuid());
         } else {
