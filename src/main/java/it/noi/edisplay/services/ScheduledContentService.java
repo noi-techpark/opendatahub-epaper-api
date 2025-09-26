@@ -11,7 +11,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.keycloak.authorization.client.util.Http;
+// import org.keycloak.authorization.client.util.Http;
 // import org.hibernate.annotations.common.util.impl.LoggerFactory;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -147,45 +147,38 @@ public class ScheduledContentService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public ResponseEntity<Void> updateSchdeduledContent(ScheduledContentDto scheduledContentDto) {
-        if (scheduledContentDto.getUuid() == null) {
-            logger.error("UUID is required for update operations");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Void> updateScheduledContent(ScheduledContentDto scheduledContentDto) {
+        ScheduledContent scheduledContent;
+        ScheduledContent existingScheduledContent;
+        Display display = displayRepository.findByUuid(scheduledContentDto.getUuid());
+        if (scheduledContentDto.getUuid() != null) {
+            existingScheduledContent = scheduledContentRepository.findByUuid(scheduledContentDto.getUuid());
+        } else {
+            existingScheduledContent = scheduledContentRepository.findByDisplayIdAndEventId(display.getId(), scheduledContentDto.getEventId());
         }
-
-        ScheduledContent existingScheduledContent = scheduledContentRepository.findByUuid(scheduledContentDto.getUuid());
 
         if (existingScheduledContent == null) {
-            logger.error("ScheduledContent with UUID {} not found", scheduledContentDto.getUuid());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            scheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
+        } else {
+            existingScheduledContent.setDisabled(scheduledContentDto.getDisabled());
+            existingScheduledContent.setStartDate(scheduledContentDto.getStartDate());
+            existingScheduledContent.setEndDate(scheduledContentDto.getEndDate());
+            existingScheduledContent.setEventDescription(scheduledContentDto.getEventDescription());
+            existingScheduledContent.setSpaceDesc(scheduledContentDto.getSpaceDesc());
+            scheduledContent = existingScheduledContent;
         }
 
-        // if (existingScheduledContent == null) {
-        //     ScheduledContent newScheduledContent = modelMapper.map(scheduledContentDto, ScheduledContent.class);
-        //     scheduledContentRepository.saveAndFlush(newScheduledContent);
-        //     logger.debug("Created a new scheduled content with uuid {}", newScheduledContent.getUuid());
-        //     return new ResponseEntity<>(HttpStatus.CREATED);
-        // }
+        scheduledContent.setDisplay(display);
 
-        // update existing scheduled content
-        existingScheduledContent.setDisabled(scheduledContentDto.getDisabled());
-        existingScheduledContent.setStartDate(scheduledContentDto.getStartDate());
-        existingScheduledContent.setEndDate(scheduledContentDto.getEndDate());
-        existingScheduledContent.setEventDescription(scheduledContentDto.getEventDescription());
-        existingScheduledContent.setSpaceDesc(scheduledContentDto.getSpaceDesc());
-        scheduledContentRepository.saveAndFlush(existingScheduledContent);
+        scheduledContent = scheduledContentRepository.saveAndFlush(scheduledContent);
 
-        logger.debug("updated scheduled content wit uuid: {}", existingScheduledContent.getUuid());
+        if (existingScheduledContent == null) {
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
-
-    private ScheduledContent findExistingScheduledContent(ScheduledContentDto scheduledContentDto) {
-        if (scheduledContentDto.getUuid() != null) {
-            return scheduledContentRepository.findByUuid(scheduledContentDto.getUuid());
-        } 
-        Display display = displayRepository.findByUuid(scheduledContentDto.getDisplayUuid());
-        return scheduledContentRepository.findByDisplayIdAndEventId(display.getId(), scheduledContentDto.getEventId());
-    }
+    
 
     public ResponseEntity<DisplayContentDto> setDisplayContent(String scheduledContentUuid, String displayContentDtoJson, MultipartFile image) throws IOException {
         ScheduledContent scheduledContent = scheduledContentRepository.findByUuid(scheduledContentUuid);
