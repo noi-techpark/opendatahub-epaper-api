@@ -62,7 +62,7 @@ public class ScheduledContentController {
     
     @PutMapping("/update")
     public ResponseEntity<Void> updateScheduledContent(@RequestBody ScheduledContentDto scheduledContentDto) {
-        return scheduledContentService.updateSchdeduledContent(scheduledContentDto);
+        return scheduledContentService.updateScheduledContent(scheduledContentDto);
     }
 
     @PostMapping(value = "/set-new-image/{scheduledContentUuid}", consumes = "multipart/form-data")
