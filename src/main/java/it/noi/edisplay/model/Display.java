@@ -9,6 +9,13 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.dto.support.AdditionalInfoDto;
+import it.noi.edisplay.dto.support.AdditionalLangDto;
+import it.noi.edisplay.dto.support.DetailDto;
+import it.noi.edisplay.dto.support.EventDateDto;
+import it.noi.edisplay.dto.support.LangDto;
+import it.noi.edisplay.dto.support.OrganizerInfosDto;
+import it.noi.edisplay.dto.support.OrganizerLangDto;
 
 import javax.persistence.*;
 
@@ -201,31 +208,31 @@ public class Display {
         Long currentTimePlusAdvance = currentTime + eventAdvance;
 
         EventDto currentEvent = events.stream().filter(
-                item -> item.getRoomStartDateUTC() < currentTimePlusAdvance && item.getRoomEndDateUTC() > currentTime)
+                item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance && item.getEventDate().get(0).getToUTC() > currentTime)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
-            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, currentEvent.getSubtitle());
-            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getCompanyName());
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, currentEvent.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription());
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getOrganizerInfos().getEn().getCompanyName());
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
-                    f.format(new Timestamp((currentEvent.getRoomStartDateUTC()))));
-            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getRoomEndDateUTC()))));
+                    f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
         }
 
         // Upcoming event
         List<EventDto> upcomingEvents = events.stream()
-                .filter(item -> item.getRoomStartDateUTC() > currentTimePlusAdvance).collect(Collectors.toList());
+                .filter(item -> item.getEventDate().get(0).getFromUTC() > currentTimePlusAdvance).collect(Collectors.toList());
         if (!upcomingEvents.isEmpty()) {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, upcomingEvent.getSubtitle());
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getCompanyName());
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, upcomingEvent.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription());
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getOrganizerInfos().getEn().getCompanyName());
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
-                    f.format(new Timestamp((upcomingEvent.getRoomStartDateUTC()))));
+                    f.format(new Timestamp((upcomingEvent.getEventDate().get(0).getFromUTC()))));
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE,
-                    f.format(new Timestamp((upcomingEvent.getRoomEndDateUTC()))));
+                    f.format(new Timestamp((upcomingEvent.getEventDate().get(0).getToUTC()))));
         } else {
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, "No upcoming events");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, "");
@@ -282,26 +289,26 @@ public class Display {
     }
 
     private String formEventDescription(EventDto eventDto) {
-        String descriptionEN = eventDto.getEventDescriptionEN().trim().toLowerCase();
-        String descriptionDE = eventDto.getEventDescriptionDE().trim().toLowerCase();
-        String descriptionIT = eventDto.getEventDescriptionIT().trim().toLowerCase();
+        String descriptionEN = eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
+        String descriptionDE = eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getDe().getDescription().trim().toLowerCase();
+        String descriptionIT = eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase();
 
         if (descriptionEN.equals(descriptionDE) && descriptionDE.equals(descriptionIT)) {
             // All descriptions duplicate, return one
-            return eventDto.getEventDescriptionEN();
+            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
         } else if (descriptionEN.equals(descriptionDE)) {
             // EN and DE are duplicates, return EN/DE + IT
-            return eventDto.getEventDescriptionEN() + "\n" + eventDto.getEventDescriptionIT();
+            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase();
         } else if (descriptionEN.equals(descriptionIT)) {
             // EN and IT are duplicates, return DE + EN/IT
-            return eventDto.getEventDescriptionEN() + "\n" + eventDto.getEventDescriptionDE();
+            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getDe().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
         } else if (descriptionIT.equals(descriptionDE)) {
             // IT and DE are duplicates, return IT/DE + EN
-            return eventDto.getEventDescriptionIT() + "\n" + eventDto.getEventDescriptionEN();
+            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
         } else {
             // Descriptions in all languages are unique, return all
-            return eventDto.getEventDescriptionDE() + "\n" + eventDto.getEventDescriptionEN() + "\n"
-                    + eventDto.getEventDescriptionIT();
+            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getDe().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase() + "\n"
+                    + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase();
         }
     }
 

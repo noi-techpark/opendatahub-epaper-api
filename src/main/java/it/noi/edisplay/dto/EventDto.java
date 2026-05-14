@@ -4,115 +4,36 @@
 
 package it.noi.edisplay.dto;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import it.noi.edisplay.dto.support.AdditionalInfoDto;
+import it.noi.edisplay.dto.support.AdditionalLangDto;
+import it.noi.edisplay.dto.support.DetailDto;
+import it.noi.edisplay.dto.support.EventDateDto;
+import it.noi.edisplay.dto.support.LangDto;
+import it.noi.edisplay.dto.support.OrganizerInfosDto;
+import it.noi.edisplay.dto.support.OrganizerLangDto;
 
 /**
  * DTO to read Events from OpenDataHub opendatahub.com
  */
 public class EventDto implements Comparable<EventDto> {
 
-	@JsonProperty("SpaceDesc")
 	private String spaceDesc;
-
-    @JsonProperty("SpaceDescList")
-	private ArrayList<String> spaceDescList;
-
-    @JsonProperty("EventDescriptionEN")
-	private String eventDescriptionEN;
-
-    @JsonProperty("EventDescriptionDE")
-    private String eventDescriptionDE;
-
-    @JsonProperty("EventDescriptionIT")
-    private String eventDescriptionIT;
-
-	@JsonProperty("Subtitle")
-	private String subtitle;
-
-	@JsonProperty("CompanyName")
-	private String companyName;
-
-	@JsonProperty("RoomStartDateUTC")
-	private Long roomStartDateUTC;
-
-	@JsonProperty("RoomEndDateUTC")
-	private Long roomEndDateUTC;
-
-    @JsonProperty("RoomStartDate")
-    private String roomStartDate;
-
-    @JsonProperty("RoomEndDate")
-    private String roomEndDate;
-
+    
     @JsonProperty("EventId")
     private Integer eventId;
 
-	public String getSpaceDesc() {
-		return spaceDesc;
-	}
+    @JsonProperty("Detail")
+    private DetailDto detail;
 
-	public void setSpaceDesc(String spaceDesc) {
-		this.spaceDesc = spaceDesc;
-	}
+    @JsonProperty("OrganizerInfos")
+    private OrganizerInfosDto organizerInfos;
 
-    public ArrayList<String> getSpaceDescList() {
-        return spaceDescList;
-    }
-
-    public void setSpaceDescList(ArrayList<String> spaceDescList) {
-        this.spaceDescList = spaceDescList;
-    }
-
-	public String getEventDescriptionEN() {
-		return eventDescriptionEN;
-	}
-
-	public void setEventDescriptionEN(String eventDescriptionEN) {
-		this.eventDescriptionEN = eventDescriptionEN;
-	}
-
-	public String getCompanyName() {
-		return companyName;
-	}
-
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
-
-	public Long getRoomStartDateUTC() {
-		return roomStartDateUTC;
-	}
-
-	public void setRoomStartDateUTC(Long roomStartDateUTC) {
-		this.roomStartDateUTC = roomStartDateUTC;
-	}
-
-	public Long getRoomEndDateUTC() {
-		return roomEndDateUTC;
-	}
-
-	public void setRoomEndDateUTC(Long roomEndDateUTC) {
-		this.roomEndDateUTC = roomEndDateUTC;
-	}
-
-    public String getRoomStartDate() {
-        return roomStartDate;
-    }
-
-    public void setRoomStartDate(String roomStartDate) {
-        this.roomStartDate = roomStartDate;
-    }
-
-    public String getRoomEndDate() {
-        return roomEndDate;
-    }
-
-    public void setRoomEndDate(String roomEndDate) {
-        this.roomEndDate = roomEndDate;
-    }
+    @JsonProperty("EventDate")
+    private List<EventDateDto> eventDate;
 
     public Integer getEventId() {
         return eventId;
@@ -122,33 +43,43 @@ public class EventDto implements Comparable<EventDto> {
         this.eventId = eventId;
     }
 
-	public String getSubtitle() {
-		return subtitle;
-	}
+    public DetailDto getDetail() {
+        return detail;
+    }
 
-	public void setSubtitle(String subtitle) {
-		this.subtitle = subtitle;
-	}
+    public void setDetail(DetailDto detail) {
+        this.detail = detail;
+    }
 
+    public OrganizerInfosDto getOrganizerInfos() {
+        return organizerInfos;
+    }
+
+    public void setOrganizerInfos(OrganizerInfosDto organizerInfos) {
+        this.organizerInfos = organizerInfos;
+    }
+
+    public List<EventDateDto> getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(List<EventDateDto> eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    
     @Override
     public int compareTo(EventDto o) {
-      return getRoomStartDateUTC().compareTo(o.getRoomStartDateUTC());
+        return this.getEventDate().get(0).getFromUTC()
+            .compareTo(o.getEventDate().get(0).getFromUTC());
     }
 
-    public String getEventDescriptionDE() {
-        return eventDescriptionDE;
-    }
+	public String getSpaceDesc() {
+		return spaceDesc;
+	}
 
-    public void setEventDescriptionDE(String eventDescriptionDE) {
-        this.eventDescriptionDE = eventDescriptionDE;
-    }
-
-    public String getEventDescriptionIT() {
-        return eventDescriptionIT;
-    }
-
-    public void setEventDescriptionIT(String eventDescriptionIT) {
-        this.eventDescriptionIT = eventDescriptionIT;
-    }
+	public void setSpaceDesc(String spaceDesc) {
+		this.spaceDesc = spaceDesc;
+	}
 
 }
