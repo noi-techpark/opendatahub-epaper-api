@@ -6,6 +6,7 @@ package it.noi.edisplay.services;
 
 
 import it.noi.edisplay.dto.EventDto;
+import it.noi.edisplay.dto.support.ResponseDto;
 import it.noi.edisplay.dto.NOIPlaceData;
 import it.noi.edisplay.dto.NOIPlaceDto;
 
@@ -26,9 +27,6 @@ public class OpenDataRestService {
 	@Value("${open.data.events.url}")
 	private String eventsUrl;
 
-	@Value("${open.data.event.locations.url}")
-	private String eventLocationUrl;
-
 	@Value("${open.data.places.url}")
 	private String placesUrl;
 
@@ -42,24 +40,10 @@ public class OpenDataRestService {
 	public List<EventDto> getEvents() {
 		ArrayList<EventDto> result = new ArrayList<>();
 		String urlWithTimestamp = String.format(eventsUrl, new Date().getTime() + eventOffset * 60000);
-		EventDto[] eventDtos = restTemplate.getForObject(urlWithTimestamp, EventDto[].class);
-		if (eventDtos != null) {
-			Collections.addAll(result, eventDtos);
+		ResponseDto response = restTemplate.getForObject(urlWithTimestamp, ResponseDto.class);
+		if (response != null) {
+			result = new ArrayList<>(response.getItems());
 		}
-		return result;
-	}
-
-	public List<String> getEventLocations() {
-		ArrayList<String> result = new ArrayList<>();
-		String eventLocationsRawString = restTemplate.getForObject(eventLocationUrl, String.class);
-
-		if (eventLocationsRawString != null && eventLocationsRawString.length() > 2) {
-			eventLocationsRawString = eventLocationsRawString.substring(1, eventLocationsRawString.length() - 1 );
-			for(String s : eventLocationsRawString.split(",")) {
-				result.add(s.split(":")[0].replaceAll("\"", ""));
-			}
-		}
-
 		return result;
 	}
 
