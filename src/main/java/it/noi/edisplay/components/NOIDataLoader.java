@@ -10,6 +10,8 @@ import it.noi.edisplay.dto.ScheduledContentDto;
 import it.noi.edisplay.model.Display;
 import it.noi.edisplay.model.ScheduledContent;
 import it.noi.edisplay.services.OpenDataRestService;
+import it.noi.edisplay.services.VenueResolverService;
+
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -17,6 +19,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
@@ -58,6 +63,9 @@ public class NOIDataLoader {
         loadNoiPlaces();
     }
 
+    @Autowired
+    private VenueResolverService venueResolverService;
+
 
     @Scheduled(cron = "${cron.opendata.events}")
     public void loadNoiTodayEvents() {
@@ -67,7 +75,13 @@ public class NOIDataLoader {
         try {
             List<EventDto> loadedEventDtos = openDataRestService.getEvents();
             if (loadedEventDtos != null) {
-                events = loadedEventDtos;
+                events = loadedEventDtos;             
+                events.forEach(event -> {
+                    event.getEventDate().forEach(ed -> {
+                        List<String> roomNames =
+                            venueResolverService.resolve(ed.getVenueRoomDetailsIds());
+                    });
+                });
             } else {
                 events = Collections.emptyList();
             }
@@ -110,7 +124,7 @@ public class NOIDataLoader {
             if (room != null) {
                 String normalizedRoomName = normalizeRoomName(room.getTodaynoibzit());
                 noiEvents.addAll(events.stream()
-                    .filter(event -> event.getSpaceDescList() != null && event.getSpaceDescList().contains(normalizedRoomName))
+                    .filter(event -> venueResolverService.normalizeUrns(event.getEventDate().get(0).getVenueRoomDetailsIds()) != null && venueResolverService.normalizeUrns(event.getEventDate().get(0).getVenueRoomDetailsIds()).contains(normalizedRoomName))
                     .collect(Collectors.toList()));
             }
         }
@@ -130,7 +144,7 @@ public class NOIDataLoader {
             if (room != null) {
                 String normalizedRoomName = normalizeRoomName(room.getTodaynoibzit());
                 List<EventDto> roomEventDtos = events.stream()
-                    .filter(event -> event.getSpaceDescList() != null && event.getSpaceDescList().contains(normalizedRoomName))
+                    .filter(event -> venueResolverService.normalizeUrns(event.getEventDate().get(0).getVenueRoomDetailsIds()) != null && venueResolverService.normalizeUrns(event.getEventDate().get(0).getVenueRoomDetailsIds()).contains(normalizedRoomName))
                     .collect(Collectors.toList()); 
 
                 noiEventsByRoom.put(normalizedRoomName, roomEventDtos);
@@ -162,7 +176,7 @@ public class NOIDataLoader {
                     // Filter events based on NOI room that the display is in
                     String normalizedRoomName = normalizeRoomName(room.getTodaynoibzit());
                     List<EventDto> noiEvents = events.stream()
-                        .filter(event -> event.getSpaceDescList() != null && event.getSpaceDescList().contains(normalizedRoomName))
+                        .filter(event -> venueResolverService.normalizeUrns(event.getEventDate().get(0).getVenueRoomDetailsIds()) != null && venueResolverService.normalizeUrns(event.getEventDate().get(0).getVenueRoomDetailsIds()).contains(normalizedRoomName))
                         .collect(Collectors.toList());
                     
                     for (EventDto noiEventDto : noiEvents) {
@@ -173,17 +187,17 @@ public class NOIDataLoader {
                         
                         if (scheduledContentDto == null) {
                             scheduledContentDto = new ScheduledContentDto();
-                            scheduledContentDto.setStartDate(toTimestamp(noiEventDto.getRoomStartDateUTC()));
-                            scheduledContentDto.setEndDate(toTimestamp(noiEventDto.getRoomEndDateUTC()));
-                            scheduledContentDto.setEventDescription(noiEventDto.getEventDescriptionEN());
+                            scheduledContentDto.setStartDate(toTimestamp(noiEventDto.getEventDate().get(0).getFromUTC()));
+                            scheduledContentDto.setEndDate(toTimestamp(noiEventDto.getEventDate().get(0).getToUTC()));
+                            scheduledContentDto.setEventDescription(noiEventDto.getDetail().getEn().getTitle());
                             scheduledContentDto.setEventId(noiEventDto.getEventId());
                             scheduledContentDto.setDisplayUuid(display.getUuid());
-                            scheduledContentDto.setSpaceDesc(noiEventDto.getSpaceDesc());
+                            scheduledContentDto.setSpaceDesc(venueResolverService.normalizeUrns(noiEventDto.getEventDate().get(0).getVenueRoomDetailsIds()).toString().replace("[","").replace("]",""));
                             scheduledContentDtos.add(scheduledContentDto);
                         }
-                        scheduledContentDto.setOriginalStartDate(toTimestamp(noiEventDto.getRoomStartDateUTC()));
-                        scheduledContentDto.setOriginalEndDate(toTimestamp(noiEventDto.getRoomEndDateUTC()));
-                        scheduledContentDto.setOriginalEventDescription(noiEventDto.getEventDescriptionEN());
+                        scheduledContentDto.setOriginalStartDate(toTimestamp(noiEventDto.getEventDate().get(0).getFromUTC()));
+                        scheduledContentDto.setOriginalEndDate(toTimestamp(noiEventDto.getEventDate().get(0).getToUTC()));
+                        scheduledContentDto.setOriginalEventDescription(noiEventDto.getDetail().getEn().getTitle());
                     }
                 }
             }
