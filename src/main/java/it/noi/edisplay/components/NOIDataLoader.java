@@ -189,7 +189,7 @@ public class NOIDataLoader {
                             scheduledContentDto = new ScheduledContentDto();
                             scheduledContentDto.setStartDate(toTimestamp(noiEventDto.getEventDate().get(0).getFromUTC()));
                             scheduledContentDto.setEndDate(toTimestamp(noiEventDto.getEventDate().get(0).getToUTC()));
-                            scheduledContentDto.setEventDescription(noiEventDto.getDetail().getEn().getTitle());
+                            scheduledContentDto.setEventDescription(getEventTitle(noiEventDto));
                             scheduledContentDto.setEventId(noiEventDto.getEventId());
                             scheduledContentDto.setDisplayUuid(display.getUuid());
                             scheduledContentDto.setSpaceDesc(venueResolverService.normalizeUrns(noiEventDto.getEventDate().get(0).getVenueRoomDetailsIds()).toString().replace("[","").replace("]",""));
@@ -197,7 +197,7 @@ public class NOIDataLoader {
                         }
                         scheduledContentDto.setOriginalStartDate(toTimestamp(noiEventDto.getEventDate().get(0).getFromUTC()));
                         scheduledContentDto.setOriginalEndDate(toTimestamp(noiEventDto.getEventDate().get(0).getToUTC()));
-                        scheduledContentDto.setOriginalEventDescription(noiEventDto.getDetail().getEn().getTitle());
+                        scheduledContentDto.setOriginalEventDescription(getEventTitle(noiEventDto));
                     }
                 }
             }
@@ -220,6 +220,14 @@ public class NOIDataLoader {
     private String normalizeRoomName(String roomName) {
         if (roomName == null || roomName.isEmpty()) return "";
         return roomName.replace("NOI ", "");
+    }
+
+    private String getEventTitle(EventDto event) {
+        if (event.getDetail() == null) return null;
+        if (event.getDetail().getEn() != null) return event.getDetail().getEn().getTitle();
+        if (event.getDetail().getDe() != null) return event.getDetail().getDe().getTitle();
+        if (event.getDetail().getIt() != null) return event.getDetail().getIt().getTitle();
+        return null;
     }
 
     private Timestamp toTimestamp(Long epochMillis) {
