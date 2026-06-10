@@ -214,8 +214,10 @@ public class Display {
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
-            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, currentEvent.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription());
-            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentEvent.getOrganizerInfos().getEn().getCompanyName());
+            AdditionalInfoDto currentInfo = currentEvent.getEventDate().get(0).getEventDateAdditionalInfo();
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, safeDescription(currentInfo != null ? currentInfo.getEn() : null));
+            OrganizerInfosDto currentOrganizer = currentEvent.getOrganizerInfos();
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentOrganizer != null && currentOrganizer.getEn() != null ? currentOrganizer.getEn().getCompanyName() : "");
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
