@@ -35,7 +35,7 @@ public class FileImportStorageS3 {
     public void upload(byte[] bytes, String s3FileKey) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
         PutObjectResponse response = s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
-        if (response.eTag() == null || response.eTag().isBlank()) {
+        if (response.eTag() == null || response.eTag().trim().isEmpty()) {
             throw new RuntimeException("S3 upload returned no ETag for key: " + s3FileKey);
         }
         logger.debug("Uploaded {} to S3, ETag: {}", s3FileKey, response.eTag());
