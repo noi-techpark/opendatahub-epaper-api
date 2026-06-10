@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Entity class for Displays that contains all needed information for an
@@ -227,8 +228,10 @@ public class Display {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, upcomingEvent.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription());
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, upcomingEvent.getOrganizerInfos().getEn().getCompanyName());
+            AdditionalInfoDto upcomingInfo = upcomingEvent.getEventDate().get(0).getEventDateAdditionalInfo();
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, safeDescription(upcomingInfo != null ? upcomingInfo.getEn() : null));
+            OrganizerInfosDto organizer = upcomingEvent.getOrganizerInfos();
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, organizer != null && organizer.getEn() != null ? organizer.getEn().getCompanyName() : "");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
                     f.format(new Timestamp((upcomingEvent.getEventDate().get(0).getFromUTC()))));
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE,
@@ -289,27 +292,29 @@ public class Display {
     }
 
     private String formEventDescription(EventDto eventDto) {
-        String descriptionEN = eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
-        String descriptionDE = eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getDe().getDescription().trim().toLowerCase();
-        String descriptionIT = eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase();
+        AdditionalInfoDto info = eventDto.getEventDate().get(0).getEventDateAdditionalInfo();
+        String descriptionEN = safeDescription(info != null ? info.getEn() : null);
+        String descriptionDE = safeDescription(info != null ? info.getDe() : null);
+        String descriptionIT = safeDescription(info != null ? info.getIt() : null);
 
         if (descriptionEN.equals(descriptionDE) && descriptionDE.equals(descriptionIT)) {
-            // All descriptions duplicate, return one
-            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
+            return descriptionEN;
         } else if (descriptionEN.equals(descriptionDE)) {
-            // EN and DE are duplicates, return EN/DE + IT
-            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase();
+            return descriptionEN + (descriptionIT.isEmpty() ? "" : "\n" + descriptionIT);
         } else if (descriptionEN.equals(descriptionIT)) {
-            // EN and IT are duplicates, return DE + EN/IT
-            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getDe().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
+            return (descriptionDE.isEmpty() ? "" : descriptionDE + "\n") + descriptionEN;
         } else if (descriptionIT.equals(descriptionDE)) {
-            // IT and DE are duplicates, return IT/DE + EN
-            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase();
+            return descriptionIT + (descriptionEN.isEmpty() ? "" : "\n" + descriptionEN);
         } else {
-            // Descriptions in all languages are unique, return all
-            return eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getDe().getDescription().trim().toLowerCase() + "\n" + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getEn().getDescription().trim().toLowerCase() + "\n"
-                    + eventDto.getEventDate().get(0).getEventDateAdditionalInfo().getIt().getDescription().trim().toLowerCase();
+            return Stream.of(descriptionDE, descriptionEN, descriptionIT)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.joining("\n"));
         }
+    }
+
+    private String safeDescription(AdditionalLangDto lang) {
+        if (lang == null || lang.getDescription() == null) return "";
+        return lang.getDescription().trim().toLowerCase();
     }
 
     public String[] getRoomCodes() {
