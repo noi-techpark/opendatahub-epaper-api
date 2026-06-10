@@ -4,6 +4,8 @@
 
 package it.noi.edisplay.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +17,12 @@ import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 @Service
 public class FileImportStorageS3 {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileImportStorageS3.class);
 
     private final String bucket;
     private final S3Client s3Client;
@@ -29,7 +34,11 @@ public class FileImportStorageS3 {
 
     public void upload(byte[] bytes, String s3FileKey) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
-        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+        PutObjectResponse response = s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+        if (response.eTag() == null || response.eTag().isBlank()) {
+            throw new RuntimeException("S3 upload returned no ETag for key: " + s3FileKey);
+        }
+        logger.debug("Uploaded {} to S3, ETag: {}", s3FileKey, response.eTag());
     }
 
     public byte[] download(String s3FileKey) {
