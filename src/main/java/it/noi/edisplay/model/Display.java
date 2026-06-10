@@ -299,6 +299,10 @@ public class Display {
         String descriptionDE = safeDescription(info != null ? info.getDe() : null);
         String descriptionIT = safeDescription(info != null ? info.getIt() : null);
 
+        if (descriptionEN.isEmpty() && descriptionDE.isEmpty() && descriptionIT.isEmpty()) {
+            return safeDetailTitle(eventDto);
+        }
+
         if (descriptionEN.equals(descriptionDE) && descriptionDE.equals(descriptionIT)) {
             return descriptionEN;
         } else if (descriptionEN.equals(descriptionDE)) {
@@ -317,6 +321,15 @@ public class Display {
     private String safeDescription(AdditionalLangDto lang) {
         if (lang == null || lang.getDescription() == null) return "";
         return lang.getDescription().trim().toLowerCase();
+    }
+
+    private String safeDetailTitle(EventDto eventDto) {
+        DetailDto detail = eventDto.getDetail();
+        if (detail == null) return "";
+        if (detail.getEn() != null && detail.getEn().getTitle() != null) return detail.getEn().getTitle().trim();
+        if (detail.getDe() != null && detail.getDe().getTitle() != null) return detail.getDe().getTitle().trim();
+        if (detail.getIt() != null && detail.getIt().getTitle() != null) return detail.getIt().getTitle().trim();
+        return "";
     }
 
     public String[] getRoomCodes() {

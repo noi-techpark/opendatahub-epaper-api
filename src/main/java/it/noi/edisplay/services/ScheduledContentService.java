@@ -86,7 +86,7 @@ public class ScheduledContentService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        byte[] image = fileImportStorageS3.download(scheduledContent.getDisplay().getUuid());
+        byte[] image = fileImportStorageS3.download(scheduledContent.getDisplayContent().getUuid());
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 
@@ -248,7 +248,7 @@ public class ScheduledContentService {
 
         if (template.getDisplayContent() != null) {
             // copy background image from template
-            fileImportStorageS3.copy(template.getDisplayContent().getUuid(), scheduledContent.getDisplay().getUuid());
+            fileImportStorageS3.copy(template.getDisplayContent().getUuid(), scheduledContent.getDisplayContent().getUuid());
         }
 
         scheduledContent.getDisplayContent().setImageFields(displayContent.getImageFields());
