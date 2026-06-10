@@ -209,31 +209,40 @@ public class Display {
         Long currentTimePlusAdvance = currentTime + eventAdvance;
 
         EventDto currentEvent = events.stream().filter(
-                item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance && item.getEventDate().get(0).getToUTC() > currentTime)
+                item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
+                        && item.getEventDate().get(0).getToUTC() > currentTime)
                 .findFirst().orElse(null);
         if (currentEvent != null) {
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
             AdditionalInfoDto currentInfo = currentEvent.getEventDate().get(0).getEventDateAdditionalInfo();
-            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, safeDescription(currentInfo != null ? currentInfo.getEn() : null));
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
+                    safeDescription(currentInfo != null ? currentInfo.getEn() : null));
             OrganizerInfosDto currentOrganizer = currentEvent.getOrganizerInfos();
-            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, currentOrganizer != null && currentOrganizer.getEn() != null ? currentOrganizer.getEn().getCompanyName() : "");
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
+                    currentOrganizer != null && currentOrganizer.getEn() != null
+                            ? currentOrganizer.getEn().getCompanyName()
+                            : "");
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
                     f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
-            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE,
+                    f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
         }
 
         // Upcoming event
         List<EventDto> upcomingEvents = events.stream()
-                .filter(item -> item.getEventDate().get(0).getFromUTC() > currentTimePlusAdvance).collect(Collectors.toList());
+                .filter(item -> item.getEventDate().get(0).getFromUTC() > currentTimePlusAdvance)
+                .collect(Collectors.toList());
         if (!upcomingEvents.isEmpty()) {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
             AdditionalInfoDto upcomingInfo = upcomingEvent.getEventDate().get(0).getEventDateAdditionalInfo();
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, safeDescription(upcomingInfo != null ? upcomingInfo.getEn() : null));
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE,
+                    safeDescription(upcomingInfo != null ? upcomingInfo.getEn() : null));
             OrganizerInfosDto organizer = upcomingEvent.getOrganizerInfos();
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER, organizer != null && organizer.getEn() != null ? organizer.getEn().getCompanyName() : "");
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER,
+                    organizer != null && organizer.getEn() != null ? organizer.getEn().getCompanyName() : "");
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_START_DATE,
                     f.format(new Timestamp((upcomingEvent.getEventDate().get(0).getFromUTC()))));
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_END_DATE,
@@ -319,17 +328,22 @@ public class Display {
     }
 
     private String safeDescription(AdditionalLangDto lang) {
-        if (lang == null || lang.getDescription() == null) return "";
+        if (lang == null || lang.getDescription() == null)
+            return "";
         return lang.getDescription().trim().toLowerCase();
     }
 
     private String safeDetailTitle(EventDto eventDto) {
         DetailDto detail = eventDto.getDetail();
-        if (detail == null) return "";
-        if (detail.getEn() != null && detail.getEn().getTitle() != null) return detail.getEn().getTitle().trim();
-        if (detail.getDe() != null && detail.getDe().getTitle() != null) return detail.getDe().getTitle().trim();
-        if (detail.getIt() != null && detail.getIt().getTitle() != null) return detail.getIt().getTitle().trim();
-        return "";
+        if (detail == null)
+            return "";
+        String en = detail.getEn() != null && detail.getEn().getTitle() != null ? detail.getEn().getTitle().trim() : "";
+        String de = detail.getDe() != null && detail.getDe().getTitle() != null ? detail.getDe().getTitle().trim() : "";
+        String it = detail.getIt() != null && detail.getIt().getTitle() != null ? detail.getIt().getTitle().trim() : "";
+        return Stream.of(de, en, it)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .collect(Collectors.joining("\n"));
     }
 
     public String[] getRoomCodes() {
