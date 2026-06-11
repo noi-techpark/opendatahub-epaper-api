@@ -16,7 +16,7 @@ public interface ScheduledContentRepository extends JpaRepository<ScheduledConte
 
     List<ScheduledContent> findByDisplayId(int displayId);
 
-    ScheduledContent findByDisplayIdAndEventId(int displayId, int eventId);
+    ScheduledContent findByDisplayIdAndEventId(int displayId, String eventId);
 
     // List<ScheduledContent> findAll();
 }
