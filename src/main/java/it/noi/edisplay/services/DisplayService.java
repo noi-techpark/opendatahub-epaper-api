@@ -338,8 +338,6 @@ public class DisplayService {
             display.getDisplayContent().setDisplay(display);
         }
         display.getDisplayContent().setImageFields(displayContent.getImageFields());
-        display.getDisplayContent().setDisplay(displayContent.getDisplay());
-        
 
         if (image != null) {
             InputStream is = new ByteArrayInputStream(image.getBytes());
