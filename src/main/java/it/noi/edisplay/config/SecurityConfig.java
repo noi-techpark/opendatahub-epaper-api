@@ -66,6 +66,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 			.authorizeRequests()
 				// Display hardware endpoints — no auth, called by e-paper devices
 				.antMatchers(HttpMethod.POST, "/display/sync-status/**").permitAll()
+				// Public read endpoints
+				.antMatchers(HttpMethod.GET, "/display/all").permitAll()
 				// Image endpoints — loaded via <img src> in the webapp, cannot send auth headers
 				.antMatchers(HttpMethod.GET, "/display/get-image/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/template/get-image/**").permitAll()
