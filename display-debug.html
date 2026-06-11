@@ -1,0 +1,396 @@
+<!--
+SPDX-FileCopyrightText: 2026 NOI Techpark <digital@noi.bz.it>
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ePaper Display Debugger</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; padding: 20px; }
+  h1 { font-size: 1.1rem; color: #aaa; margin-bottom: 16px; letter-spacing: 2px; text-transform: uppercase; }
+  .row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .panel { background: #242424; border: 1px solid #333; border-radius: 4px; padding: 14px; flex: 1 1 340px; min-width: 280px; }
+  .panel h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 12px; }
+  label { display: block; font-size: 0.75rem; color: #999; margin-bottom: 3px; margin-top: 10px; }
+  label:first-of-type { margin-top: 0; }
+  input[type=text], input[type=number], textarea {
+    width: 100%; padding: 6px 8px; background: #1a1a1a; border: 1px solid #444;
+    color: #e0e0e0; border-radius: 3px; font-family: monospace; font-size: 0.85rem;
+  }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus {
+    outline: none; border-color: #666;
+  }
+  textarea { resize: vertical; min-height: 48px; }
+  button {
+    margin-top: 12px; padding: 7px 14px; background: #333; border: 1px solid #555;
+    color: #e0e0e0; border-radius: 3px; cursor: pointer; font-family: monospace;
+    font-size: 0.85rem; transition: background 0.15s;
+  }
+  button:hover { background: #444; }
+  button.primary { background: #2a4a2a; border-color: #4a8a4a; color: #8aca8a; }
+  button.primary:hover { background: #2f5a2f; }
+  button.active { background: #4a3a1a; border-color: #8a6a2a; color: #caaa5a; }
+  button.active:hover { background: #5a4a1a; }
+  button.danger { background: #3a1a1a; border-color: #7a3a3a; color: #ca7a7a; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  #image-panel { flex: 2 1 400px; }
+  #image-wrap {
+    background: #111; border: 1px solid #333; border-radius: 3px;
+    min-height: 120px; display: flex; align-items: center; justify-content: center;
+    overflow: auto; margin-top: 8px; padding: 8px;
+  }
+  #image-wrap img, #image-wrap canvas { max-width: 500px; width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  #image-placeholder { color: #555; font-size: 0.8rem; }
+
+  #log {
+    margin-top: 16px; background: #111; border: 1px solid #333; border-radius: 4px;
+    padding: 12px; font-size: 0.78rem; max-height: 280px; overflow-y: auto;
+  }
+  .log-entry { padding: 3px 0; border-bottom: 1px solid #222; line-height: 1.4; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: #666; margin-right: 6px; }
+  .log-ok { color: #6ab06a; }
+  .log-err { color: #c06a6a; }
+  .log-info { color: #6a9ab0; }
+  .log-warn { color: #c0a06a; }
+
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.78rem; margin-top: 8px; }
+  .kv .k { color: #888; }
+  .kv .v { color: #e0e0e0; word-break: break-all; }
+  .kv .v.changed { color: #f0c040; font-weight: bold; }
+  .kv .v.same { color: #6ab06a; }
+  .kv .v.missing { color: #c06a6a; }
+
+  .badge {
+    display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 0.7rem;
+    background: #333; color: #aaa; margin-left: 6px; vertical-align: middle;
+  }
+  .badge.green { background: #1a3a1a; color: #6ab06a; }
+  .badge.red { background: #3a1a1a; color: #c06a6a; }
+  .badge.yellow { background: #3a2a1a; color: #c0a06a; }
+
+  hr { border: none; border-top: 1px solid #2a2a2a; margin: 14px 0; }
+  #autorefresh-interval { width: 60px; display: inline; }
+</style>
+</head>
+<body>
+
+<div class="panel" style="margin-bottom: 16px; padding: 10px 14px;">
+  <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+    <div style="flex: 2 1 200px;">
+      <label style="margin-top: 0;">API Base URL</label>
+      <input type="text" id="apiBase" value="https://api.epaper.opendatahub.testingmachine.eu">
+    </div>
+    <div style="flex: 1 1 120px;">
+      <label style="margin-top: 0;">Display UUID</label>
+      <input type="text" id="displayUuid" value="local-test">
+    </div>
+  </div>
+</div>
+
+<!-- sync-status panel -->
+<div class="panel" style="margin-bottom: 16px;">
+  <h2>POST /display/sync-status/{uuid}</h2>
+  <label>Battery %</label>
+  <input type="number" id="battery" value="87" min="0" max="100">
+  <label>Error Message (empty = none)</label>
+  <input type="text" id="errorMsg" value="" placeholder="e.g. E_INK_REFRESH_FAILED">
+  <label>Warning Message (empty = none)</label>
+  <input type="text" id="warnMsg" value="" placeholder="e.g. LOW_BATTERY">
+  <div class="btn-row">
+    <button class="primary" onclick="doSyncStatus()">Send sync-status</button>
+  </div>
+  <div id="sync-result" class="kv" style="display:none;"></div>
+</div>
+
+<!-- get-image panel -->
+<div class="panel" id="image-panel" style="margin-bottom: 16px;">
+  <h2>GET /display/get-image/{uuid}</h2>
+  <div class="kv" style="margin-top:0; margin-bottom: 10px;">
+    <span class="k">convertToBMP</span><span class="v">true (fixed — display native format)</span>
+    <span class="k">withTextFields</span><span class="v">true (renders dynamic fields)</span>
+  </div>
+  <div class="btn-row">
+    <button class="primary" onclick="doGetImage()">Fetch image</button>
+    <button id="autoRefreshBtn" onclick="toggleAutoRefresh()">Auto-refresh: OFF</button>
+    <input type="number" id="autorefresh-interval" value="30" min="5" title="Interval in seconds">
+    <span style="font-size:0.75rem; color:#666;">s</span>
+  </div>
+
+  <div id="image-info" class="kv" style="display:none; margin-top: 10px;"></div>
+
+  <div id="image-wrap">
+    <span id="image-placeholder">No image fetched yet</span>
+  </div>
+</div>
+
+<div id="log"><div class="log-entry"><span class="log-info">▶ Debugger ready. Set the display UUID and use the buttons above.</span></div></div>
+
+<script>
+  // --- State ---
+  let lastSyncHash = null;  // hash returned by the previous sync-status call
+  let autoRefreshTimer = null;
+  let autoRefreshOn = false;
+
+  // --- Logging ---
+  function log(msg, level = 'info') {
+    const el = document.getElementById('log');
+    const now = new Date().toTimeString().slice(0,8);
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `<span class="log-time">${now}</span><span class="log-${level}">${msg}</span>`;
+    el.prepend(div);
+  }
+
+  // --- Helpers ---
+  function base() { return document.getElementById('apiBase').value.replace(/\/$/, ''); }
+  function uuid() { return document.getElementById('displayUuid').value.trim(); }
+
+  function setKV(elId, pairs, show = true) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.innerHTML = pairs.map(([k, v, cls]) =>
+      `<span class="k">${k}</span><span class="v ${cls || ''}">${v}</span>`
+    ).join('');
+    el.style.display = show ? 'grid' : 'none';
+  }
+
+  // --- sync-status ---
+  async function doSyncStatus() {
+    const id = uuid();
+    const payload = {
+      batteryPercentage: parseInt(document.getElementById('battery').value) || 0,
+      errorMessage: document.getElementById('errorMsg').value || null,
+      warningMessage: document.getElementById('warnMsg').value || null,
+    };
+    log(`→ POST /display/sync-status/${id}  body=${JSON.stringify(payload)}`, 'info');
+
+    try {
+      const res = await fetch(`${base()}/display/sync-status/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const statusText = `${res.status} ${res.statusText}`;
+      if (!res.ok) {
+        log(`✗ sync-status  HTTP ${statusText}`, 'err');
+        setKV('sync-result', [
+          ['status', statusText, 'missing'],
+          ['body', await res.text(), 'missing'],
+        ]);
+        return;
+      }
+
+      const serverHash = (await res.text()).trim();
+
+      log(`✓ sync-status  HTTP ${statusText}  hash=${serverHash}`, 'ok');
+
+      let hashCls = '';
+      let hashNote = serverHash;
+      if (serverHash === 'no-hash') {
+        hashCls = 'missing';
+        hashNote = 'no-hash — display would fetch image unconditionally';
+      } else if (lastSyncHash === null) {
+        hashNote += '  (first sync — no previous hash to compare)';
+      } else if (serverHash === lastSyncHash) {
+        hashCls = 'same';
+        hashNote += '  ✓ same as last sync — display would SKIP refresh';
+      } else {
+        hashCls = 'changed';
+        hashNote += `  ⚠ changed from ${lastSyncHash} — display would FETCH new image`;
+      }
+
+      lastSyncHash = serverHash === 'no-hash' ? null : serverHash;
+
+      setKV('sync-result', [
+        ['status', statusText, 'log-ok'],
+        ['server hash', hashNote, hashCls],
+        ['battery sent', payload.batteryPercentage + '%'],
+        ['errorMessage', payload.errorMessage ?? '(none)'],
+        ['warningMessage', payload.warningMessage ?? '(none)'],
+      ]);
+    } catch (e) {
+      log(`✗ sync-status  ${e.message}`, 'err');
+      setKV('sync-result', [['error', e.message, 'missing']]);
+    }
+  }
+
+  // --- get-image ---
+  async function doGetImage() {
+    const id = uuid();
+    const url = `${base()}/display/get-image/${id}?convertToBMP=true&withTextFields=true`;
+    log(`→ GET /display/get-image/${id}?convertToBMP=true&withTextFields=true`, 'info');
+
+    try {
+      const res = await fetch(url);
+      const statusText = `${res.status} ${res.statusText}`;
+
+      if (!res.ok) {
+        log(`✗ get-image  HTTP ${statusText}`, 'err');
+        setKV('image-info', [['status', statusText, 'missing']]);
+        return;
+      }
+
+      const blob = await res.blob();
+      const sizeKB = (blob.size / 1024).toFixed(1);
+      const contentType = res.headers.get('content-type') || 'unknown';
+      log(`✓ get-image  HTTP ${statusText}  ${sizeKB} KB`, 'ok');
+
+      setKV('image-info', [
+        ['status', statusText, 'log-ok'],
+        ['content-type', contentType],
+        ['size', sizeKB + ' KB'],
+      ]);
+
+      const wrap = document.getElementById('image-wrap');
+      wrap.innerHTML = '';
+
+      const objectUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        wrap.appendChild(img);
+        URL.revokeObjectURL(objectUrl);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        log('⚠ Browser cannot render BMP directly — using canvas fallback', 'warn');
+        blob.arrayBuffer().then(buf => renderBMPToCanvas(new Uint8Array(buf), wrap));
+      };
+      img.src = objectUrl;
+      img.alt = `Display image for ${id}`;
+      img.style.cssText = 'max-width:100%; max-width:500px; image-rendering:pixelated;';
+
+    } catch (e) {
+      log(`✗ get-image  ${e.message}`, 'err');
+      setKV('image-info', [['error', e.message, 'missing']]);
+    }
+  }
+
+  // Minimal BMP decoder for 1bpp/4bpp/8bpp/24bpp uncompressed BMPs
+  function renderBMPToCanvas(bytes, container) {
+    try {
+      const view = new DataView(bytes.buffer);
+      if (view.getUint16(0, true) !== 0x4D42) { container.textContent = 'Not a valid BMP file'; return; }
+
+      const pixelOffset = view.getUint32(10, true);
+      const width       = view.getInt32(18, true);
+      const height      = view.getInt32(22, true);
+      const bpp         = view.getUint16(28, true);
+      const compression = view.getUint32(30, true);
+      const absHeight   = Math.abs(height);
+      const topDown     = height < 0;
+
+      if (compression !== 0 && compression !== 3) {
+        container.textContent = `BMP compression ${compression} not supported in fallback renderer`;
+        return;
+      }
+
+      // Color table
+      const colorTableOffset = 54;
+      const colorCount = (bpp <= 8) ? (1 << bpp) : 0;
+      const palette = [];
+      for (let i = 0; i < colorCount; i++) {
+        const off = colorTableOffset + i * 4;
+        palette.push([bytes[off+2], bytes[off+1], bytes[off], 255]);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = absHeight;
+      canvas.style.cssText = 'max-width:100%; max-width:500px; image-rendering:pixelated;';
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(width, absHeight);
+      const d = imgData.data;
+
+      const rowSize = Math.floor((bpp * width + 31) / 32) * 4;
+
+      for (let row = 0; row < absHeight; row++) {
+        const srcRow = topDown ? row : (absHeight - 1 - row);
+        const rowOffset = pixelOffset + srcRow * rowSize;
+
+        for (let col = 0; col < width; col++) {
+          let r, g, b, a = 255;
+
+          if (bpp === 1) {
+            const byteIdx = rowOffset + Math.floor(col / 8);
+            const bit = 7 - (col % 8);
+            const idx = (bytes[byteIdx] >> bit) & 1;
+            [r, g, b, a] = palette[idx];
+          } else if (bpp === 4) {
+            const byteIdx = rowOffset + Math.floor(col / 2);
+            const idx = (col % 2 === 0) ? (bytes[byteIdx] >> 4) & 0xf : bytes[byteIdx] & 0xf;
+            [r, g, b, a] = palette[idx];
+          } else if (bpp === 8) {
+            [r, g, b, a] = palette[bytes[rowOffset + col]];
+          } else if (bpp === 24) {
+            const off = rowOffset + col * 3;
+            b = bytes[off]; g = bytes[off+1]; r = bytes[off+2];
+          } else if (bpp === 32) {
+            const off = rowOffset + col * 4;
+            b = bytes[off]; g = bytes[off+1]; r = bytes[off+2]; a = bytes[off+3];
+          } else {
+            container.textContent = `BMP bpp=${bpp} not supported in fallback renderer`; return;
+          }
+
+          const dIdx = (row * width + col) * 4;
+          d[dIdx] = r; d[dIdx+1] = g; d[dIdx+2] = b; d[dIdx+3] = a;
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+      container.appendChild(canvas);
+      log(`✓ BMP rendered via canvas  ${width}×${absHeight}  ${bpp}bpp`, 'ok');
+    } catch (e) {
+      container.textContent = `BMP render error: ${e.message}`;
+      log(`✗ BMP canvas render  ${e.message}`, 'err');
+    }
+  }
+
+  // --- Auto-refresh ---
+  function toggleAutoRefresh() {
+    if (autoRefreshOn) {
+      stopAutoRefresh();
+    } else {
+      startAutoRefresh();
+    }
+  }
+
+  function startAutoRefresh() {
+    autoRefreshOn = true;
+    const btn = document.getElementById('autoRefreshBtn');
+    btn.textContent = 'Auto-refresh: ON';
+    btn.classList.add('active');
+    const secs = Math.max(5, parseInt(document.getElementById('autorefresh-interval').value) || 30);
+    log(`↻ Auto-refresh started — every ${secs}s`, 'info');
+    scheduleNext(secs);
+  }
+
+  function scheduleNext(secs) {
+    if (!autoRefreshOn) return;
+    autoRefreshTimer = setTimeout(async () => {
+      if (!autoRefreshOn) return;
+      await doSyncStatus();
+      await doGetImage();
+      const secs2 = Math.max(5, parseInt(document.getElementById('autorefresh-interval').value) || 30);
+      scheduleNext(secs2);
+    }, secs * 1000);
+  }
+
+  function stopAutoRefresh() {
+    autoRefreshOn = false;
+    clearTimeout(autoRefreshTimer);
+    const btn = document.getElementById('autoRefreshBtn');
+    btn.textContent = 'Auto-refresh: OFF';
+    btn.classList.remove('active');
+    log('↻ Auto-refresh stopped', 'info');
+  }
+</script>
+</body>
+</html>
