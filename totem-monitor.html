@@ -1,0 +1,261 @@
+<!--
+SPDX-FileCopyrightText: 2026 NOI Techpark <digital@noi.bz.it>
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ePaper Totem Monitor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100vh; overflow: hidden;
+    font-family: monospace; background: #1a1a1a; color: #e0e0e0;
+    display: flex; flex-direction: column;
+  }
+
+  #topbar {
+    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    background: #242424; border-bottom: 1px solid #333; flex-shrink: 0;
+  }
+  #topbar label { font-size: 0.72rem; color: #888; white-space: nowrap; }
+  #topbar input[type=text] {
+    flex: 1; padding: 5px 8px; background: #1a1a1a; border: 1px solid #444;
+    color: #e0e0e0; border-radius: 3px; font-family: monospace; font-size: 0.82rem;
+  }
+  #topbar input[type=text]:focus { outline: none; border-color: #666; }
+
+  button {
+    padding: 5px 12px; background: #333; border: 1px solid #555;
+    color: #e0e0e0; border-radius: 3px; cursor: pointer; font-family: monospace;
+    font-size: 0.82rem; transition: background 0.15s; white-space: nowrap;
+  }
+  button:hover { background: #444; }
+  button.primary { background: #2a4a2a; border-color: #4a8a4a; color: #8aca8a; }
+  button.primary:hover { background: #2f5a2f; }
+  button.active { background: #4a3a1a; border-color: #8a6a2a; color: #caaa5a; }
+
+  #statusbar {
+    font-size: 0.72rem; color: #555; padding: 4px 16px; flex-shrink: 0;
+    border-bottom: 1px solid #222; min-height: 22px;
+  }
+  #statusbar.err { color: #c06a6a; }
+  #statusbar.ok  { color: #6ab06a; }
+
+  #grid {
+    flex: 1; display: grid; gap: 12px;
+    padding: 12px 16px; overflow: hidden; min-height: 0;
+    align-content: start;
+  }
+
+  .dcard {
+    background: #242424; border: 1px solid #2e2e2e; border-radius: 4px;
+    display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+  }
+
+  .dcard-header {
+    padding: 6px 10px 4px; flex-shrink: 0;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  }
+  .dcard-name {
+    font-size: 0.82rem; font-weight: bold; color: #d0d0d0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dcard-uuid { font-size: 0.65rem; color: #444; flex-shrink: 0; }
+
+  .dcard-meta {
+    padding: 0 10px 6px; flex-shrink: 0;
+    font-size: 0.7rem; color: #777; display: flex; flex-wrap: wrap; gap: 0 14px;
+  }
+  .dcard-meta .warn { color: #c0a06a; }
+  .dcard-meta .err  { color: #c06a6a; }
+  .dcard-meta .ok   { color: #6ab06a; }
+  .dcard-meta .dim  { color: #444; }
+
+  .dcard-img {
+    flex: 1; min-height: 0; overflow: hidden;
+    background: #111; display: flex; align-items: center; justify-content: center;
+    padding: 6px;
+  }
+  .dcard-img img {
+    max-width: 100%; max-height: 100%;
+    width: auto; height: auto;
+    display: block; image-rendering: pixelated; object-fit: contain;
+  }
+  .dcard-img .placeholder { font-size: 0.75rem; color: #444; }
+  .dcard-img .img-err     { font-size: 0.75rem; color: #c06a6a; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <label>API</label>
+  <input type="text" id="apiBase" value="https://api.epaper.opendatahub.testingmachine.eu">
+  <button class="primary" onclick="refresh()">Refresh</button>
+  <button id="autoBtn" onclick="toggleAuto()">Auto: OFF</button>
+</div>
+<div id="statusbar">Ready.</div>
+<div id="grid"></div>
+
+<script>
+  let autoTimer = null;
+  let autoOn = false;
+
+  function base() { return document.getElementById('apiBase').value.replace(/\/$/, ''); }
+
+  function status(msg, cls = '') {
+    const el = document.getElementById('statusbar');
+    el.textContent = msg;
+    el.className = cls;
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return '—';
+    const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+    if (diff < 60)  return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  }
+
+  function battClass(pct) {
+    if (!pct) return 'dim';
+    if (pct < 20) return 'err';
+    if (pct < 40) return 'warn';
+    return 'ok';
+  }
+
+  function applyLayout(count) {
+    if (count === 0) return;
+    const gap = 12;
+    const padH = 32, padV = 24;
+
+    const topH   = document.getElementById('topbar').offsetHeight;
+    const statH  = document.getElementById('statusbar').offsetHeight;
+    const availW = window.innerWidth  - padH;
+    const availH = window.innerHeight - topH - statH - padV;
+
+    // Pick fewest rows that keep card width >= 180px
+    let cols = count;
+    while (cols > 1) {
+      const rows = Math.ceil(count / cols);
+      const cardW = (availW - gap * (cols - 1)) / cols;
+      const cardH = (availH - gap * (rows - 1)) / rows;
+      if (cardW >= 180 && cardH >= 160) break;
+      cols--;
+    }
+
+    const rows = Math.ceil(count / cols);
+    const cardH = Math.floor((availH - gap * (rows - 1)) / rows);
+
+    const grid = document.getElementById('grid');
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    grid.style.gridTemplateRows    = `repeat(${rows}, ${cardH}px)`;
+  }
+
+  async function refresh() {
+    status('Fetching displays…');
+    let displays;
+    try {
+      const res = await fetch(`${base()}/display/all`);
+      if (!res.ok) { status(`GET /display/all  HTTP ${res.status}`, 'err'); return; }
+      displays = await res.json();
+    } catch (e) {
+      status(`Error: ${e.message}`, 'err');
+      return;
+    }
+
+    renderCards(displays);
+    applyLayout(displays.length);
+    status(`Fetching ${displays.length} image(s)…`);
+    await fetchImages(displays);
+    status(`Updated ${new Date().toLocaleTimeString()}  ·  ${displays.length} display(s)`, 'ok');
+  }
+
+  function renderCards(displays) {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    for (const d of displays) {
+      const res = d.resolution ? `${d.resolution.width}×${d.resolution.height}` : null;
+      const meta = [
+        `<span class="${battClass(d.batteryPercentage)}">${d.batteryPercentage}%</span>`,
+        `<span>${timeAgo(d.lastState)}</span>`,
+        res ? `<span>${res}</span>` : '',
+        d.errorMessage   ? `<span class="err">✗ ${d.errorMessage}</span>`   : '',
+        d.warningMessage ? `<span class="warn">⚠ ${d.warningMessage}</span>` : '',
+      ].filter(Boolean).join('');
+
+      const card = document.createElement('div');
+      card.className = 'dcard';
+      card.innerHTML = `
+        <div class="dcard-header">
+          <span class="dcard-name">${d.name || '(unnamed)'}</span>
+          <span class="dcard-uuid">${d.uuid}</span>
+        </div>
+        <div class="dcard-meta">${meta}</div>
+        <div class="dcard-img" id="img-${d.uuid}">
+          <span class="placeholder">Loading…</span>
+        </div>`;
+      grid.appendChild(card);
+    }
+  }
+
+  async function fetchImages(displays) {
+    await Promise.all(displays.map(d => fetchImage(d.uuid)));
+  }
+
+  async function fetchImage(uuid) {
+    const wrap = document.getElementById(`img-${uuid}`);
+    if (!wrap) return;
+    try {
+      const res = await fetch(`${base()}/display/get-image/${uuid}?withTextFields=true`);
+      if (!res.ok) {
+        wrap.innerHTML = `<span class="img-err">HTTP ${res.status}</span>`;
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      wrap.innerHTML = '';
+      const img = document.createElement('img');
+      img.onload = () => URL.revokeObjectURL(url);
+      img.onerror = () => { URL.revokeObjectURL(url); wrap.innerHTML = `<span class="img-err">render failed</span>`; };
+      img.src = url;
+      img.alt = uuid;
+      wrap.appendChild(img);
+    } catch (e) {
+      if (wrap) wrap.innerHTML = `<span class="img-err">${e.message}</span>`;
+    }
+  }
+
+  function toggleAuto() {
+    autoOn = !autoOn;
+    const btn = document.getElementById('autoBtn');
+    if (autoOn) {
+      btn.textContent = 'Auto: ON (30s)';
+      btn.classList.add('active');
+      scheduleNext();
+    } else {
+      btn.textContent = 'Auto: OFF';
+      btn.classList.remove('active');
+      clearTimeout(autoTimer);
+    }
+  }
+
+  function scheduleNext() {
+    if (!autoOn) return;
+    autoTimer = setTimeout(async () => { if (autoOn) { await refresh(); scheduleNext(); } }, 30000);
+  }
+
+  window.addEventListener('resize', () => {
+    const count = document.querySelectorAll('.dcard').length;
+    if (count) applyLayout(count);
+  });
+
+  refresh();
+</script>
+</body>
+</html>
