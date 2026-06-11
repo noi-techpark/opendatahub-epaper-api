@@ -56,7 +56,10 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 			.authorizeRequests()
 				// Display hardware endpoints — no auth, called by e-paper devices
 				.antMatchers(HttpMethod.POST, "/display/sync-status/**").permitAll()
-				.antMatchers(HttpMethod.GET,  "/display/get-image/**").permitAll()
+				// Image endpoints — loaded via <img src> in the webapp, cannot send auth headers
+				.antMatchers(HttpMethod.GET, "/display/get-image/**").permitAll()
+				.antMatchers(HttpMethod.GET, "/template/get-image/**").permitAll()
+				.antMatchers(HttpMethod.GET, "/ScheduledContent/get-image/**").permitAll()
 				// Swagger UI
 				.antMatchers("/", "/swagger-ui.html", "/swagger-resources/**", "/v2/api-docs", "/webjars/**").permitAll()
 				// Everything else requires a valid Keycloak bearer token with the admin client role

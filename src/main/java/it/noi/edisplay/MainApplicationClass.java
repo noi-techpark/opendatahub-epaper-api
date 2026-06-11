@@ -14,35 +14,44 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.util.Collections;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 
-//exclude = { SecurityAutoConfiguration.class so that own config from SecurityConfiguration.java is used
-//@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
-public class MainApplicationClass  extends SpringBootServletInitializer {
+public class MainApplicationClass extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MainApplicationClass.class, args);
 	}
 
-
-	// Fix the CORS errors fir VUE.js, otherwise no data will arrive at VUE
 	@Bean
-	public FilterRegistrationBean<CorsFilter> simpleCorsFilter() {
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(Collections.singletonList("*"));
-		config.setAllowedMethods(Collections.singletonList("*"));
-		config.setAllowedHeaders(Collections.singletonList("*"));
-		source.registerCorsConfiguration("/**", config);
-		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+	public FilterRegistrationBean<Filter> corsFilter() {
+		FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>(new OncePerRequestFilter() {
+			@Override
+			protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+					throws IOException, javax.servlet.ServletException {
+				String origin = request.getHeader("Origin");
+				if (origin != null) {
+					// Echo the origin back — handles regular origins, and "null" from file:// pages
+					response.setHeader("Access-Control-Allow-Origin", origin);
+					response.setHeader("Access-Control-Allow-Methods", "*");
+					response.setHeader("Access-Control-Allow-Headers", "*");
+				}
+				if ("OPTIONS".equals(request.getMethod())) {
+					response.setStatus(HttpServletResponse.SC_OK);
+					return;
+				}
+				chain.doFilter(request, response);
+			}
+		});
 		bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		return bean;
 	}
