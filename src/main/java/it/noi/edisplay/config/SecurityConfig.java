@@ -20,6 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -49,6 +50,15 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		super.configure(http);
 		http
+			.cors().configurationSource(request -> {
+				CorsConfiguration config = new CorsConfiguration();
+				String origin = request.getHeader("Origin");
+				// Echo the origin back — handles regular origins and "null" from file:// pages
+				config.addAllowedOrigin(origin != null ? origin : "*");
+				config.addAllowedMethod("*");
+				config.addAllowedHeader("*");
+				return config;
+			}).and()
 			.csrf().disable()
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
