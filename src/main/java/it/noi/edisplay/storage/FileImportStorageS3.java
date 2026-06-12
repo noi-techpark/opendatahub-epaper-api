@@ -14,8 +14,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
@@ -42,10 +44,21 @@ public class FileImportStorageS3 {
     }
 
     public byte[] download(String s3FileKey) {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
-        final ResponseBytes<GetObjectResponse> object = s3Client.getObject(getObjectRequest,
-                ResponseTransformer.toBytes());
-        return object.asByteArray();
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
+            final ResponseBytes<GetObjectResponse> object = s3Client.getObject(getObjectRequest,
+                    ResponseTransformer.toBytes());
+            return object.asByteArray();
+        } catch (NoSuchKeyException e) {
+            logger.warn("S3 key not found: {}", s3FileKey);
+            return null;
+        }
+    }
+
+    public void delete(String s3FileKey) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key(s3FileKey).build();
+        s3Client.deleteObject(deleteObjectRequest);
+        logger.debug("Deleted {} from S3", s3FileKey);
     }
 
     public void copy(String oldS3FileKey, String newS3FileKey) {
