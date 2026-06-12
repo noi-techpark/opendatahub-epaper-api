@@ -292,25 +292,30 @@ public class Display {
         return fieldValues;
     }
 
-    public DisplayContent getCurrentContent() {
-        DisplayContent currentDisplayContent = null;
-        Display display = this;
-        if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
-            // Current Event
+    public DisplayContent getCurrentContent(int eventAdvance) {
+        if (!ignoreScheduledContent && scheduledContent != null) {
+            long now = System.currentTimeMillis();
+            long nowPlusAdvance = now + eventAdvance * 60000L;
 
-            Date currentDate = new Date();
-            ScheduledContent currentEvent = display.getScheduledContent().stream()
-                    .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .findFirst().orElse(null);
-            if (currentEvent != null && !Boolean.TRUE.equals(currentEvent.getDisabled())
-                    && currentEvent.getDisplayContent() != null) {
-                currentDisplayContent = currentEvent.getDisplayContent();
+            // Priority: manual running (3) > ODH-override running (2) > manual advance (1) > ODH-override advance (0)
+            ScheduledContent best = null;
+            int bestPriority = -1;
+
+            for (ScheduledContent item : scheduledContent) {
+                if (Boolean.TRUE.equals(item.getDisabled())
+                        || item.getStartDate() == null || item.getEndDate() == null
+                        || item.getDisplayContent() == null
+                        || item.getEndDate().getTime() <= now
+                        || item.getStartDate().getTime() >= nowPlusAdvance) continue;
+                boolean isManual = item.getEventId() == null;
+                boolean isRunning = item.getStartDate().getTime() <= now;
+                int priority = isRunning ? (isManual ? 3 : 2) : (isManual ? 1 : 0);
+                if (priority > bestPriority) { bestPriority = priority; best = item; }
             }
+
+            if (best != null) return best.getDisplayContent();
         }
-        if (currentDisplayContent == null) {
-            currentDisplayContent = display.getDisplayContent();
-        }
-        return currentDisplayContent;
+        return displayContent;
     }
 
     public String getWarningMessage() {
