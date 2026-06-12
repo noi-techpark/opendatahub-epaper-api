@@ -208,61 +208,52 @@ public class Display {
         Long currentTime = System.currentTimeMillis();
         Long currentTimePlusAdvance = currentTime + eventAdvance;
 
-        // Manual scheduled content (no ODH eventId) takes priority over ODH events
-        ScheduledContent manualCurrent = null;
+        // Priority: manual running (3) > ODH running (2) > manual advance (1) > ODH advance (0)
+        Object bestCandidate = null;
+        int bestPriority = -1;
+
         if (!ignoreScheduledContent && scheduledContent != null) {
-            manualCurrent = scheduledContent.stream()
-                .filter(item -> item.getEventId() == null
-                    && !Boolean.TRUE.equals(item.getDisabled())
-                    && item.getStartDate() != null && item.getEndDate() != null
-                    && item.getStartDate().getTime() <= currentTime
-                    && item.getEndDate().getTime() > currentTime)
-                .findFirst().orElse(null);
-            if (manualCurrent == null) {
-                manualCurrent = scheduledContent.stream()
-                    .filter(item -> item.getEventId() == null
-                        && !Boolean.TRUE.equals(item.getDisabled())
-                        && item.getStartDate() != null && item.getEndDate() != null
-                        && item.getStartDate().getTime() < currentTimePlusAdvance
-                        && item.getEndDate().getTime() > currentTime)
-                    .findFirst().orElse(null);
+            for (ScheduledContent item : scheduledContent) {
+                if (item.getEventId() != null || Boolean.TRUE.equals(item.getDisabled())
+                        || item.getStartDate() == null || item.getEndDate() == null
+                        || item.getEndDate().getTime() <= currentTime
+                        || item.getStartDate().getTime() >= currentTimePlusAdvance) continue;
+                int priority = item.getStartDate().getTime() <= currentTime ? 3 : 1;
+                if (priority > bestPriority) { bestPriority = priority; bestCandidate = item; }
             }
         }
 
-        if (manualCurrent != null) {
+        for (EventDto item : events) {
+            long from = item.getEventDate().get(0).getFromUTC();
+            long to = item.getEventDate().get(0).getToUTC();
+            if (to <= currentTime || from >= currentTimePlusAdvance) continue;
+            int priority = from <= currentTime ? 2 : 0;
+            if (priority > bestPriority) { bestPriority = priority; bestCandidate = item; }
+        }
+
+        if (bestCandidate instanceof ScheduledContent) {
+            ScheduledContent sc = (ScheduledContent) bestCandidate;
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, manualCurrent.getEventDescription() != null ? manualCurrent.getEventDescription() : "");
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, sc.getEventDescription() != null ? sc.getEventDescription() : "");
             fieldValues.put(ImageFieldType.EVENT_SUBTITLE, "");
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
-            fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(manualCurrent.getStartDate()));
-            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(manualCurrent.getEndDate()));
-        } else {
-            EventDto currentEvent = events.stream()
-                    .filter(item -> item.getEventDate().get(0).getFromUTC() <= currentTime
-                            && item.getEventDate().get(0).getToUTC() > currentTime)
-                    .findFirst().orElse(null);
-            if (currentEvent == null) {
-                currentEvent = events.stream()
-                        .filter(item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
-                                && item.getEventDate().get(0).getToUTC() > currentTime)
-                        .findFirst().orElse(null);
-            }
-            if (currentEvent != null) {
-                fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
-                fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
-                AdditionalInfoDto currentInfo = currentEvent.getEventDate().get(0).getEventDateAdditionalInfo();
-                fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
-                        safeDescription(currentInfo != null ? currentInfo.getEn() : null));
-                OrganizerInfosDto currentOrganizer = currentEvent.getOrganizerInfos();
-                fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
-                        currentOrganizer != null && currentOrganizer.getEn() != null
-                                ? currentOrganizer.getEn().getCompanyName()
-                                : "");
-                fieldValues.put(ImageFieldType.EVENT_START_DATE,
-                        f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
-                fieldValues.put(ImageFieldType.EVENT_END_DATE,
-                        f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
-            }
+            fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(sc.getStartDate()));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(sc.getEndDate()));
+        } else if (bestCandidate instanceof EventDto) {
+            EventDto event = (EventDto) bestCandidate;
+            fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(event));
+            AdditionalInfoDto currentInfo = event.getEventDate().get(0).getEventDateAdditionalInfo();
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
+                    safeDescription(currentInfo != null ? currentInfo.getEn() : null));
+            OrganizerInfosDto currentOrganizer = event.getOrganizerInfos();
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
+                    currentOrganizer != null && currentOrganizer.getEn() != null
+                            ? currentOrganizer.getEn().getCompanyName() : "");
+            fieldValues.put(ImageFieldType.EVENT_START_DATE,
+                    f.format(new Timestamp(event.getEventDate().get(0).getFromUTC())));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE,
+                    f.format(new Timestamp(event.getEventDate().get(0).getToUTC())));
         }
 
         // Upcoming event
