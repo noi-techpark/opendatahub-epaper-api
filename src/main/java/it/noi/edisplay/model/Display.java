@@ -209,15 +209,25 @@ public class Display {
         Long currentTimePlusAdvance = currentTime + eventAdvance;
 
         // Manual scheduled content (no ODH eventId) takes priority over ODH events
-        ScheduledContent manualCurrent = (!ignoreScheduledContent && scheduledContent != null)
-            ? scheduledContent.stream()
+        ScheduledContent manualCurrent = null;
+        if (!ignoreScheduledContent && scheduledContent != null) {
+            manualCurrent = scheduledContent.stream()
                 .filter(item -> item.getEventId() == null
                     && !Boolean.TRUE.equals(item.getDisabled())
                     && item.getStartDate() != null && item.getEndDate() != null
-                    && item.getStartDate().getTime() < currentTimePlusAdvance
+                    && item.getStartDate().getTime() <= currentTime
                     && item.getEndDate().getTime() > currentTime)
-                .findFirst().orElse(null)
-            : null;
+                .findFirst().orElse(null);
+            if (manualCurrent == null) {
+                manualCurrent = scheduledContent.stream()
+                    .filter(item -> item.getEventId() == null
+                        && !Boolean.TRUE.equals(item.getDisabled())
+                        && item.getStartDate() != null && item.getEndDate() != null
+                        && item.getStartDate().getTime() < currentTimePlusAdvance
+                        && item.getEndDate().getTime() > currentTime)
+                    .findFirst().orElse(null);
+            }
+        }
 
         if (manualCurrent != null) {
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
@@ -227,10 +237,16 @@ public class Display {
             fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(manualCurrent.getStartDate()));
             fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(manualCurrent.getEndDate()));
         } else {
-            EventDto currentEvent = events.stream().filter(
-                    item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
+            EventDto currentEvent = events.stream()
+                    .filter(item -> item.getEventDate().get(0).getFromUTC() <= currentTime
                             && item.getEventDate().get(0).getToUTC() > currentTime)
                     .findFirst().orElse(null);
+            if (currentEvent == null) {
+                currentEvent = events.stream()
+                        .filter(item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
+                                && item.getEventDate().get(0).getToUTC() > currentTime)
+                        .findFirst().orElse(null);
+            }
             if (currentEvent != null) {
                 fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
                 fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
