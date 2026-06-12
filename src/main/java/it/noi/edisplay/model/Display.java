@@ -208,25 +208,45 @@ public class Display {
         Long currentTime = System.currentTimeMillis();
         Long currentTimePlusAdvance = currentTime + eventAdvance;
 
-        EventDto currentEvent = events.stream().filter(
-                item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
-                        && item.getEventDate().get(0).getToUTC() > currentTime)
-                .findFirst().orElse(null);
-        if (currentEvent != null) {
+        // Manual scheduled content (no ODH eventId) takes priority over ODH events
+        ScheduledContent manualCurrent = (!ignoreScheduledContent && scheduledContent != null)
+            ? scheduledContent.stream()
+                .filter(item -> item.getEventId() == null
+                    && !Boolean.TRUE.equals(item.getDisabled())
+                    && item.getStartDate() != null && item.getEndDate() != null
+                    && item.getStartDate().getTime() < currentTimePlusAdvance
+                    && item.getEndDate().getTime() > currentTime)
+                .findFirst().orElse(null)
+            : null;
+
+        if (manualCurrent != null) {
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
-            AdditionalInfoDto currentInfo = currentEvent.getEventDate().get(0).getEventDateAdditionalInfo();
-            fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
-                    safeDescription(currentInfo != null ? currentInfo.getEn() : null));
-            OrganizerInfosDto currentOrganizer = currentEvent.getOrganizerInfos();
-            fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
-                    currentOrganizer != null && currentOrganizer.getEn() != null
-                            ? currentOrganizer.getEn().getCompanyName()
-                            : "");
-            fieldValues.put(ImageFieldType.EVENT_START_DATE,
-                    f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
-            fieldValues.put(ImageFieldType.EVENT_END_DATE,
-                    f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, manualCurrent.getEventDescription() != null ? manualCurrent.getEventDescription() : "");
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, "");
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
+            fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(manualCurrent.getStartDate()));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(manualCurrent.getEndDate()));
+        } else {
+            EventDto currentEvent = events.stream().filter(
+                    item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
+                            && item.getEventDate().get(0).getToUTC() > currentTime)
+                    .findFirst().orElse(null);
+            if (currentEvent != null) {
+                fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
+                fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
+                AdditionalInfoDto currentInfo = currentEvent.getEventDate().get(0).getEventDateAdditionalInfo();
+                fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
+                        safeDescription(currentInfo != null ? currentInfo.getEn() : null));
+                OrganizerInfosDto currentOrganizer = currentEvent.getOrganizerInfos();
+                fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
+                        currentOrganizer != null && currentOrganizer.getEn() != null
+                                ? currentOrganizer.getEn().getCompanyName()
+                                : "");
+                fieldValues.put(ImageFieldType.EVENT_START_DATE,
+                        f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
+                fieldValues.put(ImageFieldType.EVENT_END_DATE,
+                        f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
+            }
         }
 
         // Upcoming event

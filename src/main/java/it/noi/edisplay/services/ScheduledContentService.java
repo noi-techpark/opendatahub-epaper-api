@@ -90,11 +90,11 @@ public class ScheduledContentService {
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 
-        if (withTextFields) {
+        if (withTextFields && scheduledContent.getDisplayContent().getTemplate() != null) {
             int roomAmount = scheduledContent.getDisplayContent().getTemplate().getMaxRooms();
             int padding = scheduledContent.getDisplayContent().getPadding();
             int roomSectionHeight = (scheduledContent.getDisplayContent().getTemplate().getResolution().getHeight() - (padding * 2)) / roomAmount;
-            
+
             for (int roomIndex = 0; roomIndex < roomAmount; roomIndex++) {
                 imageUtil.drawImageTextFields(
                     bImage,
