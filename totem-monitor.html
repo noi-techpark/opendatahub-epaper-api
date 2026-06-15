@@ -169,6 +169,7 @@ SPDX-License-Identifier: CC0-1.0
       return;
     }
 
+    displays.sort((a, b) => (a.name || '').localeCompare(b.name || '') || a.uuid.localeCompare(b.uuid));
     renderCards(displays);
     applyLayout(displays.length);
     status(`Fetching ${displays.length} image(s)…`);

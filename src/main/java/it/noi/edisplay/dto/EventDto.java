@@ -8,13 +8,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import it.noi.edisplay.dto.support.AdditionalInfoDto;
-import it.noi.edisplay.dto.support.AdditionalLangDto;
 import it.noi.edisplay.dto.support.DetailDto;
 import it.noi.edisplay.dto.support.EventDateDto;
-import it.noi.edisplay.dto.support.LangDto;
 import it.noi.edisplay.dto.support.OrganizerInfosDto;
-import it.noi.edisplay.dto.support.OrganizerLangDto;
 
 /**
  * DTO to read Events from OpenDataHub opendatahub.com
@@ -23,8 +19,8 @@ public class EventDto implements Comparable<EventDto> {
 
 	private String spaceDesc;
     
-    @JsonProperty("EventId")
-    private Integer eventId;
+    @JsonProperty("Id")
+    private String eventId;
 
     @JsonProperty("Detail")
     private DetailDto detail;
@@ -35,11 +31,11 @@ public class EventDto implements Comparable<EventDto> {
     @JsonProperty("EventDate")
     private List<EventDateDto> eventDate;
 
-    public Integer getEventId() {
+    public String getEventId() {
         return eventId;
     }
 
-    public void setEventId(Integer eventId) {
+    public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 

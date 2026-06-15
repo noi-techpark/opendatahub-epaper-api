@@ -87,14 +87,18 @@ public class ScheduledContentService {
         }
 
         byte[] image = fileImportStorageS3.download(scheduledContent.getDisplayContent().getUuid());
+        if (image == null) {
+            logger.debug("Image not found in S3 for scheduled content uuid: {}", uuid);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 
-        if (withTextFields) {
+        if (withTextFields && scheduledContent.getDisplayContent().getTemplate() != null) {
             int roomAmount = scheduledContent.getDisplayContent().getTemplate().getMaxRooms();
             int padding = scheduledContent.getDisplayContent().getPadding();
             int roomSectionHeight = (scheduledContent.getDisplayContent().getTemplate().getResolution().getHeight() - (padding * 2)) / roomAmount;
-            
+
             for (int roomIndex = 0; roomIndex < roomAmount; roomIndex++) {
                 imageUtil.drawImageTextFields(
                     bImage,
@@ -142,8 +146,23 @@ public class ScheduledContentService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
+        String s3Key = scheduledContent.getDisplayContent() != null
+                ? scheduledContent.getDisplayContent().getUuid() : null;
+
+        Display display = scheduledContent.getDisplay();
+
         scheduledContentRepository.delete(scheduledContent);
-        logger.debug("scheduled content with uuid: {} deleted successfully!", uuid);
+
+        if (s3Key != null) {
+            fileImportStorageS3.delete(s3Key);
+        }
+
+        if (display != null && display.getDisplayContent() != null) {
+            display.getDisplayContent().setImageHash(null);
+            displayRepository.saveAndFlush(display);
+        }
+
+        logger.debug("Scheduled content with uuid: {} deleted successfully!", uuid);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

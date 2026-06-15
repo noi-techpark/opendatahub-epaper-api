@@ -208,25 +208,52 @@ public class Display {
         Long currentTime = System.currentTimeMillis();
         Long currentTimePlusAdvance = currentTime + eventAdvance;
 
-        EventDto currentEvent = events.stream().filter(
-                item -> item.getEventDate().get(0).getFromUTC() < currentTimePlusAdvance
-                        && item.getEventDate().get(0).getToUTC() > currentTime)
-                .findFirst().orElse(null);
-        if (currentEvent != null) {
+        // Priority: manual running (3) > ODH running (2) > manual advance (1) > ODH advance (0)
+        Object bestCandidate = null;
+        int bestPriority = -1;
+
+        if (!ignoreScheduledContent && scheduledContent != null) {
+            for (ScheduledContent item : scheduledContent) {
+                if (item.getEventId() != null || Boolean.TRUE.equals(item.getDisabled())
+                        || item.getStartDate() == null || item.getEndDate() == null
+                        || item.getEndDate().getTime() <= currentTime
+                        || item.getStartDate().getTime() >= currentTimePlusAdvance) continue;
+                int priority = item.getStartDate().getTime() <= currentTime ? 3 : 1;
+                if (priority > bestPriority) { bestPriority = priority; bestCandidate = item; }
+            }
+        }
+
+        for (EventDto item : events) {
+            long from = item.getEventDate().get(0).getFromUTC();
+            long to = item.getEventDate().get(0).getToUTC();
+            if (to <= currentTime || from >= currentTimePlusAdvance) continue;
+            int priority = from <= currentTime ? 2 : 0;
+            if (priority > bestPriority) { bestPriority = priority; bestCandidate = item; }
+        }
+
+        if (bestCandidate instanceof ScheduledContent) {
+            ScheduledContent sc = (ScheduledContent) bestCandidate;
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
-            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(currentEvent));
-            AdditionalInfoDto currentInfo = currentEvent.getEventDate().get(0).getEventDateAdditionalInfo();
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, sc.getEventDescription() != null ? sc.getEventDescription() : "");
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, "");
+            fieldValues.put(ImageFieldType.EVENT_ORGANIZER, "");
+            fieldValues.put(ImageFieldType.EVENT_START_DATE, f.format(sc.getStartDate()));
+            fieldValues.put(ImageFieldType.EVENT_END_DATE, f.format(sc.getEndDate()));
+        } else if (bestCandidate instanceof EventDto) {
+            EventDto event = (EventDto) bestCandidate;
+            fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
+            fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(event));
+            AdditionalInfoDto currentInfo = event.getEventDate().get(0).getEventDateAdditionalInfo();
             fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
                     safeDescription(currentInfo != null ? currentInfo.getEn() : null));
-            OrganizerInfosDto currentOrganizer = currentEvent.getOrganizerInfos();
+            OrganizerInfosDto currentOrganizer = event.getOrganizerInfos();
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
                     currentOrganizer != null && currentOrganizer.getEn() != null
-                            ? currentOrganizer.getEn().getCompanyName()
-                            : "");
+                            ? currentOrganizer.getEn().getCompanyName() : "");
             fieldValues.put(ImageFieldType.EVENT_START_DATE,
-                    f.format(new Timestamp((currentEvent.getEventDate().get(0).getFromUTC()))));
+                    f.format(new Timestamp(event.getEventDate().get(0).getFromUTC())));
             fieldValues.put(ImageFieldType.EVENT_END_DATE,
-                    f.format(new Timestamp((currentEvent.getEventDate().get(0).getToUTC()))));
+                    f.format(new Timestamp(event.getEventDate().get(0).getToUTC())));
         }
 
         // Upcoming event
@@ -265,25 +292,30 @@ public class Display {
         return fieldValues;
     }
 
-    public DisplayContent getCurrentContent() {
-        DisplayContent currentDisplayContent = null;
-        Display display = this;
-        if (!display.getIgnoreScheduledContent() && display.getScheduledContent() != null) {
-            // Current Event
+    public DisplayContent getCurrentContent(int eventAdvance) {
+        if (!ignoreScheduledContent && scheduledContent != null) {
+            long now = System.currentTimeMillis();
+            long nowPlusAdvance = now + eventAdvance * 60000L;
 
-            Date currentDate = new Date();
-            ScheduledContent currentEvent = display.getScheduledContent().stream()
-                    .filter(item -> item.getStartDate().before(currentDate) && item.getEndDate().after(currentDate))
-                    .findFirst().orElse(null);
-            if (currentEvent != null && !Boolean.TRUE.equals(currentEvent.getDisabled())
-                    && currentEvent.getDisplayContent() != null) {
-                currentDisplayContent = currentEvent.getDisplayContent();
+            // Priority: manual running (3) > ODH-override running (2) > manual advance (1) > ODH-override advance (0)
+            ScheduledContent best = null;
+            int bestPriority = -1;
+
+            for (ScheduledContent item : scheduledContent) {
+                if (Boolean.TRUE.equals(item.getDisabled())
+                        || item.getStartDate() == null || item.getEndDate() == null
+                        || item.getDisplayContent() == null
+                        || item.getEndDate().getTime() <= now
+                        || item.getStartDate().getTime() >= nowPlusAdvance) continue;
+                boolean isManual = item.getEventId() == null;
+                boolean isRunning = item.getStartDate().getTime() <= now;
+                int priority = isRunning ? (isManual ? 3 : 2) : (isManual ? 1 : 0);
+                if (priority > bestPriority) { bestPriority = priority; best = item; }
             }
+
+            if (best != null) return best.getDisplayContent();
         }
-        if (currentDisplayContent == null) {
-            currentDisplayContent = display.getDisplayContent();
-        }
-        return currentDisplayContent;
+        return displayContent;
     }
 
     public String getWarningMessage() {

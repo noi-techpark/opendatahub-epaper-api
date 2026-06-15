@@ -186,6 +186,9 @@ public class TemplateService {
             }
 
             byte[] image = fileImportStorageS3.download(template.getDisplayContent().getUuid());
+            if (image == null) {
+                throw new IllegalArgumentException("Template image not found in storage!");
+            }
             InputStream is = new ByteArrayInputStream(image);
             BufferedImage bImage = ImageIO.read(is);
 

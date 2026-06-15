@@ -112,7 +112,7 @@ public class DisplayService {
                 displayDto.setDisplayContent(null);
             }
 
-            DisplayContent currentContent = display.getCurrentContent();
+            DisplayContent currentContent = display.getCurrentContent(eventAdvance + eventOffset);
             if (currentContent != null) {
                 displayDto.setCurrentImageHash(currentContent.getImageHash());
             }
@@ -234,7 +234,7 @@ public class DisplayService {
 
         displayRepository.saveAndFlush(display);
 
-        DisplayContent displayContent = display.getCurrentContent();
+        DisplayContent displayContent = display.getCurrentContent(eventAdvance + eventOffset);
         if (displayContent == null) {
             logger.debug("Display with uuid {} has no content!", displayContent);
             return new ResponseEntity<>("Display content is missing!", HttpStatus.NOT_FOUND);
@@ -243,6 +243,10 @@ public class DisplayService {
         String imageHash = displayContent.getImageHash();
 
         byte[] image = fileImportStorageS3.download(displayContent.getUuid());
+        if (image == null) {
+            logger.warn("Image not found in S3 for display content uuid: {}", displayContent.getUuid());
+            return new ResponseEntity<>("Display image not found in storage!", HttpStatus.NOT_FOUND);
+        }
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 
@@ -266,6 +270,8 @@ public class DisplayService {
         if (!generatedHash.equals(imageHash)) {
             displayContent.setImageHash(null);
             displayContentRepository.saveAndFlush(displayContent);
+            logger.debug("Image hash changed for display with uuid: {}!", displayUuid);
+            return new ResponseEntity<>(generatedHash, HttpStatus.OK);
         }
 
         if (imageHash == null) {
@@ -284,7 +290,7 @@ public class DisplayService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        DisplayContent displayContent = display.getCurrentContent();
+        DisplayContent displayContent = display.getCurrentContent(eventAdvance + eventOffset);
 
         if (displayContent == null) {
             logger.debug("Display with uuid {} has not image!", displayUuid);
@@ -292,6 +298,10 @@ public class DisplayService {
         }
 
         byte[] image = fileImportStorageS3.download(displayContent.getUuid());
+        if (image == null) {
+            logger.warn("Image not found in S3 for display content uuid: {}", displayContent.getUuid());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         InputStream is = new ByteArrayInputStream(image);
         BufferedImage bImage = ImageIO.read(is);
 

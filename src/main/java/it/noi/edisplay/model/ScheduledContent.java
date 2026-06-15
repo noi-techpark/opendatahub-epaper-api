@@ -23,7 +23,7 @@ public class ScheduledContent {
 
     private Boolean disabled;
 
-    private Integer eventId;
+    private String eventId;
 
     private Date startDate;
 
@@ -71,11 +71,11 @@ public class ScheduledContent {
         this.disabled = disabled;
     }
 
-    public Integer getEventId() {
+    public String getEventId() {
         return eventId;
     }
 
-    public void setEventId(Integer eventId) {
+    public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
