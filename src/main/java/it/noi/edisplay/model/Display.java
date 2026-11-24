@@ -243,9 +243,7 @@ public class Display {
             EventDto event = (EventDto) bestCandidate;
             fieldValues.put(ImageFieldType.LOCATION_NAME, roomName);
             fieldValues.put(ImageFieldType.EVENT_DESCRIPTION, formEventDescription(event));
-            AdditionalInfoDto currentInfo = event.getEventDate().get(0).getEventDateAdditionalInfo();
-            fieldValues.put(ImageFieldType.EVENT_SUBTITLE,
-                    safeDescription(currentInfo != null ? currentInfo.getEn() : null));
+            fieldValues.put(ImageFieldType.EVENT_SUBTITLE, formEventSubtitle(event));
             OrganizerInfosDto currentOrganizer = event.getOrganizerInfos();
             fieldValues.put(ImageFieldType.EVENT_ORGANIZER,
                     currentOrganizer != null && currentOrganizer.getEn() != null
@@ -264,9 +262,7 @@ public class Display {
             Collections.sort(upcomingEvents); // Sort events by start date
             EventDto upcomingEvent = upcomingEvents.get(0);
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_DESCRIPTION, formEventDescription(upcomingEvent));
-            AdditionalInfoDto upcomingInfo = upcomingEvent.getEventDate().get(0).getEventDateAdditionalInfo();
-            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE,
-                    safeDescription(upcomingInfo != null ? upcomingInfo.getEn() : null));
+            fieldValues.put(ImageFieldType.UPCOMING_EVENT_SUBTITLE, formEventSubtitle(upcomingEvent));
             OrganizerInfosDto organizer = upcomingEvent.getOrganizerInfos();
             fieldValues.put(ImageFieldType.UPCOMING_EVENT_ORGANIZER,
                     organizer != null && organizer.getEn() != null ? organizer.getEn().getCompanyName() : "");
@@ -357,6 +353,29 @@ public class Display {
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.joining("\n"));
         }
+    }
+
+    // Same rule as webcomp-events-today-noi: EventDate[0].Detail.Title overrides Detail.SubHeader,
+    // per language, then language fallback en -> it -> de. Lowercased like the previous safeDescription subtitle
+    private String formEventSubtitle(EventDto eventDto) {
+        DetailDto eventDateDetail = eventDto.getEventDate().get(0).getDetail();
+        DetailDto detail = eventDto.getDetail();
+        return Stream.of(
+                    subtitleForLanguage(eventDateDetail != null ? eventDateDetail.getEn() : null, detail != null ? detail.getEn() : null),
+                    subtitleForLanguage(eventDateDetail != null ? eventDateDetail.getIt() : null, detail != null ? detail.getIt() : null),
+                    subtitleForLanguage(eventDateDetail != null ? eventDateDetail.getDe() : null, detail != null ? detail.getDe() : null))
+                .filter(s -> !s.isEmpty())
+                .findFirst()
+                .orElse("")
+                .toLowerCase();
+    }
+
+    private String subtitleForLanguage(LangDto eventDateLang, LangDto detailLang) {
+        if (eventDateLang != null && eventDateLang.getTitle() != null && !eventDateLang.getTitle().trim().isEmpty())
+            return eventDateLang.getTitle().trim();
+        if (detailLang != null && detailLang.getSubHeader() != null)
+            return detailLang.getSubHeader().trim();
+        return "";
     }
 
     private String safeDescription(AdditionalLangDto lang) {

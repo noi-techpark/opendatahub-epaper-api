@@ -28,6 +28,9 @@ public class EventDateDto {
     @JsonProperty("EventDateAdditionalInfo")
     private AdditionalInfoDto eventDateAdditionalInfo;
 
+    @JsonProperty("Detail")
+    private DetailDto detail;
+
     public Long getFromUTC() {
         return fromUTC;
     }
@@ -74,5 +77,13 @@ public class EventDateDto {
 
     public void setEventDateAdditionalInfo(AdditionalInfoDto eventDateAdditionalInfo) {
         this.eventDateAdditionalInfo = eventDateAdditionalInfo;
+    }
+
+    public DetailDto getDetail() {
+        return detail;
+    }
+
+    public void setDetail(DetailDto detail) {
+        this.detail = detail;
     }
 }

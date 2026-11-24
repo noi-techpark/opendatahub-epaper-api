@@ -10,11 +10,22 @@ public class LangDto {
     @JsonProperty("Title")
     private String title;
 
+    @JsonProperty("SubHeader")
+    private String subHeader;
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSubHeader() {
+        return subHeader;
+    }
+
+    public void setSubHeader(String subHeader) {
+        this.subHeader = subHeader;
     }
 }
