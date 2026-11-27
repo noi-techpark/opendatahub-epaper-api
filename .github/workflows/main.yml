@@ -28,6 +28,12 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           test-command: 'mvn -B -U clean test'
 
+  # Deploy test (https://api.epaper.opendatahub.testingmachine.eu) on Scaleway, from main.
+  # Server: docker01-test in noi-techpark/infrastructure (terraform/scaleway/digital/docker);
+  # the Caddy proxy proxy-test there forwards api.epaper.scw.opendatahub.testingmachine.eu to
+  # SERVER_PORT, and the AWS Caddy keeps the public name and forwards to that.
+  # Database: Scaleway instance test-pg-misc (terraform/scaleway/digital/db, terraform output
+  # endpoints), whose ACL must allow docker01-test.
   deploy-test:
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/main'
@@ -45,9 +51,9 @@ jobs:
           X_DOCKER_TAG: ${{ env.DOCKER_TAG }}
           X_SERVER_PORT: 1012
 
-          X_DB_URL: "jdbc:postgresql://test-pg-misc.co90ybcr8iim.eu-west-1.rds.amazonaws.com:5432/epaper"
+          X_DB_URL: "jdbc:postgresql://163.172.176.125:3208/epaper"
           X_DB_USERNAME: "epaper"
-          X_DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST }}
+          X_DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST_SCW }}
 
           X_APP_DEBUG: true
           X_NOI_EVENTS_ENABLED: true
@@ -82,7 +88,7 @@ jobs:
       - name: Deploy application
         uses: noi-techpark/github-actions/docker-deploy@v2
         with:
-          hosts: 'test'
+          hosts: 'scwtest'
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           docker-username: 'noi-techpark-bot'
           docker-password: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
