@@ -53,7 +53,7 @@ jobs:
 
           X_DB_URL: "jdbc:postgresql://163.172.176.125:3208/epaper"
           X_DB_USERNAME: "epaper"
-          X_DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST_SCW }}
+          X_DB_PASSWORD: ${{ secrets.DB_PASSWORD_TEST }}
 
           X_APP_DEBUG: true
           X_NOI_EVENTS_ENABLED: true
