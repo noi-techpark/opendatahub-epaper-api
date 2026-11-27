@@ -15,7 +15,7 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
 
@@ -35,7 +35,7 @@ jobs:
   # Database: Scaleway instance test-pg-misc (terraform/scaleway/digital/db, terraform output
   # endpoints), whose ACL must allow docker01-test.
   deploy-test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main'
     needs: test
     concurrency: deploy-test
@@ -95,7 +95,7 @@ jobs:
           project-name: ${{ env.PROJECT_NAME }}
 
   deploy-prod:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/prod'
     needs: test
     concurrency: deploy-prod
